@@ -7,15 +7,17 @@ if (!isset($_SESSION['user_id'])) {
 include_once __DIR__ . '/../config/config.php';
 
 $member_id = $_SESSION['member_id'];
+$status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
 $no_share = 1;
 $admission_paid = false;
+$current_year = (int)date('Y');
 
 // Fetch admission info
 $stmt = $pdo->prepare("SELECT no_share, admission_fee FROM member_share WHERE member_id = ? LIMIT 1");
 $stmt->execute([$member_id]);
 if ($row = $stmt->fetch()) {
     $no_share = (float)$row['no_share'];
-    $admission_paid = !is_null($row['admission_fee']);
+    $admission_paid = isset($row['admission_fee']) && (float)$row['admission_fee'] > 0;
 }
 
 // Fetch already paid monthly payments
@@ -40,28 +42,34 @@ include_once __DIR__ . '/../includes/open.php';
           <div class="card-body p-4">
             <h3 class="mb-3 text-primary fw-bold">Make a Payment <span class="text-secondary">(পেমেন্ট করুন)</span></h3>
             <hr class="mb-4" />
-            <form method="post" action="../process/payment_process.php">
+            <form method="post" action="../process/payment_process.php" enctype="multipart/form-data">
               <div class="row">
                 <div class="col-md-6 mb-3">
                 <label for="payment_type" class="form-label">Payments (পেমেন্ট)</label>
                 <select class="form-select" id="payment_type" name="payment_type" required>
                   <option value="">Select (বাছাই করুন)</option>
                   <?php
-                  $months = [
-                    'admission' => 'Admission-Share Fee (ভর্তি-শেয়ার ফি)',
-                    'january'   => 'January (জানুয়ারি)',
-                    'february'  => 'February (ফেব্রুয়ারি)',
-                    'march'     => 'March (মার্চ)',
-                    'april'     => 'April (এপ্রিল)',
-                    'may'       => 'May (মে)',
-                    'june'      => 'June (জুন)',
-                    'july'      => 'July (জুলাই)',
-                    'august'    => 'August (আগস্ট)',
-                    'september' => 'September (সেপ্টেম্বর)',
-                    'october'   => 'October (অক্টোবর)',
-                    'november'  => 'November (নভেম্বর)',
-                    'december'  => 'December (ডিসেম্বর)',
-                  ];
+                  if ($status === 'P') {
+                      $months = [
+                          'admission' => 'Admission Fee (ভর্তি ফি)'
+                      ];
+                  } else {
+                      $months = [
+                          'share'     => 'Share Fee (শেয়ার ফি)',
+                          'january'   => 'January (জানুয়ারি)',
+                          'february'  => 'February (ফেব্রুয়ারি)',
+                          'march'     => 'March (মার্চ)',
+                          'april'     => 'April (এপ্রিল)',
+                          'may'       => 'May (মে)',
+                          'june'      => 'June (জুন)',
+                          'july'      => 'July (জুলাই)',
+                          'august'    => 'August (আগস্ট)',
+                          'september' => 'September (সেপ্টেম্বর)',
+                          'october'   => 'October (অক্টোবর)',
+                          'november'  => 'November (নভেম্বর)',
+                          'december'  => 'December (ডিসেম্বর)'
+                      ];
+                  }
                   foreach ($months as $key => $val): ?>
                     <option value="<?= $key ?>" <?= (!empty($payment_type) && $payment_type == $key) ? 'selected' : '' ?>>
                       <?= $val ?>
@@ -73,15 +81,18 @@ include_once __DIR__ . '/../includes/open.php';
               <div class="col-md-6 mb-3">
                 <label for="payment_year" class="form-label">Year (বছর)</label>
                 <select class="form-select" id="payment_year" name="payment_year" required>
-                  <?php for ($y = 2025; $y <= 2027; $y++): ?>
-                    <option value="<?= $y ?>" <?= (!empty($payment_year) && $payment_year == $y) ? 'selected' : '' ?>>
+                  <?php 
+                  for ($y = $current_year; $y <= ($current_year + 0); $y++): 
+                    $is_selected = (empty($payment_year) && $y == $current_year) || (!empty($payment_year) && $payment_year == $y);
+                  ?>
+                    <option value="<?= $y ?>" <?= $is_selected ? 'selected' : '' ?>>
                       <?= $y ?>
                     </option>
                   <?php endfor; ?>
                 </select>
               </div>
 
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                   <label for="amount" class="form-label">Amount (টাকার পরিমাণ)</label>
                   <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
                   <div id="admissionInfo" class="form-text text-info" style="display:none;">
@@ -89,13 +100,20 @@ include_once __DIR__ . '/../includes/open.php';
                   </div>
                   <div id="admissionPaidMsg" class="form-text text-danger" style="display:none;"></div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                   <label for="bank_trans" class="form-label">Bank Transaction (ব্যাংক লেনদেন নং)</label>
                   <input type="text" class="form-control" id="bank_trans" name="bank_trans" required>
                 </div>
                 <div class="col-md-4 mb-3">
                   <label for="payment_date" class="form-label">Bank Deposit Date (ব্যাংকে জমার তারিখ)</label>
                   <input type="date" class="form-control" id="payment_date" name="payment_date" required>
+                </div>
+                <div class="col-md-5 mb-3">
+                  <label for="payment_slip" class="form-label">Payment Slip</label>
+                  <input type="file" class="form-control" id="payment_slip" name="payment_slip" accept="image/*" required onchange="previewPaymentSlip(event)">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <img id="paymentSlipPreview" src="#" alt="Preview" style="display:none;max-height:80px;margin-top:8px;">
                 </div>
                 <div class="col-12 mt-4 text-end">
                   <button type="submit" id="submit" class="btn btn-primary btn-lg px-4 shadow-sm">Submit Payment (পেমেন্ট সংরক্ষণ করুন)</button>
@@ -130,48 +148,44 @@ document.addEventListener('DOMContentLoaded', function() {
     var type = paymentType.value;
     var year = paymentYear.value;
 
+    // First check if payment exists
+    var key = type + '-' + year;
+    if(existingPayments.includes(key) || (type === 'admission' && admissionPaid)) {
+      // Payment already exists
+      amountInput.value = '';
+      amountInput.disabled = true;
+      bankTrans.disabled = true;
+      paymentDate.disabled = true;
+      admissionInfo.style.display = 'none';
+      admissionPaidMsg.textContent = type === 'admission' ? 
+        "ভর্তি ফি ইতিমধ্যেই প্রদান করা হয়েছে" : 
+        "এই মাসের পেমেন্ট ইতিমধ্যেই প্রদান করা হয়েছে";
+      admissionPaidMsg.style.display = 'block';
+      submitButton.style.display = 'none';
+      return;
+    }
+
+    // Enable form fields for new payment
+    amountInput.disabled = false;
+    bankTrans.disabled = false;
+    paymentDate.disabled = false;
+    admissionPaidMsg.style.display = 'none';
+    submitButton.style.display = 'inline-block';
+
+    // Set amount based on payment type
     if(type === 'admission') {
-      if(admissionPaid) {
-        amountInput.value = '';
-        amountInput.disabled = true;
-        bankTrans.disabled = true;
-        paymentDate.disabled = true;
-        admissionInfo.style.display = 'none';
-        admissionPaidMsg.textContent = "ভর্তি ফি ইতিমধ্যেই প্রদান করা হয়েছে"; 
-        admissionPaidMsg.style.display = 'block';
-        submitButton.style.display = 'none';
-      } else {
-        amountInput.value = (noShare * 5000).toFixed(2);
-        amountInput.disabled = false;
-        bankTrans.disabled = false;
-        paymentDate.disabled = false;
-        shareCount.textContent = noShare;
-        admissionInfo.style.display = 'block';
-        admissionPaidMsg.style.display = 'none';
-        submitButton.style.display = 'inline-block';
-      }
+      amountInput.value = (1500).toFixed(2);
+      admissionInfo.style.display = 'none';
+    } else if(type === 'share') {
+      amountInput.value = (noShare * 5000).toFixed(2);
+      shareCount.textContent = noShare;
+      admissionInfo.style.display = 'block';
+    } else if(type !== '') { // Monthly payments (january-december)
+      amountInput.value = (2000).toFixed(2);
+      admissionInfo.style.display = 'none';
     } else {
-      // Combine month + year key
-      var key = type + '-' + year;
-      if(existingPayments.includes(key)) {
-        // Already paid for this month & year
-        amountInput.value = '';
-        amountInput.disabled = true;
-        bankTrans.disabled = true;
-        paymentDate.disabled = true;
-        admissionInfo.style.display = 'none';
-        admissionPaidMsg.textContent = "এই মাসের পেমেন্ট ইতিমধ্যেই প্রদান করা হয়েছে";
-        admissionPaidMsg.style.display = 'block';
-        submitButton.style.display = 'none';
-      } else {
-        amountInput.value = (noShare * 2500).toFixed(2);
-        amountInput.disabled = false;
-        bankTrans.disabled = false;
-        paymentDate.disabled = false;
-        admissionInfo.style.display = 'none';
-        admissionPaidMsg.style.display = 'none';
-        submitButton.style.display = 'inline-block';
-      }
+      amountInput.value = '';
+      admissionInfo.style.display = 'none';
     }
   }
 
@@ -181,9 +195,16 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initial load
   updateForm();
 });
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<?php include_once __DIR__ . '/../includes/toast.php'; ?>
+function previewPaymentSlip(event) {
+  var img = document.getElementById('paymentSlipPreview');
+  if(event.target.files && event.target.files[0]) {
+    img.src = URL.createObjectURL(event.target.files[0]);
+    img.style.display = 'block';
+  } else {
+    img.style.display = 'none';
+  }
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

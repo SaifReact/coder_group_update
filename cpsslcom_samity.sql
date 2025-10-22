@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 21, 2025 at 07:54 PM
+-- Generation Time: Oct 22, 2025 at 09:15 PM
 -- Server version: 10.4.11-MariaDB
 -- PHP Version: 7.4.3
 
@@ -156,10 +156,10 @@ CREATE TABLE `member_documents` (
 --
 
 INSERT INTO `member_documents` (`id`, `member_id`, `member_code`, `doc_type`, `doc_path`, `created_at`) VALUES
-(1, 42, 'CPSS-00042', 101, 'user_images/member_CPSS-00042/doc_101_1761067545_584d4610.jpg', '2025-10-21 23:25:45'),
-(2, 42, 'CPSS-00042', 102, 'user_images/member_CPSS-00042/doc_102_1761067545_bc529ff2.jpg', '2025-10-21 23:25:45'),
-(3, 42, 'CPSS-00042', 103, 'user_images/member_CPSS-00042/doc_103_1761067545_10483524.png', '2025-10-21 23:25:45'),
-(8, 42, 'CPSS-00042', 104, 'user_images/member_CPSS-00042/doc_104_1761069004_a5243036.jpg', '2025-10-21 23:50:04');
+(37, 42, 'CPSS-00042', 101, 'user_images/member_CPSS-00042/doc_101_1761160052_143f7512.jpg', '2025-10-23 01:07:32'),
+(38, 42, 'CPSS-00042', 102, 'user_images/member_CPSS-00042/doc_102_1761160052_29ab7662.jpg', '2025-10-23 01:07:32'),
+(39, 42, 'CPSS-00042', 103, 'user_images/member_CPSS-00042/doc_103_1761160052_0fe276b9.jpg', '2025-10-23 01:07:32'),
+(40, 42, 'CPSS-00042', 104, 'user_images/member_CPSS-00042/doc_104_1761160052_a915c33b.jpg', '2025-10-23 01:07:32');
 
 -- --------------------------------------------------------
 
@@ -252,8 +252,17 @@ CREATE TABLE `member_payments` (
   `created_at` datetime DEFAULT current_timestamp(),
   `created_by` int(11) DEFAULT NULL,
   `serial_no` int(11) DEFAULT NULL,
-  `for_fees` varchar(20) DEFAULT NULL
+  `for_fees` varchar(20) DEFAULT NULL,
+  `payment_slip` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `member_payments`
+--
+
+INSERT INTO `member_payments` (`id`, `member_id`, `member_code`, `payment_method`, `bank_pay_date`, `bank_trans_no`, `trans_no`, `amount`, `payment_year`, `created_at`, `created_by`, `serial_no`, `for_fees`, `payment_slip`) VALUES
+(6, 42, 'CPSS-00042', 'admission', '2025-10-20', 'd43t54grergrgr', 'TRADMISSION20251', '1500.00', 2025, '2025-10-22 19:05:23', 13, 1, 'admission', 'payment_slip_42_1761138323_5820.jpg'),
+(7, 42, 'CPSS-00042', 'share', '2025-10-20', '564654654544', 'TRSHARE20251', '25000.00', 2025, '2025-10-23 01:09:52', 13, 1, 'share', 'payment_slip_42_1761160192_2655.jpg');
 
 -- --------------------------------------------------------
 
@@ -295,7 +304,7 @@ INSERT INTO `member_share` (`id`, `member_id`, `member_code`, `no_share`, `admis
 (25, 39, 'CPSS-00037', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (26, 40, 'CPSS-00040', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (27, 41, 'CPSS-00041', 2, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
-(28, 42, 'CPSS-00042', 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 0, '2025-10-21 22:38:47');
+(28, 42, 'CPSS-00042', 5, 1500, 100, 150, 350, 100, 350, 250, 500, 0, 4, 3, 24500, '2025-10-21 22:38:47');
 
 -- --------------------------------------------------------
 
@@ -429,7 +438,13 @@ INSERT INTO `user_access` (`id`, `user_id`, `member_id`, `login`, `logout`) VALU
 (154, 2, 0, '2025-10-21 23:03:43', '2025-10-21 23:04:40'),
 (155, 13, 42, '2025-10-21 23:04:54', '2025-10-21 23:04:54'),
 (156, 13, 42, '2025-10-21 23:12:25', '2025-10-21 23:12:25'),
-(157, 13, 42, '2025-10-21 23:13:17', '2025-10-21 23:13:17');
+(157, 13, 42, '2025-10-21 23:13:17', '2025-10-21 23:13:17'),
+(158, 13, 42, '2025-10-22 00:08:04', '2025-10-22 00:08:04'),
+(159, 13, 42, '2025-10-22 06:00:45', '2025-10-22 19:13:27'),
+(160, 2, 0, '2025-10-22 19:14:07', '2025-10-22 20:43:16'),
+(161, 13, 42, '2025-10-22 20:43:37', '2025-10-23 01:08:24'),
+(162, 2, 0, '2025-10-23 01:08:52', '2025-10-23 01:09:08'),
+(163, 13, 42, '2025-10-23 01:09:23', '2025-10-23 01:10:11');
 
 -- --------------------------------------------------------
 
@@ -454,7 +469,7 @@ CREATE TABLE `user_login` (
 --
 
 INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `password`, `re_password`, `role`, `status`, `created_at`) VALUES
-(2, 0, '', 'saifur', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'Admin', 'I', '2025-08-15 19:33:39'),
+(2, 0, '', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'Admin', 'A', '2025-08-15 19:33:39'),
 (3, 1, 'CPSS-00001', '505646', 'c04c747a06eadb597d44f0a28988f057', 'S#01540a', 'user', 'P', '2025-10-13 21:31:57'),
 (4, 30, 'CPSS-00002', 'coderap', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'I', '2025-10-13 22:28:41'),
 (5, 31, 'CPSS-00031', 'codermk', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'I', '2025-10-13 22:36:03'),
@@ -464,7 +479,7 @@ INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `passwo
 (10, 39, 'CPSS-00037', 'ashiqur_ruhullah', '3b192651dafa9a384b45d15bdd551c3a', 'Abc@33688', 'user', 'I', '2025-10-16 16:35:26'),
 (11, 40, 'CPSS-00040', 'tariqul@erainfotechbd.com', 'd82f0f7bbb5e126328c20590e8bd8bee', 'Tariqul*sorse4', 'user', 'I', '2025-10-16 17:32:03'),
 (12, 41, 'CPSS-00041', 'Samrat0026@', '6d4a2c2688cbf0b68a09db10bf21c4f0', '25800', 'user', 'I', '2025-10-19 11:12:10'),
-(13, 42, 'CPSS-00042', 'saifur', '25d55ad283aa400af464c76d713c07ad', '12345678', 'user', 'P', '2025-10-21 22:38:47');
+(13, 42, 'CPSS-00042', 'saifur', '25d55ad283aa400af464c76d713c07ad', '12345678', 'user', 'A', '2025-10-21 22:38:47');
 
 --
 -- Indexes for dumped tables
@@ -586,7 +601,7 @@ ALTER TABLE `members_info`
 -- AUTO_INCREMENT for table `member_documents`
 --
 ALTER TABLE `member_documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `member_nominee`
@@ -604,7 +619,7 @@ ALTER TABLE `member_office`
 -- AUTO_INCREMENT for table `member_payments`
 --
 ALTER TABLE `member_payments`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `member_share`
@@ -634,7 +649,7 @@ ALTER TABLE `setup`
 -- AUTO_INCREMENT for table `user_access`
 --
 ALTER TABLE `user_access`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=158;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=164;
 
 --
 -- AUTO_INCREMENT for table `user_login`

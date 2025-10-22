@@ -1,160 +1,188 @@
 <?php
 session_start();
-include_once __DIR__ . '/../config/config.php';
-
-// This endpoint accepts only POST from the form (no AJAX/JSON). Responses use session messages + redirect.
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $_SESSION['error_msg'] = 'Invalid request method.';
-    header('Location: ../users/documents.php');
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../login.php');
     exit;
 }
 
-// Detect AJAX request (fetch/XHR) to decide response type
-$isAjax = false;
-if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-    $isAjax = true;
-} elseif (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
-    $isAjax = true;
-}
-error_reporting(E_ALL);
-ini_set('log_errors', 1);
-ini_set('display_errors', 0);
+include_once __DIR__ . '/../config/config.php';
 
-try {
-    // No AJAX detection anymore; this script always redirects back with session messages
-
-    // --- Validate identity ---
-    $member_id   = isset($_POST['member_id'])   ? (int)$_POST['member_id']   : 0;
-    $member_code = isset($_POST['member_code']) ? trim($_POST['member_code']) : '';
-
-    if ($member_id <= 0 || $member_code === '') {
-        throw new Exception('Member context missing.');
-    }
-
-    if (!isset($_FILES['required_documents'])) {
-        throw new Exception('No files received.');
-    }
-
-    $doc_types = $_POST['required_document_types'] ?? [];
-    $files     = $_FILES['required_documents'];
-
-    $count = is_array($files['name']) ? count($files['name']) : 0;
-    if ($count === 0) {
-        throw new Exception('No files selected for upload.');
-    }
-
-    if (!is_array($doc_types) || count($doc_types) !== $count) {
-        throw new Exception('Mismatch between document types and files count.');
-    }
-
-    // --- Prepare storage directory ---
-    $baseDir   = dirname(__DIR__) . '/user_images';
+// Helper to upload document image
+function uploadDocumentImage($file, $doc_type, $member_code) {
+    $baseDir = dirname(__DIR__) . '/user_images';
     $memberDir = $baseDir . '/member_' . $member_code;
-
+    
     if (!is_dir($memberDir)) {
         mkdir($memberDir, 0777, true);
     }
-
-    $allowedExt  = ['jpg', 'jpeg', 'png'];
-    $allowedMime = ['image/jpeg', 'image/png'];
-    $maxBytes    = 3 * 1024 * 1024; // 3MB
-
-    $savedFiles = [];
-
-    for ($i = 0; $i < $count; $i++) {
-        $doc_type = $doc_types[$i];
-        $name     = $files['name'][$i];
-        $tmp_name = $files['tmp_name'][$i];
-        $size     = $files['size'][$i];
-        $error    = $files['error'][$i];
-
-        if ($error !== UPLOAD_ERR_OK) {
-            error_log("Upload error for $name: code=$error");
-            continue;
+    
+    if ($file['error'] === UPLOAD_ERR_OK) {
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+            return null;
         }
-
-        if (!is_uploaded_file($tmp_name)) {
-            error_log("Not a valid uploaded file for $name");
-            continue;
+        
+        // Check file size (3MB max)
+        if ($file['size'] > 3 * 1024 * 1024) {
+            return null;
         }
-
-        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-        if (!in_array($ext, $allowedExt)) {
-            error_log("Invalid file extension for $name");
-            continue;
+        
+        // Verify MIME type
+        $mime = mime_content_type($file['tmp_name']);
+        if (!in_array($mime, ['image/jpeg', 'image/png'])) {
+            return null;
         }
-
-        if ($size > $maxBytes) {
-            error_log("File too large ($size bytes): $name");
-            continue;
+        
+        $filename = 'doc_' . preg_replace('/\D+/', '', $doc_type) . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+        $target = $memberDir . '/' . $filename;
+        
+        if (move_uploaded_file($file['tmp_name'], $target)) {
+            return 'user_images/member_' . $member_code . '/' . $filename;
         }
-
-        $mime = mime_content_type($tmp_name);
-        if (!in_array($mime, $allowedMime)) {
-            error_log("Invalid MIME type ($mime) for $name");
-            continue;
-        }
-
-        // --- Check duplicate ---
-        $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM member_documents WHERE member_id=? AND member_code=? AND doc_type=?");
-        $stmtCheck->execute([$member_id, $member_code, $doc_type]);
-        if ($stmtCheck->fetchColumn() > 0) {
-            continue; // Skip duplicates
-        }
-
-        // --- Save file ---
-        $uniqueName = 'doc_' . preg_replace('/\D+/', '', $doc_type) . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-        $destPath   = $memberDir . '/' . $uniqueName;
-
-        if (!move_uploaded_file($tmp_name, $destPath)) {
-            error_log("Failed to move uploaded file $name");
-            continue;
-        }
-
-        $doc_path = 'user_images/member_' . $member_code . '/' . $uniqueName;
-
-        $stmt = $pdo->prepare("INSERT INTO member_documents (member_id, member_code, doc_type, doc_path, created_at) VALUES (?,?,?,?,NOW())");
-        $stmt->execute([$member_id, $member_code, $doc_type, $doc_path]);
-
-        $savedFiles[] = [
-            'doc_type' => $doc_type,
-            'file' => $doc_path
-        ];
     }
+    return null;
+}
 
-    if (empty($savedFiles)) {
-        $_SESSION['error_msg'] = '❌ No files were uploaded or all files were duplicates.';
-        throw new Exception($_SESSION['error_msg']);
-    }
+// Handle delete action (delete existing document and its file)
+$action = $_POST['action'] ?? '';
 
-    // Build success message, store in session
-    $successMsg = "ডকুমেন্টগুলো সফলভাবে আপলোড হয়েছে। (" . count($savedFiles) . ")";
-    $_SESSION['success_msg'] = $successMsg;
+if ($action === 'delete') {
+    $id = $_POST['id'] ?? '';
+    if ($id) {
+        // Restrict deletion to logged-in member when available
+        $sessionMemberId = $_SESSION['member_id'] ?? null;
+        if ($sessionMemberId) {
+            $stmt = $pdo->prepare("SELECT doc_path FROM member_documents WHERE id = ? AND member_id = ?");
+            $stmt->execute([$id, $sessionMemberId]);
+        } else {
+            $stmt = $pdo->prepare("SELECT doc_path FROM member_documents WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+        $docPath = $stmt->fetchColumn();
 
-    if ($isAjax) {
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'success' => true,
-            'saved_count' => count($savedFiles),
-            'files' => $savedFiles,
-            'message' => $successMsg
-        ]);
-        exit;
-    }
+        if ($docPath) {
+            $absPath = dirname(__DIR__) . '/' . ltrim($docPath, '/');
+            if (file_exists($absPath)) {
+                @unlink($absPath);
+            }
 
-    // Non-AJAX: redirect back to documents page where toast will be shown
-    header('Location: ../users/documents.php');
-    exit;
+            // Delete record
+            if ($sessionMemberId) {
+                $stmt = $pdo->prepare("DELETE FROM member_documents WHERE id = ? AND member_id = ?");
+                $stmt->execute([$id, $sessionMemberId]);
+            } else {
+                $stmt = $pdo->prepare("DELETE FROM member_documents WHERE id = ?");
+                $stmt->execute([$id]);
+            }
 
-} catch (Exception $e) {
-    error_log('Upload failed: ' . $e->getMessage());
-    $_SESSION['error_msg'] = $e->getMessage();
-    if ($isAjax) {
-        header('Content-Type: application/json; charset=utf-8');
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => $_SESSION['error_msg']]);
-        exit;
+            $_SESSION['error_msg'] = '❌ ডকুমেন্ট সফলভাবে মুছে ফেলা হয়েছে।';
+    } else {
+            $_SESSION['error_msg'] = '❌ ডকুমেন্ট পাওয়া যায়নি বা অনুমতি নেই।';
+        }
+    } else {
+        $_SESSION['error_msg'] = '❌ অবৈধ ডিলিট অনুরোধ।';
     }
     header('Location: ../users/documents.php');
     exit;
 }
+
+// (Insert logic continues below)
+
+// Handle insert action
+if ($action === 'insert') {
+    // Get form data
+    $member_id = $_POST['member_id'] ?? 0;
+    $member_code = $_POST['member_code'] ?? '';
+    $doc_types = $_POST['required_document_types'] ?? [];
+    $files = $_FILES['required_documents'] ?? null;
+
+    // Validate member data
+    if (empty($member_id) || empty($member_code)) {
+        $_SESSION['error_msg'] = '❌ সদস্যের তথ্য পাওয়া যায়নি।';
+        header('Location: ../users/documents.php');
+        exit;
+    }
+
+    // Validate files
+    if (!$files || !isset($files['name']) || !is_array($files['name'])) {
+        $_SESSION['error_msg'] = '❌ আপলোডের জন্য কোনও ফাইল নির্বাচন করা হয়নি।';
+        header('Location: ../users/documents.php');
+        exit;
+    }
+
+    $file_count = count($files['name']);
+
+    if ($file_count === 0) {
+        $_SESSION['error_msg'] = '❌ আপলোডের জন্য কোনও ফাইল নির্বাচন করা হয়নি।';
+        header('Location: ../users/documents.php');
+        exit;
+    }
+
+    if (!is_array($doc_types) || count($doc_types) !== $file_count) {
+        $_SESSION['error_msg'] = '❌ ডকুমেন্টের ধরন এবং ফাইলের সংখ্যা মধ্যে অমিল।';
+        header('Location: ../users/documents.php');
+        exit;
+    }
+
+    $uploaded_count = 0;
+    $updated_count = 0;
+    $failed_count = 0;
+
+    for ($i = 0; $i < $file_count; $i++) {
+        $doc_type = $doc_types[$i];
+
+        // Check if document type already exists
+        $stmt = $pdo->prepare("SELECT id, doc_path FROM member_documents WHERE member_id = ? AND member_code = ? AND doc_type = ?");
+        $stmt->execute([$member_id, $member_code, $doc_type]);
+        $existing_doc = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Prepare file array for single file
+        $single_file = [
+            'name' => $files['name'][$i],
+            'type' => $files['type'][$i],
+            'tmp_name' => $files['tmp_name'][$i],
+            'error' => $files['error'][$i],
+            'size' => $files['size'][$i]
+        ];
+
+        // Upload file
+        $doc_path = uploadDocumentImage($single_file, $doc_type, $member_code);
+
+        if ($doc_path) {
+            if ($existing_doc) {
+                // Update existing document
+                // Delete old file
+                $old_file_path = dirname(__DIR__) . '/' . $existing_doc['doc_path'];
+                if (file_exists($old_file_path)) {
+                    unlink($old_file_path);
+                }
+
+                // Update database
+                $stmt = $pdo->prepare("UPDATE member_documents SET doc_path = ?, created_at = NOW() WHERE id = ?");
+                $stmt->execute([$doc_path, $existing_doc['id']]);
+                $updated_count++;
+            } else {
+                // Insert new document
+                $stmt = $pdo->prepare("INSERT INTO member_documents (member_id, member_code, doc_type, doc_path, created_at) VALUES (?, ?, ?, ?, NOW())");
+                $stmt->execute([$member_id, $member_code, $doc_type, $doc_path]);
+                $uploaded_count++;
+            }
+        } else {
+            $failed_count++;
+        }
+    }
+
+    // Set appropriate message
+    if ($uploaded_count > 0 || $updated_count > 0) {
+        $parts = [];
+        if ($uploaded_count > 0) { $parts[] = "$uploaded_count টি নতুন ডকুমেন্ট আপলোড"; }
+        if ($updated_count > 0) { $parts[] = "$updated_count টি ডকুমেন্ট আপডেট"; }
+        $_SESSION['success_msg'] = '✅ সফলভাবে ' . implode(' এবং ', $parts) . ' হয়েছে।';
+    } else {
+        $_SESSION['error_msg'] = '❌ ডকুমেন্ট আপলোড ব্যর্থ হয়েছে। শুধুমাত্র JPG/PNG ফাইল (সর্বোচ্চ 3MB) গ্রহণযোগ্য।';
+    }
+
+    header('Location: ../users/documents.php');
+    exit;
+}
+

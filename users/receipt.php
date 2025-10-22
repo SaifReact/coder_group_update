@@ -7,6 +7,9 @@ if (!isset($_SESSION['user_id'])) {
 
 include_once __DIR__ . '/../config/config.php';
 
+$status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
+$current_year = (int)date('Y');
+
 /* --------- Number to Words Function --------- */
 function numberToWords($num) {
     $ones = [
@@ -125,7 +128,7 @@ include_once __DIR__ . '/../includes/open.php';
     --bs-corporate-blue: #002D59;
     --bs-corporate-orange: #F8971D;
 }
-.receipt-container { width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; }
+.receipt-container { width: 865px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; }
 .dotted-input-solid { border: none; border-bottom: 1px solid #000; background: transparent; outline: none; padding: 0 5px; flex-grow: 1; }
 .header-bg { background: var(--bs-corporate-orange); position: relative; }
 .header-bg::before { content:''; position:absolute; top:0; left:0; width:35%; height:100%; background:var(--bs-corporate-blue); transform:skewX(-20deg); transform-origin: top left; z-index:1; }
@@ -139,7 +142,7 @@ include_once __DIR__ . '/../includes/open.php';
   <div class="row">
     <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
     <main class="col-12 col-md-9 col-lg-9 px-md-4">
-      <div class="container">
+      <div class="container-fluid">
         <div class="card shadow-lg rounded-3 border-0">
           <div class="card-body p-4">
             <h3 class="mb-3 text-primary fw-bold">Payment Receipt <span class="text-secondary">(পেমেন্ট রসিদ)</span></h3>
@@ -147,29 +150,50 @@ include_once __DIR__ . '/../includes/open.php';
 
             <!-- ===== Receipt Form ===== -->
             <form method="post" class="mb-4 row g-3">
-              <div class="col-md-5">
+              <div class="col-md-5 mb-3">
                 <label for="payment_type" class="form-label">Payments (পেমেন্ট)</label>
                 <select class="form-select" id="payment_type" name="payment_type" required>
                   <option value="">Select (বাছাই করুন)</option>
                   <?php
-                  $months = [
-                    'admission' => 'Admission-Share Fee (ভর্তি-শেয়ার ফি)',
-                    'january'=>'January (জানুয়ারি)','february'=>'February (ফেব্রুয়ারি)','march'=>'March (মার্চ)',
-                    'april'=>'April (এপ্রিল)','may'=>'May (মে)','june'=>'June (জুন)','july'=>'July (জুলাই)',
-                    'august'=>'August (আগস্ট)','september'=>'September (সেপ্টেম্বর)','october'=>'October (অক্টোবর)',
-                    'november'=>'November (নভেম্বর)','december'=>'December (ডিসেম্বর)'
-                  ];
+                  if ($status === 'P') {
+                      $months = [
+                          'admission' => 'Admission Fee (ভর্তি ফি)'
+                      ];
+                  } else {
+                      $months = [
+                          'share'     => 'Share Fee (শেয়ার ফি)',
+                          'january'   => 'January (জানুয়ারি)',
+                          'february'  => 'February (ফেব্রুয়ারি)',
+                          'march'     => 'March (মার্চ)',
+                          'april'     => 'April (এপ্রিল)',
+                          'may'       => 'May (মে)',
+                          'june'      => 'June (জুন)',
+                          'july'      => 'July (জুলাই)',
+                          'august'    => 'August (আগস্ট)',
+                          'september' => 'September (সেপ্টেম্বর)',
+                          'october'   => 'October (অক্টোবর)',
+                          'november'  => 'November (নভেম্বর)',
+                          'december'  => 'December (ডিসেম্বর)'
+                      ];
+                  }
                   foreach ($months as $key => $val): ?>
-                    <option value="<?= $key ?>" <?= ($payment_type == $key) ? 'selected' : '' ?>><?= $val ?></option>
+                    <option value="<?= $key ?>" <?= (!empty($payment_type) && $payment_type == $key) ? 'selected' : '' ?>>
+                      <?= $val ?>
+                    </option>
                   <?php endforeach; ?>
                 </select>
               </div>
 
-              <div class="col-md-4">
+              <div class="col-md-4 mb-3">
                 <label for="payment_year" class="form-label">Year (বছর)</label>
                 <select class="form-select" id="payment_year" name="payment_year" required>
-                  <?php for($y=2025;$y<=2027;$y++): ?>
-                    <option value="<?= $y ?>" <?= ($payment_year==$y)?'selected':'' ?>><?= $y ?></option>
+                  <?php 
+                  for ($y = $current_year; $y <= ($current_year + 0); $y++): 
+                    $is_selected = (empty($payment_year) && $y == $current_year) || (!empty($payment_year) && $payment_year == $y);
+                  ?>
+                    <option value="<?= $y ?>" <?= $is_selected ? 'selected' : '' ?>>
+                      <?= $y ?>
+                    </option>
                   <?php endfor; ?>
                 </select>
               </div>

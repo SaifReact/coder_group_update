@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
+    header('Location: ../login.php');
+    exit;
+}
+
 include_once __DIR__ . '/../config/config.php';
 
 include_once __DIR__ . '/../includes/open.php';
@@ -53,6 +58,27 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
     $user_id = (int)$_POST['user_id'];
     $status = in_array($_POST['status'], ['P', 'A', 'I', 'R']) ? $_POST['status'] : 'I';
+    
+    // Get member_id from user_login table
+    $stmt = $pdo->prepare("SELECT member_id FROM user_login WHERE id = ?");
+    $stmt->execute([$user_id]);
+    $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $member_id = $user_data['member_id'];
+    
+    // Check if status is 'A' (Approved), verify all 4 documents exist
+    if ($status === 'A') {
+        $stmt = $pdo->prepare("SELECT COUNT(*) as doc_count FROM member_documents WHERE member_id = ?");
+        $stmt->execute([$member_id]);
+        $doc_data = $stmt->fetch(PDO::FETCH_ASSOC);
+        $doc_count = (int)$doc_data['doc_count'];
+        
+        if ($doc_count < 4) {
+            $_SESSION['error_msg'] = '❌ সদস্যকে অনুমোদন করা যাবে না! সকল ডকুমেন্ট জমা দেওয়া হয়নি। (মোট ' . $doc_count . '/4 টি ছবি পাওয়া গেছে)';
+            header('Location: ../admin/approval.php');
+            exit;
+        }
+    }
+    
     $stmt = $pdo->prepare("UPDATE user_login SET status = ? WHERE id = ?");
     $stmt->execute([$status, $user_id]);
 
@@ -60,7 +86,7 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
     if ($status === 'P') {
         $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও মেম্বারশিপ ফি জমা দেয়ার জন্য আপনাকে প্রক্রিয়াধীন রাখা হইলো!";
     } elseif ($status === 'A') {
-        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও মেম্বারশিপ ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
+        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও শেয়ার ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
     } elseif ($status === 'I') {
         $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় আপনাকে নিষ্ক্রিয় করে রাখা হইলো !";
     } elseif ($status === 'R') {
@@ -88,7 +114,7 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
 
         $_SESSION['success_msg'] = $success_msg;
 
-    header('Location: /approval.php'); // Redirect to avoid form resubmission
+    header('Location: ../admin/approval.php'); // Redirect to avoid form resubmission
     exit;
 }
 ?>
