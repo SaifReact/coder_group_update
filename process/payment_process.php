@@ -85,13 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($payment_method === 'admission' && $amount > 0) {
         // Fixed admission fees
         $admission_fee = $amount;
-        $idcard_fee = 100;
-        $passbook_fee = 150;
-        $softuses_fee = 350;
+        $idcard_fee = 150;
+        $passbook_fee = 200;
+        $softuses_fee = 400;
         $sms_fee = 100;
-        $office_rent = 350;
-        $office_staff = 250;
-        $other_fee = 200;
+        $office_rent = 300;
+        $office_staff = 200;
+        $other_fee = 150;
 
         // Insert into member_payments table
         $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

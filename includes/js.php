@@ -192,18 +192,24 @@
         const shareInput = document.getElementById('share');
         const errorSpan = document.getElementById('shareError');
     
-        // Remove non-numeric characters
-        shareInput.value = shareInput.value.replace(/[^0-9]/g, '');
-    
-        const share = Number(shareInput.value);
-    
-        if (share < 2) {
-            errorSpan.textContent = 'শেয়ার সংখ্যা অবশ্যই ২ এর সমান বা বেশি হতে হবে (The number of shares must be equal to or greater than 2)';
-            shareInput.value = ''; // clear the input field
+        // Remove non-numeric characters except when user is typing
+        let val = shareInput.value.replace(/[^0-9]/g, '');
+        // Only allow up to 3 digits (optional, remove if not needed)
+        // val = val.slice(0, 3);
+        shareInput.value = val;
+
+        // Only validate if not empty
+        if (val.length > 0) {
+            const share = Number(val);
+            if (share < 2) {
+                errorSpan.textContent = 'শেয়ার সংখ্যা অবশ্যই ২ এর সমান বা বেশি হতে হবে (The number of shares must be equal to or greater than 2)';
+            } else {
+                errorSpan.textContent = '';
+            }
         } else {
             errorSpan.textContent = '';
         }
-    }
+        }
     
     function clearSHAREError() {
         document.getElementById('shareError').textContent = '';
