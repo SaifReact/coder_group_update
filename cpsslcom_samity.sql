@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 5.0.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Oct 22, 2025 at 09:15 PM
--- Server version: 10.4.11-MariaDB
--- PHP Version: 7.4.3
+-- Host: localhost:3306
+-- Generation Time: Oct 29, 2025 at 03:53 PM
+-- Server version: 11.4.8-MariaDB
+-- PHP Version: 8.4.13
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -35,7 +34,7 @@ CREATE TABLE `banner` (
   `banner_image` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `banner_category` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `banner`
@@ -62,7 +61,7 @@ CREATE TABLE `committee_member` (
   `li` varchar(100) NOT NULL,
   `role` varchar(100) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -77,7 +76,7 @@ CREATE TABLE `company` (
   `company_image` varchar(255) NOT NULL,
   `about_company` text NOT NULL,
   `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `company`
@@ -118,23 +117,33 @@ CREATE TABLE `members_info` (
   `ref_no` text DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `member_type` varchar(5) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `members_info`
 --
 
 INSERT INTO `members_info` (`id`, `member_code`, `name_bn`, `name_en`, `father_name`, `mother_name`, `nid`, `dob`, `religion`, `marital_status`, `spouse_name`, `mobile`, `gender`, `education`, `agreed_rules`, `profile_image`, `created_at`, `ref_no`, `email`, `member_type`) VALUES
-(1, 'CPSS-00001', 'মোঃ সাইফুর রহমান', 'MD SAIFUR RAHMAN', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '2355765385', '1985-07-17', 'ইসলাম', 'Married', 'সুমাইয়া আক্তার', '01540505646', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00001/profile_image_1760369517_68ed1b6dc987c.jpg', '2025-10-13 15:31:57', 'D005', NULL, NULL),
-(30, 'CPSS-00002', 'আনোয়ার পারভেজ', 'ANWAR PARVEZ', 'Md. Abu Hanif', 'Mrs. Luchiea Bagum', '8682027266', '1984-02-09', 'ইসলাম', 'Married', 'Maria Keboty', '01941787809', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00002/profile_image_1760372921_68ed28b9c7d7b.jpg', '2025-10-13 16:28:41', 'D020', NULL, NULL),
-(31, 'CPSS-00031', 'মারিয়া কিবতি', 'MARIA KEBOTY', 'Sardar Abdur Rahim', 'Tahmina Yesmin', '9572231638', '1996-05-07', 'ইসলাম', 'Married', 'Anwar Parvez', '01641982202', 'Female', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00031/profile_image_1760373363_68ed2a73d6b39.jpg', '2025-10-13 16:36:03', 'D020', NULL, NULL),
-(34, 'CPSS-00032', 'মোঃ সাইফুল ইসলাম', 'MD SAIFUL ISLAM', 'Md.Warish Mollah', 'Hezera Begum', '2359148299', '1986-01-08', 'ইসলাম', 'Married', 'Sumaiya Adrin Romi', '01715867456', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00032/profile_image_1760436269_68ee202df1bae.jpg', '2025-10-14 10:04:29', 'Anwar Parvez', NULL, NULL),
-(35, 'CPSS-00035', 'মুহাম্মদ ইকবাল হোসেন', 'MOHAMMAD IQBAL HOSSAON', 'Abdul Bashir Munshi', 'Afzolen Nessa', '9131567076', '1979-04-04', 'ইসলাম', 'Married', 'Rano Akter', '01978333448', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00035/profile_image_1760439119_68ee2b4fcf37c.jpg', '2025-10-14 10:51:59', 'CPSS-00035', NULL, NULL),
-(36, 'CPSS-00036', 'সালাহ উদ্দিন', 'MD SALAHUDDIN', 'Md. Abdul Mannan', 'Mrs. Shahanara Akhtar', '19862696829656960', '1986-12-28', 'ইসলাম', 'Single', '', '01918923063', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00036/profile_image_1760446126_68ee46aeb6ea8.jpg', '2025-10-14 12:48:46', 'CPSS-00036', NULL, NULL),
-(39, 'CPSS-00037', 'এইচ. এন.  আশিকুর রুহুল্লাহ', 'H N ASHIQUR RUHULLAH', 'মোঃ আখতার হোসেন', 'উম্মে কুলসুম', '6454134666', '1998-07-08', 'ইসলাম', 'Married', 'সাবরিনা রেজা', '01518403106', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00037/profile_image_1760610926_68f0ca6eba572.jpg', '2025-10-16 10:35:26', 'CPSS-00037', NULL, NULL),
-(40, 'CPSS-00040', 'মোঃ তারিকুল ইসলাম', 'MD TARIQUL ISLAM', 'Jahangir Hossain', 'Mrs. Parvin Begum', '1935967172', '1989-11-15', 'ইসলাম', 'Married', '', '01913215568', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00040/profile_image_1760614323_68f0d7b360823.jpg', '2025-10-16 11:32:03', 'CPSS-00040', NULL, NULL),
+(1, 'CPSS-00001', 'মোঃ সাইফুর রহমান', 'MD SAIFUR RAHMAN', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '2355765385', '1985-07-17', 'ইসলাম', 'Married', 'সুমাইয়া আক্তার', '01540505646', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00001/profile_image_1760369517_68ed1b6dc987c.jpg', '2025-10-13 15:31:57', 'D005', NULL, 'MP'),
+(30, 'CPSS-00002', 'আনোয়ার পারভেজ', 'ANWAR PARVEZ', 'Md. Abu Hanif', 'Mrs. Luchiea Bagum', '8682027266', '1984-02-09', 'ইসলাম', 'Married', 'Maria Keboty', '01941787809', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00002/profile_image_1760372921_68ed28b9c7d7b.jpg', '2025-10-13 16:28:41', 'D020', NULL, 'MP'),
+(31, 'CPSS-00031', 'মারিয়া কিবতি', 'MARIA KEBOTY', 'Sardar Abdur Rahim', 'Tahmina Yesmin', '9572231638', '1996-05-07', 'ইসলাম', 'Married', 'Anwar Parvez', '01641982202', 'Female', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00031/profile_image_1760373363_68ed2a73d6b39.jpg', '2025-10-13 16:36:03', 'D020', NULL, 'MP'),
+(34, 'CPSS-00032', 'মোঃ সাইফুল ইসলাম', 'MD SAIFUL ISLAM', 'Md.Warish Mollah', 'Hezera Begum', '2359148299', '1986-01-08', 'ইসলাম', 'Married', 'Sumaiya Adrin Romi', '01715867456', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00032/profile_image_1760436269_68ee202df1bae.jpg', '2025-10-14 10:04:29', 'Anwar Parvez', NULL, 'MP'),
+(35, 'CPSS-00035', 'মুহাম্মদ ইকবাল হোসেন', 'MOHAMMAD IQBAL HOSSAON', 'Abdul Bashir Munshi', 'Afzolen Nessa', '9131567076', '1979-04-04', 'ইসলাম', 'Married', 'Rano Akter', '01978333448', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00035/profile_image_1760439119_68ee2b4fcf37c.jpg', '2025-10-14 10:51:59', 'CPSS-00035', NULL, 'MP'),
+(36, 'CPSS-00036', 'সালাহ উদ্দিন', 'MD SALAHUDDIN', 'Md. Abdul Mannan', 'Mrs. Shahanara Akhtar', '19862696829656960', '1986-12-28', 'ইসলাম', 'Single', '', '01918923063', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00036/profile_image_1760446126_68ee46aeb6ea8.jpg', '2025-10-14 12:48:46', 'CPSS-00036', NULL, 'MP'),
+(39, 'CPSS-00037', 'এইচ. এন.  আশিকুর রুহুল্লাহ', 'H N ASHIQUR RUHULLAH', 'মোঃ আখতার হোসেন', 'উম্মে কুলসুম', '6454134666', '1998-07-08', 'ইসলাম', 'Married', 'সাবরিনা রেজা', '01518403106', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00037/profile_image_1760610926_68f0ca6eba572.jpg', '2025-10-16 10:35:26', 'CPSS-00037', NULL, 'MP'),
+(40, 'CPSS-00040', 'মোঃ তারিকুল ইসলাম', 'MD TARIQUL ISLAM', 'Jahangir Hossain', 'Mrs. Parvin Begum', '1935967172', '1989-11-15', 'ইসলাম', 'Married', '', '01913215568', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00040/profile_image_1760614323_68f0d7b360823.jpg', '2025-10-16 11:32:03', 'CPSS-00040', NULL, 'MP'),
 (41, 'CPSS-00041', 'মোঃ ইমতিয়াজ হাসান', 'MDIMTIAZ HASAN', 'মরহুম বাদল আক্তার', 'মমতাজ আক্তার', '3255768222', '1986-11-10', 'ইসলাম', 'Married', 'সৌয়দা নাজমা আক্তার', '01685092236', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00041/profile_image_1760850730_68f4732ab7bc8.jpg', '2025-10-19 05:12:10', 'D005', NULL, NULL),
-(42, 'CPSS-00042', 'Md. Saifur Rahman', 'MD SAIFUR RAHMAN', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '2132165146541655465', '1995-10-01', 'ইসলাম', 'Single', '', '01540505646', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00042/profile_image_1761064727_68f7b7172a88c.jpg', '2025-10-21 16:38:47', 'DOO5', 'saifur@erainfotechbd.com', 'MP');
+(42, 'CPSS-00042', 'সিরাজুল ইসলাম', 'SHIRAJUL ISLAM', 'Md. Shamsul Haque', 'Rushanara Haque', '5960104221', '1985-01-22', 'ইসলাম', 'Married', 'Sajia Afrin Akhi', '01919787839', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00042/profile_image_1761109271_68f86517cc147.jpg', '2025-10-22 05:01:11', 'CPSS-00042', NULL, NULL),
+(45, 'CPSS-00043', 'মোহা: সুমরিয়া রাইহান', 'MD SUMRIA RAIHAN', 'Md. Abdur Rashid', 'Mst. Sorifa', '7793619235', '1984-11-30', 'ইসলাম', 'Married', 'Mst. Mahamuda Khatun', '01716035300', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00043/profile_image_1761211289_68f9f399f3dd1.jpg', '2025-10-23 09:21:29', 'Anwar Parvez', 'sraihan68@gmail.com', 'OM'),
+(46, 'CPSS-00046', 'মোঃ আলাউদ্দিন', 'MD ALAUDDIN', 'Late Md. Borhan uddin', 'Late Hasina Begum', '2806165631', '1983-02-01', 'ইসলাম', 'Married', 'Luna Laila', '01904119216', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00046/profile_image_1761214791_68fa0147decdf.jpg', '2025-10-23 10:19:51', 'Md. Anwar Parvez', 'alauddin@erainfotechbd.com', 'OM'),
+(47, 'CPSS-00047', 'মোঃ মসিদুজ্জামান', 'MD MOSHIDUZZAMAN', 'MD MONIRUZZAMAN', 'SHEFALI KHANOM', '1016014779', '1982-02-01', 'ইসলাম', 'Married', 'Asma Akter', '01716712046', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00047/profile_image_1761235331_68fa5183a41c7.png', '2025-10-23 16:02:11', 'Shirajul Islam', 'moshidchamak@gmail.com', 'MP'),
+(48, 'CPSS-00048', 'মাহ্দী মোহাম্মাদ', 'MAHDI MOHAMMAD', 'Md. Mobarak Hossain', 'Hasna Hena', '7300400459', '1994-01-01', 'ইসলাম', 'Married', 'Ummay Kulsom', '01990859786', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00048/profile_image_1761360267_68fc398b371d8.jpg', '2025-10-25 02:44:27', 'Anwar Parvez', 'mahdi174@gmail.com', 'MP'),
+(50, 'CPSS-00049', 'আসলাম হোসাইন', 'MD ASLAM HOSSAIN', 'Abdul Aziz', 'Most Morjina Khatun', '6888476634', '1984-10-07', 'ইসলাম', 'Married', '', '01917074634', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00049/profile_image_1761411621_68fd0225365bc.jpg', '2025-10-25 17:00:21', 'Aslam', 'aslamrp07@gmail.com', 'MP'),
+(51, 'CPSS-00051', 'সোনিয়া আফরোজ', 'SONIA AFROSE', 'Mohammad Hanif', 'Masuda Begum', '9143519586', '1985-06-05', 'ইসলাম', 'Married', 'Md. Abul Hassan', '01904119219', 'Female', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00051/profile_image_1761461193_68fdc3c900a64.jpg', '2025-10-26 06:46:33', 'Anwar Parvez', 'sonia@erainfotechbd.com', 'OM'),
+(52, 'CPSS-00052', 'ফারহানা শিরিন', 'FARHANA SHIRIN', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '3255751624', '1988-10-21', 'ইসলাম', 'Married', 'শাহ মোঃ আশফাক রহমান', '01912504305', 'Female', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00052/profile_image_1761474008_68fdf5d89e2e5.jpg', '2025-10-26 10:20:08', 'D005', '', 'MP'),
+(55, 'CPSS-00053', 'ফয়সাল মাহমুদ', 'FOISAL MAHMUD', 'HABIBUR RAHMAN', 'SHAMIMA SHULTANA', '6412558576', '1992-08-08', 'ইসলাম', 'Married', 'PAPIATUL ZANNAT', '01672443734', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00053/profile_image_1761547308_68ff142c88859.jpg', '2025-10-27 06:41:48', 'Md. Aslam Hossain', 'foisalmahmud34@gmail.com', 'MP'),
+(56, 'CPSS-00056', 'মোঃ মোশারফ হোসেন', 'MD MOSHAROF HOSSAN', 'Md SIRAJUL ISLAM', 'RAMESA KHATUN', '8680630749', '1988-10-20', 'ইসলাম', 'Married', 'SABICUN NAHAR', '01722276090', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00056/profile_image_1761569031_68ff6907f06d4.jpg', '2025-10-27 12:43:51', 'CPSS-00056', 'mithumosharof@gmail.com', 'MP'),
+(57, 'CPSS-00057', 'মোঃ আরিফুল ইসলাম', 'MD ARIFUL ISLAM', 'Md. Shahidul Islam', 'Jahanara Begum', '1025555564', '1986-09-04', 'ইসলাম', 'Married', 'Syeda Tanjila', '01717819612', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00057/profile_image_1761666480_6900e5b0e64d2.jpeg', '2025-10-28 15:48:00', 'CPSS-00057', 'arifultonu007@gmail.com', 'MP');
 
 -- --------------------------------------------------------
 
@@ -149,17 +158,7 @@ CREATE TABLE `member_documents` (
   `doc_type` int(11) NOT NULL,
   `doc_path` text NOT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `member_documents`
---
-
-INSERT INTO `member_documents` (`id`, `member_id`, `member_code`, `doc_type`, `doc_path`, `created_at`) VALUES
-(37, 42, 'CPSS-00042', 101, 'user_images/member_CPSS-00042/doc_101_1761160052_143f7512.jpg', '2025-10-23 01:07:32'),
-(38, 42, 'CPSS-00042', 102, 'user_images/member_CPSS-00042/doc_102_1761160052_29ab7662.jpg', '2025-10-23 01:07:32'),
-(39, 42, 'CPSS-00042', 103, 'user_images/member_CPSS-00042/doc_103_1761160052_0fe276b9.jpg', '2025-10-23 01:07:32'),
-(40, 42, 'CPSS-00042', 104, 'user_images/member_CPSS-00042/doc_104_1761160052_a915c33b.jpg', '2025-10-23 01:07:32');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -178,7 +177,7 @@ CREATE TABLE `member_nominee` (
   `percentage` float NOT NULL,
   `nominee_image` text NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `member_nominee`
@@ -197,7 +196,19 @@ INSERT INTO `member_nominee` (`id`, `member_id`, `member_code`, `name`, `relatio
 (38, 39, 'CPSS-00037', 'উম্মে কুলসুম', 'Mother', '19731917512075258', '1974-12-30 00:00:00', 50, 'user_images/member_CPSS-00037/nominee_1_1760610926_68f0ca6ebb7c6.jpg', '2025-10-16 16:35:26'),
 (39, 40, 'CPSS-00040', 'Mst. Lata Khatun', 'Wife', '3310996271', '2003-03-03 00:00:00', 100, 'user_images/member_CPSS-00040/nominee_1_1760614323_68f0d7b360dfb.jpg', '2025-10-16 17:32:03'),
 (40, 41, 'CPSS-00041', 'সৌয়দা নাজমা আক্তার', 'wife', '9106855506', '1988-11-23 00:00:00', 100, 'user_images/member_CPSS-00041/nominee_1_1760850730_68f4732abd9a5.jpg', '2025-10-19 11:12:10'),
-(41, 42, 'CPSS-00042', 'Md. Abrar Faiyaz', 'Son', '13216514165413164', '2025-10-01 00:00:00', 100, 'user_images/member_CPSS-00042/nominee_1_1761064727_68f7b7172e335.png', '2025-10-21 22:38:47');
+(41, 42, 'CPSS-00042', 'Afnan Islam Ayaz', 'Son', '20200003802018122', '2020-03-04 00:00:00', 100, 'user_images/member_CPSS-00042/nominee_1_1761109271_68f86517cd8d7.jpg', '2025-10-22 11:01:11'),
+(42, 45, 'CPSS-00043', 'Mst. Mahamuda Khatun', 'Wife', '19908122503000036', '1990-08-30 00:00:00', 100, 'user_images/member_CPSS-00043/nominee_1_1761211290_68f9f39a00765.jpg', '2025-10-23 15:21:30'),
+(43, 46, 'CPSS-00046', 'Runa Laila', 'wife', '5925615122410', '1983-08-02 00:00:00', 100, 'user_images/member_CPSS-00046/nominee_1_1761214791_68fa0147dfa7d.jpg', '2025-10-23 16:19:51'),
+(44, 47, 'CPSS-00047', 'ASMA AKTER', 'Wife', '6901993144', '1995-06-08 00:00:00', 100, 'user_images/member_CPSS-00047/nominee_1_1761235331_68fa5183a55ba.jpg', '2025-10-23 22:02:11'),
+(45, 48, 'CPSS-00048', 'Hasna Hena', 'Mother', '6434502644', '1967-02-04 00:00:00', 100, 'user_images/member_CPSS-00048/nominee_1_1761360267_68fc398b38677.jpg', '2025-10-25 08:44:27'),
+(46, 50, 'CPSS-00049', 'Metu Akhter', 'Wife', '6004075518', '1999-01-03 00:00:00', 100, 'user_images/member_CPSS-00049/nominee_1_1761411621_68fd0225368ac.jpg', '2025-10-25 23:00:21'),
+(47, 51, 'CPSS-00051', 'Sumia Ajmin Maisha', 'Younger Sister', '9577481048', '1999-08-28 00:00:00', 100, 'user_images/member_CPSS-00051/nominee_1_1761461193_68fdc3c901f8d.jpeg', '2025-10-26 12:46:33'),
+(48, 52, 'CPSS-00052', 'শাহ মোঃ আশফাক রহমান ', 'স্বামী', '1906274681', '1983-06-29 00:00:00', 50, 'user_images/member_CPSS-00052/nominee_1_1761474008_68fdf5d89f4d7.jpg', '2025-10-26 16:20:08'),
+(49, 52, 'CPSS-00052', 'আশফি বিনতে রহমান', 'মেয়ে', '1111111111', '2024-11-04 00:00:00', 50, 'user_images/member_CPSS-00052/nominee_2_1761474008_68fdf5d89f8b0.jpg', '2025-10-26 16:20:08'),
+(51, 55, 'CPSS-00053', 'SHAMIMA SHULTANA', 'MOTHER', '5983889295', '1973-11-20 00:00:00', 50, 'user_images/member_CPSS-00053/nominee_1_1761547308_68ff142c88d85.jpg', '2025-10-27 12:41:48'),
+(52, 55, 'CPSS-00053', 'PAPIATUL ZANNAT', 'WIFE', '9552707367', '1992-12-07 00:00:00', 50, 'user_images/member_CPSS-00053/nominee_2_1761547308_68ff142c890a2.jpg', '2025-10-27 12:41:48'),
+(53, 56, 'CPSS-00056', 'SABICUN NAHAR', 'SPOUSE', '4184933754', '1994-01-18 00:00:00', 100, 'user_images/member_CPSS-00056/nominee_1_1761569031_68ff6907f1495.jpeg', '2025-10-27 18:43:51'),
+(54, 57, 'CPSS-00057', 'Syeda Tanjila', 'WIfe', '7315858352', '1988-02-01 00:00:00', 100, 'user_images/member_CPSS-00057/nominee_1_1761666480_6900e5b0e78c7.png', '2025-10-28 21:48:00');
 
 -- --------------------------------------------------------
 
@@ -215,7 +226,7 @@ CREATE TABLE `member_office` (
   `created_at` datetime NOT NULL,
   `present_address` text DEFAULT NULL,
   `permanent_address` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `member_office`
@@ -231,7 +242,17 @@ INSERT INTO `member_office` (`id`, `member_id`, `member_code`, `office_name`, `o
 (37, 39, 'CPSS-00037', 'ERA INFOTECH LIMITED', 'Level 3, Fareast Tower, 35 Topkhana Road, Dhaka 1000', 'ASSOCIATE SOFTWARE ENGINEER', '2025-10-16 16:35:26', 'শারুলিয়া, ঢাকা, ডেমরা', 'ভাওরখোলা, মেঘনা, কুমিল্লা'),
 (38, 40, 'CPSS-00040', 'ERA InfoTech Ltd.', 'Farest Tower(Level 3), 35 Topkhana road, Dhaka-1000', 'Executive', '2025-10-16 17:32:03', 'Sonir Akhra, Jatrabari, Dhaka', 'Vill: Rajnogor, PO: Kalekhar Bir, PS: Rampal, Dis: Bagerhat'),
 (39, 41, 'CPSS-00041', 'AZIZ & COMPANY LTD', 'House-16. Road-01, Block-B, Nikatan, Gulshan-1.', 'Asst. Manager', '2025-10-19 11:12:10', '২৯/৪-এ মধ্য পাইকপাড়া, মিরপুর -১, ঢাকা-১২১৬।', '২৯/৪-এ মধ্য পাইকপাড়া, মিরপুর -১, ঢাকা-১২১৬।'),
-(40, 42, 'CPSS-00042', 'ইরা ইনফোটেক লিঃ', '10/A-3, BARDHAN BARI, WARD#09, DARUS SALAM THANA ROAD, MIRPUR-1', 'Senior Software Engineer', '2025-10-21 22:38:47', '10/A-3, BARDHAN BARI, WARD#09, DARUS SALAM THANA ROAD, MIRPUR-1', '10/A-3, BARDHAN BARI, WARD#09, DARUS SALAM THANA ROAD, MIRPUR-1');
+(40, 42, 'CPSS-00042', 'Era Infotech Limited', 'Level 3, Fareast Tower, 35 Topkhana Road, Dhaka 1000', 'Head Of System Design', '2025-10-22 11:01:11', '59 S.C.C Road,Bangshal,Dhaka', '59 S.C.C Road,Bangshal,Dhaka'),
+(43, 45, 'CPSS-00043', 'ERA INFOTECH LTD', 'Fareast Tower, Level-3, 35 Topkhana Road, Dhaka-1000, Bangladesh.', 'Engineer, Software Engineering', '2025-10-23 15:21:30', '36/Ka, Parvin Villa, PC Culture Road, Shyamoli, Dhaka 1207', '02/08, PTI Masterpara, Chapainawabganj Sadar 6300'),
+(44, 46, 'CPSS-00046', 'ERA-InfoTech Limited', '35, Topkhana Road, Fareast Tower (3rd and 4th fl), Dhaka-1000', 'Asst. Manager (FAD)', '2025-10-23 16:19:51', '1272/1 and 1272/2 East shewrapara, Mirpur, Dhaka-1216', '1272/1 and 1272/2 East shewrapara, Mirpur, Dhaka-1216'),
+(45, 47, 'CPSS-00047', 'ERA-Info Tech Ltd', 'Fareast Tower, 35 Topkhana Road, (Level-3), Dhaka-1000', 'Sr. Software Engineer', '2025-10-23 22:02:11', 'House no:20,Road no:2,Kallyanpur,Dhaka', 'Vill+post:Mohadevpur,Ps:Shivalya,Dist:Manikganj'),
+(46, 48, 'CPSS-00048', 'ERA Infotech Ltd.', '35, Fareast Tower(3rd, 4th Floor), Paltan More, Dhaka', 'Associate Engineer', '2025-10-25 08:44:27', 'Mollaretk, Dakkhinkhan, Uttara, Dhaka', 'Mollaretk, Dakkhinkhan, Uttara, Dhaka'),
+(48, 50, 'CPSS-00049', 'ERA', 'palton', 'Software Eng.', '2025-10-25 23:00:21', 'Sonir akhra jatrabari', 'Pabna'),
+(49, 51, 'CPSS-00051', 'ERA-InfoTech Limited', '35 Topkhana, Road, Fareast Tower Level-3, Dhaka-1000.', 'Manager, FAD', '2025-10-26 12:46:33', '1/1 Ka, South Begunbari, Tejgaon, Dhaka.', 'Vill-Sujanagor, P.O-Rampal, P.S-Munshigonj, Dist-Munshigonj.'),
+(50, 52, 'CPSS-00052', 'মৎস্য অধিদপ্তর', 'মৎস্য অধিদপ্তর, রমনা, ঢাকা', 'একাউন্টস অফিসার', '2025-10-26 16:20:08', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(53, 55, 'CPSS-00053', 'Era Infotech Ltd.', 'Fareast Tower, Topkhana road, Paltan ,Dhaka -1000', 'Associate Software Engineer', '2025-10-27 12:41:48', '345/2, Jafrabad , Mohammadpur , Dhaka-1207', 'East Harinahati, Kotalipara, Goplaganj'),
+(54, 56, 'CPSS-00056', 'DBH FINANCE PLC.', '12-14, LANDMARK BUILDING,14 FLOOR,GULSHAN-2, DHAKA-1212', 'ASSISTANT MANAGER', '2025-10-27 18:43:51', 'House : 7/B, Road : 2, Kallyanpur, Dhaka-1207', 'Vill : Ramer Danga, P.O : Baladanga, P.S+Dist : Satkhira-9400'),
+(55, 57, 'CPSS-00057', 'Walton', 'Plot-1088, Block-I, Sabrina Sobhan Road P.O-Khilkhet, P.S-Vatara, Bashundhara R/A', 'Deputy Operative Director', '2025-10-28 21:48:00', 'House No. 416, Road No. 7, Block D, Bashundhara RA', '17/D, Jahanara Garden, Housing State, Goalchamot, Faridpur');
 
 -- --------------------------------------------------------
 
@@ -253,16 +274,9 @@ CREATE TABLE `member_payments` (
   `created_by` int(11) DEFAULT NULL,
   `serial_no` int(11) DEFAULT NULL,
   `for_fees` varchar(20) DEFAULT NULL,
-  `payment_slip` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `member_payments`
---
-
-INSERT INTO `member_payments` (`id`, `member_id`, `member_code`, `payment_method`, `bank_pay_date`, `bank_trans_no`, `trans_no`, `amount`, `payment_year`, `created_at`, `created_by`, `serial_no`, `for_fees`, `payment_slip`) VALUES
-(6, 42, 'CPSS-00042', 'admission', '2025-10-20', 'd43t54grergrgr', 'TRADMISSION20251', '1500.00', 2025, '2025-10-22 19:05:23', 13, 1, 'admission', 'payment_slip_42_1761138323_5820.jpg'),
-(7, 42, 'CPSS-00042', 'share', '2025-10-20', '564654654544', 'TRSHARE20251', '25000.00', 2025, '2025-10-23 01:09:52', 13, 1, 'share', 'payment_slip_42_1761160192_2655.jpg');
+  `payment_slip` text DEFAULT NULL,
+  `status` varchar(3) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -284,27 +298,37 @@ CREATE TABLE `member_share` (
   `office_staff` int(11) DEFAULT 0,
   `other_fee` int(11) DEFAULT 0,
   `for_install` int(11) DEFAULT 0,
-  `project_id` int(5) DEFAULT 0,
+  `project_id` int(11) DEFAULT 0,
   `extra_share` int(11) DEFAULT 0,
   `share_amount` int(11) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `member_share`
 --
 
 INSERT INTO `member_share` (`id`, `member_id`, `member_code`, `no_share`, `admission_fee`, `idcard_fee`, `passbook_fee`, `softuses_fee`, `sms_fee`, `office_rent`, `office_staff`, `other_fee`, `for_install`, `project_id`, `extra_share`, `share_amount`, `created_at`) VALUES
-(1, 1, 'CPSS-00001', 7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(19, 30, 'CPSS-00002', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(20, 31, 'CPSS-00031', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(22, 34, 'CPSS-00032', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(23, 35, 'CPSS-00035', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(24, 36, 'CPSS-00036', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(25, 39, 'CPSS-00037', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(26, 40, 'CPSS-00040', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(27, 41, 'CPSS-00041', 2, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
-(28, 42, 'CPSS-00042', 5, 1500, 100, 150, 350, 100, 350, 250, 500, 0, 4, 3, 24500, '2025-10-21 22:38:47');
+(1, 1, 'CPSS-00001', 7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-13 21:31:57'),
+(19, 30, 'CPSS-00002', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-13 22:28:41'),
+(20, 31, 'CPSS-00031', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-13 22:36:03'),
+(22, 34, 'CPSS-00032', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-14 16:04:29'),
+(23, 35, 'CPSS-00035', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-14 16:51:59'),
+(24, 36, 'CPSS-00036', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-14 18:48:46'),
+(25, 39, 'CPSS-00037', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-16 16:35:26'),
+(26, 40, 'CPSS-00040', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-16 17:32:03'),
+(27, 41, 'CPSS-00041', 2, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2025-10-19 11:12:10'),
+(28, 42, 'CPSS-00042', 40, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2025-10-22 11:01:11'),
+(29, 45, 'CPSS-00043', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-23 15:21:30'),
+(30, 46, 'CPSS-00046', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-23 16:19:51'),
+(31, 47, 'CPSS-00047', 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 38, 0, '2025-10-23 22:02:11'),
+(32, 48, 'CPSS-00048', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, '2025-10-25 08:44:27'),
+(33, 50, 'CPSS-00049', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-25 23:00:21'),
+(34, 51, 'CPSS-00051', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-26 12:46:33'),
+(35, 52, 'CPSS-00052', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-26 16:20:08'),
+(36, 55, 'CPSS-00053', 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 0, '2025-10-27 12:41:48'),
+(37, 56, 'CPSS-00056', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-27 18:43:51'),
+(38, 57, 'CPSS-00057', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, '2025-10-28 21:48:00');
 
 -- --------------------------------------------------------
 
@@ -317,14 +341,14 @@ CREATE TABLE `project` (
   `project_name_bn` text NOT NULL,
   `project_name_en` text NOT NULL,
   `about_project` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `project`
 --
 
 INSERT INTO `project` (`id`, `project_name_bn`, `project_name_en`, `about_project`) VALUES
-(4, 'প্রকল্প-১', 'Project-1', '<p>ইকবাল ভাইয়ের ৬শতাংশ জমি</p>');
+(4, 'প্রজেক্ট-১', 'Project-1', '<p>ইকবাল ভাইয়ের ৬ শতাংশ জমি</p>');
 
 -- --------------------------------------------------------
 
@@ -338,7 +362,7 @@ CREATE TABLE `services` (
   `service_name_en` text NOT NULL,
   `about_service` text NOT NULL,
   `icon` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `services`
@@ -377,23 +401,24 @@ CREATE TABLE `setup` (
   `about_text_en` text DEFAULT NULL,
   `slogan_bn` text DEFAULT NULL,
   `slogan_en` text DEFAULT NULL,
-  `smart_bn` text DEFAULT NULL,
-  `smart_en` text DEFAULT NULL,
+  `ac_title` text DEFAULT NULL,
+  `ac_no` text DEFAULT NULL,
   `logo` text DEFAULT NULL,
   `objectives` text DEFAULT NULL,
   `facebook` text DEFAULT NULL,
   `youtube` text DEFAULT NULL,
   `linkedin` text DEFAULT NULL,
   `instagram` text DEFAULT NULL,
-  `twitter` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `bank_name` text DEFAULT NULL,
+  `bank_address` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `setup`
 --
 
-INSERT INTO `setup` (`id`, `site_name_bn`, `site_name_en`, `registration_no`, `address`, `email`, `phone1`, `phone2`, `about_text`, `about_text_en`, `slogan_bn`, `slogan_en`, `smart_bn`, `smart_en`, `logo`, `objectives`, `facebook`, `youtube`, `linkedin`, `instagram`, `twitter`) VALUES
-(1, 'কোডার পেশাজীবী সমবায় সমিতি লিঃ (প্রস্তাবিত)', 'Coder Peshajibi Samabay Samity Ltd. (Proposed)', '২৫৫৩৫৮', '10/A-3, (7th Floor), Bardhan Bari, Darus Salam Thana, Mirpur-1, Dhaka-1216 - ( ১০/এ-৩, ( ৮ম তলা ) বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর-১, ঢাকা )', 'codersamity@gmail.com', '01540505646', '01919787839', 'কোডার পেশাজীবী সমবায় সমিতি লিঃ একটি স্বেচ্ছাসেবী, পেশাজীবী ও অরাজনৈতিক প্রতিষ্ঠান, যাহা ২০২৩ইং সালে প্রতিষ্ঠা করা হয়েছে এবং ২০২৫ইং সালে বাংলাদেশ সমবায় অধিদপ্তরে নিবন্ধন প্রক্রিয়া চলমান আছে, যাহার ফাইল নং- ২৫৫৩৫৮। &nbsp;আমাদের লক্ষ্য হলো পেশাজীবীদের মধ্যে সহযোগিতা বৃদ্ধি করা এবং তাদের পেশাগত ও আর্থিক উন্নয়ন সাধনে কাজ &nbsp;করা। আমরা বিভিন্ন প্রশিক্ষণ, কর্মশালা ও সেমিনার আয়োজন করি যাতে সদস্যরা তাদের দক্ষতা বৃদ্ধি করতে পারে এবং পেশাগত জীবনে সফল হতে পারে। আমাদের সদস্যরা বিভিন্ন পেশাগত ক্ষেত্রে কাজ করে এবং আমরা তাদের মধ্যে জ্ঞান ও অভিজ্ঞতা বিনিময় করি। সমিতির সদস্যদের জন্য একটি শক্তিশালী আর্থিক এবং পেশাদার প্ল্যাটফর্ম তৈরি করা, যেখানে সদস্যরা যৌথভাবে বিনিয়োগ করে, ব্যবসা পরিচালনা করে এবং মুনাফা ভাগাভাগি করতে পারে। আমরা বিশ্বাস করি যে, সহযোগিতা ও সমবায় মূলক কাজের মাধ্যমে আমরা আমাদের লক্ষ্য অর্জন করতে পারব এবং আমাদের সদস্যদের জন্য একটি উন্নত ও সমৃদ্ধ ভবিষ্যত গড়ে তুলতে পারব।', 'Coder Peshajibi Samabay Samity Ltd. is a voluntary, professional and non-political organization, which was established in 2023 and is in the process of registration with the Bangladesh Cooperatives Department in 2025, whose file no. is 255358. Our goal is to increase cooperation among professionals and work towards their professional and financial development. We organize various trainings, workshops and seminars so that members can enhance their skills and be successful in their professional lives. Our members work in different professional fields and we exchange knowledge and experience among them. To create a strong financial and professional platform for the members of the association, where members can jointly invest, run businesses and share profits. We believe that through cooperation and cooperative work, we can achieve our goals and build a better and prosperous future for our members.', 'একসাথে যেতে হবে বহুদূরে...', 'We have to go far together...', 'দৃঢ়ভাবে টেকসই পথে, সৃজনশীল ভাবনায় ও সৌহার্দ্যপূর্ণ সহযোগিতায় আমরা গড়ে তুলবো একটি সুন্দর ভবিষ্যৎ', 'We will build a beautiful future through strong, sustainable approaches, creative thinking, and friendly cooperation.', 'logo.png', '<ul><li>hello</li><li>bangladesh</li></ul>', 'https://www.facebook.com/profile.php?id=61581789144846', 'youtube.com', 'linkedin', 'instagram', 'twitter');
+INSERT INTO `setup` (`id`, `site_name_bn`, `site_name_en`, `registration_no`, `address`, `email`, `phone1`, `phone2`, `about_text`, `about_text_en`, `slogan_bn`, `slogan_en`, `ac_title`, `ac_no`, `logo`, `objectives`, `facebook`, `youtube`, `linkedin`, `instagram`, `bank_name`, `bank_address`) VALUES
+(1, 'কোডার পেশাজীবী সমবায় সমিতি লিঃ (প্রস্তাবিত)', 'Coder Peshajibi Samabay Samity Ltd. (Proposed)', '২৫৫৩৫৮', '10/A-3, (7th Floor), Bardhan Bari, Darus Salam Thana, Mirpur-1, Dhaka-1216 - ( ১০/এ-৩, ( ৮ম তলা ) বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর-১, ঢাকা )', 'codersamity@gmail.com', '01540505646', '01919787839', 'কোডার পেশাজীবী সমবায় সমিতি লিঃ একটি স্বেচ্ছাসেবী, পেশাজীবী ও অরাজনৈতিক প্রতিষ্ঠান, যাহা ২০২৩ইং সালে প্রতিষ্ঠা করা হয়েছে এবং ২০২৫ইং সালে বাংলাদেশ সমবায় অধিদপ্তরে নিবন্ধন প্রক্রিয়া চলমান আছে, যাহার ফাইল নং- ২৫৫৩৫৮। &nbsp;আমাদের লক্ষ্য হলো পেশাজীবীদের মধ্যে সহযোগিতা বৃদ্ধি করা এবং তাদের পেশাগত ও আর্থিক উন্নয়ন সাধনে কাজ &nbsp;করা। আমরা বিভিন্ন প্রশিক্ষণ, কর্মশালা ও সেমিনার আয়োজন করি যাতে সদস্যরা তাদের দক্ষতা বৃদ্ধি করতে পারে এবং পেশাগত জীবনে সফল হতে পারে। আমাদের সদস্যরা বিভিন্ন পেশাগত ক্ষেত্রে কাজ করে এবং আমরা তাদের মধ্যে জ্ঞান ও অভিজ্ঞতা বিনিময় করি। সমিতির সদস্যদের জন্য একটি শক্তিশালী আর্থিক এবং পেশাদার প্ল্যাটফর্ম তৈরি করা, যেখানে সদস্যরা যৌথভাবে বিনিয়োগ করে, ব্যবসা পরিচালনা করে এবং মুনাফা ভাগাভাগি করতে পারে। আমরা বিশ্বাস করি যে, সহযোগিতা ও সমবায় মূলক কাজের মাধ্যমে আমরা আমাদের লক্ষ্য অর্জন করতে পারব এবং আমাদের সদস্যদের জন্য একটি উন্নত ও সমৃদ্ধ ভবিষ্যত গড়ে তুলতে পারব।', 'Coder Peshajibi Samabay Samity Ltd. is a voluntary, professional and non-political organization, which was established in 2023 and is in the process of registration with the Bangladesh Cooperatives Department in 2025, whose file no. is 255358. Our goal is to increase cooperation among professionals and work towards their professional and financial development. We organize various trainings, workshops and seminars so that members can enhance their skills and be successful in their professional lives. Our members work in different professional fields and we exchange knowledge and experience among them. To create a strong financial and professional platform for the members of the association, where members can jointly invest, run businesses and share profits. We believe that through cooperation and cooperative work, we can achieve our goals and build a better and prosperous future for our members.', 'একসাথে যেতে হবে বহুদূরে...', 'We have to go far together...', 'মোঃ সাইফুর রহমান ও সিরাজুল ইসলাম (Md. Saifur Rahman and Sirajul Islam)', '৫০৩১১০১০২৬৫ (50311010265)', 'logo.png', '<ul><li>hello</li><li>bangladesh</li></ul>', 'https://www.facebook.com/profile.php?id=61581789144846', 'youtube.com', 'linkedin.com', 'instagram.com', 'ব্যাংক এশিয়া লিঃ (Bank Asia Ltd.)', 'পুরানা পল্টন, ঢাকা-১০০০ (Purana Paltan, Dhaka-1000)');
 
 -- --------------------------------------------------------
 
@@ -407,7 +432,7 @@ CREATE TABLE `user_access` (
   `member_id` int(11) NOT NULL,
   `login` datetime NOT NULL DEFAULT current_timestamp(),
   `logout` datetime NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user_access`
@@ -433,18 +458,21 @@ INSERT INTO `user_access` (`id`, `user_id`, `member_id`, `login`, `logout`) VALU
 (149, 2, 0, '2025-10-21 11:58:33', '2025-10-21 11:58:33'),
 (150, 2, 0, '2025-10-21 13:29:44', '2025-10-21 13:36:47'),
 (151, 2, 0, '2025-10-21 13:38:58', '2025-10-21 13:48:09'),
-(152, 2, 0, '2025-10-21 21:35:42', '2025-10-21 21:35:42'),
-(153, 2, 0, '2025-10-21 23:01:38', '2025-10-21 23:02:32'),
-(154, 2, 0, '2025-10-21 23:03:43', '2025-10-21 23:04:40'),
-(155, 13, 42, '2025-10-21 23:04:54', '2025-10-21 23:04:54'),
-(156, 13, 42, '2025-10-21 23:12:25', '2025-10-21 23:12:25'),
-(157, 13, 42, '2025-10-21 23:13:17', '2025-10-21 23:13:17'),
-(158, 13, 42, '2025-10-22 00:08:04', '2025-10-22 00:08:04'),
-(159, 13, 42, '2025-10-22 06:00:45', '2025-10-22 19:13:27'),
-(160, 2, 0, '2025-10-22 19:14:07', '2025-10-22 20:43:16'),
-(161, 13, 42, '2025-10-22 20:43:37', '2025-10-23 01:08:24'),
-(162, 2, 0, '2025-10-23 01:08:52', '2025-10-23 01:09:08'),
-(163, 13, 42, '2025-10-23 01:09:23', '2025-10-23 01:10:11');
+(152, 2, 0, '2025-10-23 11:44:42', '2025-10-23 11:45:04'),
+(153, 2, 0, '2025-10-23 13:27:24', '2025-10-23 13:28:05'),
+(154, 3, 1, '2025-10-23 13:28:24', '2025-10-23 13:29:39'),
+(155, 2, 0, '2025-10-23 14:45:59', '2025-10-23 14:46:11'),
+(156, 3, 1, '2025-10-23 14:46:33', '2025-10-23 14:47:22'),
+(157, 2, 0, '2025-10-23 14:47:31', '2025-10-23 14:48:39'),
+(158, 2, 0, '2025-10-23 15:07:30', '2025-10-23 15:07:30'),
+(159, 2, 0, '2025-10-23 17:03:18', '2025-10-23 17:03:39'),
+(160, 2, 0, '2025-10-26 10:52:31', '2025-10-26 10:53:38'),
+(161, 2, 0, '2025-10-26 14:37:46', '2025-10-26 14:37:55'),
+(162, 2, 0, '2025-10-26 15:28:14', '2025-10-26 15:28:47'),
+(163, 2, 0, '2025-10-26 15:29:01', '2025-10-26 15:29:25'),
+(164, 3, 1, '2025-10-26 15:29:40', '2025-10-26 15:30:01'),
+(165, 2, 0, '2025-10-26 15:32:30', '2025-10-26 15:32:30'),
+(166, 2, 0, '2025-10-29 15:35:45', '2025-10-29 15:35:45');
 
 -- --------------------------------------------------------
 
@@ -462,7 +490,7 @@ CREATE TABLE `user_login` (
   `role` varchar(10) NOT NULL,
   `status` varchar(2) NOT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user_login`
@@ -479,7 +507,17 @@ INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `passwo
 (10, 39, 'CPSS-00037', 'ashiqur_ruhullah', '3b192651dafa9a384b45d15bdd551c3a', 'Abc@33688', 'user', 'I', '2025-10-16 16:35:26'),
 (11, 40, 'CPSS-00040', 'tariqul@erainfotechbd.com', 'd82f0f7bbb5e126328c20590e8bd8bee', 'Tariqul*sorse4', 'user', 'I', '2025-10-16 17:32:03'),
 (12, 41, 'CPSS-00041', 'Samrat0026@', '6d4a2c2688cbf0b68a09db10bf21c4f0', '25800', 'user', 'I', '2025-10-19 11:12:10'),
-(13, 42, 'CPSS-00042', 'saifur', '25d55ad283aa400af464c76d713c07ad', '12345678', 'user', 'A', '2025-10-21 22:38:47');
+(13, 42, 'CPSS-00042', 'hera', 'cfed9928364182f874060d57295e305c', 'Her@1234', 'user', 'I', '2025-10-22 11:01:11'),
+(14, 45, 'CPSS-00043', 'sraihan68', '90973b6d611e8a9d3e9d6d4c18d99991', 'Pass@123#', 'user', 'I', '2025-10-23 15:21:30'),
+(15, 46, 'CPSS-00046', 'Md. Alauddin', '558d84d0650a49634714a42d46183114', 'Alauddin', 'user', 'I', '2025-10-23 16:19:51'),
+(16, 47, 'CPSS-00047', 'moshid', '13053ed9d25f40b415e709f3023c09b5', '19822006Cm', 'user', 'I', '2025-10-23 22:02:11'),
+(17, 48, 'CPSS-00048', 'mahdi', 'a80efaf2c72ee24985535815fc3f5380', 'Era_321', 'user', 'I', '2025-10-25 08:44:27'),
+(18, 50, 'CPSS-00049', 'aslamtmela', '1553a90b66d50da03d9b082f3880e3ad', 'Aslam@038297', 'user', 'I', '2025-10-25 23:00:21'),
+(19, 51, 'CPSS-00051', 'Sonia Afrose', 'df7c8d1964ca7cc8c13f002afa4864c7', '2468u', 'user', 'I', '2025-10-26 12:46:33'),
+(20, 52, 'CPSS-00052', '504305', '375de4af22691d85fffa4a6f694106c7', '504305', 'user', 'I', '2025-10-26 16:20:08'),
+(21, 55, 'CPSS-00053', 'Foisal Mahmud', '670a7db8e714ea9f6d43ca7b72e8cf09', 'Foisal@3734', 'user', 'I', '2025-10-27 12:41:48'),
+(22, 56, 'CPSS-00056', 'MMHO', '08e3099eac683f3cb2ca7ffea4497f55', 'Fathermother#1988', 'user', 'I', '2025-10-27 18:43:51'),
+(23, 57, 'CPSS-00057', 'ariful', '17278d31f3c882ee29cb095ed6f64cad', 'Ariful@2050#!', 'user', 'I', '2025-10-28 21:48:00');
 
 --
 -- Indexes for dumped tables
@@ -595,37 +633,37 @@ ALTER TABLE `company`
 -- AUTO_INCREMENT for table `members_info`
 --
 ALTER TABLE `members_info`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `member_documents`
 --
 ALTER TABLE `member_documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `member_nominee`
 --
 ALTER TABLE `member_nominee`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `member_office`
 --
 ALTER TABLE `member_office`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `member_payments`
 --
 ALTER TABLE `member_payments`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `member_share`
 --
 ALTER TABLE `member_share`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `project`
@@ -649,13 +687,13 @@ ALTER TABLE `setup`
 -- AUTO_INCREMENT for table `user_access`
 --
 ALTER TABLE `user_access`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=164;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=167;
 
 --
 -- AUTO_INCREMENT for table `user_login`
 --
 ALTER TABLE `user_login`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -43,12 +43,20 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                                     <input type="text" class="form-control" id="slogan_en" name="slogan_en" value="<?= htmlspecialchars($settings['slogan_en'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="smart_bn" class="form-label">Smart (Bangla)</label>
-                                    <input type="text" class="form-control" id="smart_bn" name="smart_bn" value="<?= htmlspecialchars($settings['smart_bn'] ?? '') ?>" required>
+                                    <label for="ac_title" class="form-label">A/C Title</label>
+                                    <input type="text" class="form-control" id="ac_title" name="ac_title" value="<?= htmlspecialchars($settings['ac_title'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="smart_en" class="form-label">Smart (English)</label>
-                                    <input type="text" class="form-control" id="smart_en" name="smart_en" value="<?= htmlspecialchars($settings['smart_en'] ?? '') ?>" required>
+                                    <label for="ac_no" class="form-label">A/C No.</label>
+                                    <input type="text" class="form-control" id="ac_no" name="ac_no" value="<?= htmlspecialchars($settings['ac_no'] ?? '') ?>" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="bank_name" class="form-label">Bank Name</label>
+                                    <input type="text" class="form-control" id="bank_name" name="bank_name" value="<?= htmlspecialchars($settings['bank_name'] ?? '') ?>" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="bank_address" class="form-label">Bank Address</label>
+                                    <input type="text" class="form-control" id="bank_address" name="bank_address" value="<?= htmlspecialchars($settings['bank_address'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
                                     <label for="registration_no" class="form-label">Registration No</label>
@@ -131,10 +139,6 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                                         <label for="instagram" class="form-label">Instagram</label>
                                         <input type="text" class="form-control" id="instagram" name="instagram" value="<?= htmlspecialchars($settings['instagram'] ?? '') ?>">
                                     </div>
-                                    <div class="col-12 col-md-12 mb-3">
-                                        <label for="twitter" class="form-label">Twitter</label>
-                                        <input type="text" class="form-control" id="twitter" name="twitter" value="<?= htmlspecialchars($settings['twitter'] ?? '') ?>">
-                                    </div>
                                 </div>
 
                                 <div class="col-12 mt-4 text-end">
@@ -166,8 +170,5 @@ ClassicEditor.create(document.querySelector('#objectives'), {
     toolbar: ['bold', 'italic', 'underline', 'link', 'bulletedList', 'numberedList', 'undo', 'redo']
 }).catch(error => {});
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<?php include_once __DIR__ . '/../includes/toast.php'; ?>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

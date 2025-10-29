@@ -35,6 +35,14 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <label for="project_name_en" class="form-label">Project Name (English)</label>
                                     <input type="text" class="form-control" id="project_name_en" name="project_name_en" required>
                                 </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="project_value" class="form-label">Project Value</label>
+                                    <input type="text" class="form-control" id="project_value" name="project_value" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="project_share" class="form-label">Project Share</label>
+                                    <input type="text" class="form-control" id="project_share" name="project_share" required>
+                                </div>
                                 <div class="col-12 col-md-12 mb-3">
                                     <label for="about_project" class="form-label">About Service</label>
                                     <textarea class="form-control" id="about_project" name="about_project" rows="10"></textarea>
@@ -53,6 +61,8 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <tr>
                                         <th>ID</th>
                                         <th>Project Name</th>
+                                        <th>Project Value</th>
+                                        <th>Project Share</th>
                                         <th>About Project</th>
                                         <th>Actions</th>
                                     </tr>
@@ -63,6 +73,8 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <td><?= $project['id']; ?></td>
                                         <td><?= htmlspecialchars($project['project_name_en']); ?> <br>
                                             <?= htmlspecialchars($project['project_name_bn']); ?></td>
+                                        <td><?= htmlspecialchars($project['project_value']); ?></td>
+                                        <td><?= htmlspecialchars($project['project_share']); ?></td>
                                         <td><?= strip_tags($project['about_project'], '<p><ul><li><b><i><br>'); ?></td>
                                         <td>
                                             <form action="../process/project_process.php" method="post" style="display:inline-block;">
@@ -72,10 +84,12 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 </button>
                                             </form>
                                            <button type="button" class="btn btn-info btn-sm"
-                                                onclick='editService(
+                                                onclick='editProject(
                                                     <?= (int)$project["id"]; ?>,
                                                     <?= json_encode($project["project_name_en"]); ?>,
                                                     <?= json_encode($project["project_name_bn"]); ?>,
+                                                    <?= json_encode($project["project_value"]); ?>,
+                                                    <?= json_encode($project["project_share"]); ?>,
                                                     <?= json_encode($project["about_project"]); ?>
                                                 )'>
                                                 <i class="fa fa-edit"></i>
@@ -106,6 +120,14 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <div class="col-12 col-md-6 mb-3">
                                     <label for="edit_project_name_en" class="form-label">Project Name (English)</label>
                                     <input type="text" class="form-control" id="edit_project_name_en" name="edit_project_name_en" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="edit_project_value" class="form-label">Project Value</label>
+                                    <input type="text" class="form-control" id="edit_project_value" name="edit_project_value" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="edit_project_share" class="form-label">Project Share</label>
+                                    <input type="text" class="form-control" id="edit_project_share" name="edit_project_share" required>
                                 </div>
                                 <div class="col-12 col-md-12 mb-3">
                                     <label for="edit_about_project" class="form-label">About Project</label>
@@ -152,12 +174,13 @@ const editors = {}; // store editors globally
 </script>
 
 <script>
-function editProject(id, project_name_en, project_name_bn, about_project) {   
+function editProject(id, project_name_en, project_name_bn, project_value, project_share, about_project) {
       
     document.getElementById('edit_id').value = id;
     document.getElementById('edit_project_name_en').value = project_name_en;
     document.getElementById('edit_project_name_bn').value = project_name_bn;
-
+    document.getElementById('edit_project_value').value = project_value;
+    document.getElementById('edit_project_share').value = project_share;
     // ✅ update CKEditor instead of textarea value
     if (editors['#edit_about_project']) {
         editors['#edit_about_project'].setData(about_project);

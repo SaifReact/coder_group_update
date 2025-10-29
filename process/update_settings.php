@@ -47,8 +47,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $about_text_en = isset($_POST['about_text_en']) ? strip_tags($_POST['about_text_en']) : '';
     $slogan_bn     = isset($_POST['slogan_bn']) ? strip_tags($_POST['slogan_bn']) : '';
     $slogan_en     = isset($_POST['slogan_en']) ? strip_tags($_POST['slogan_en']) : '';
-    $smart_bn      = isset($_POST['smart_bn']) ? strip_tags($_POST['smart_bn']) : '';
-    $smart_en      = isset($_POST['smart_en']) ? strip_tags($_POST['smart_en']) : '';
+    $ac_title      = isset($_POST['ac_title']) ? strip_tags($_POST['ac_title']) : '';
+    $ac_no         = isset($_POST['ac_no']) ? strip_tags($_POST['ac_no']) : '';
+    $bank_name     = isset($_POST['bank_name']) ? strip_tags($_POST['bank_name']) : '';
+    $bank_address  = isset($_POST['bank_address']) ? strip_tags($_POST['bank_address']) : '';
 
     // Check if a new logo is uploaded
     $new_logo = uploadLogoImage($_FILES['profile_image']);
@@ -65,14 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $youtube          = $_POST['youtube'] ?? '';
     $linkedin         = $_POST['linkedin'] ?? '';
     $instagram        = $_POST['instagram'] ?? '';
-    $twitter          = $_POST['twitter'] ?? '';
 
     // ✅ Update DB
     $stmt = $pdo->prepare("
         UPDATE setup 
         SET site_name_bn=?, site_name_en=?, registration_no=?, address=?, email=?, phone1=?, phone2=?, 
-            about_text=?, about_text_en=?, slogan_bn=?, slogan_en=?, smart_bn=?, smart_en=?, logo=?,
-            objectives=?, facebook=?, youtube=?, linkedin=?, instagram=?, twitter=?
+            about_text=?, about_text_en=?, slogan_bn=?, slogan_en=?, ac_title=?, ac_no=?, logo=?,
+            objectives=?, facebook=?, youtube=?, linkedin=?, instagram=?, bank_name=?, bank_address=?
         WHERE id=1
     ");
 
@@ -88,15 +89,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $about_text_en,
         $slogan_bn,
         $slogan_en,
-        $smart_bn,
-        $smart_en,
+        $ac_title,
+        $ac_no,
         $logo,
         $objectives,
         $facebook,
         $youtube,
         $linkedin, 
         $instagram,
-        $twitter
+        $bank_name,
+        $bank_address
     ]);
 
     $_SESSION['success_msg'] = "✅ Setup updated successfully..! (সফলভাবে হালনাগাদ করা হলো..!)";

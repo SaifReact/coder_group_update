@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
 
     } else {
-        $_SESSION['error_msg'] = '❌ Invalid username or password.';
+        $_SESSION['error_msg'] = '❌ আপনার ইউজার ও পাসওয়ার্ড একটিভ হয়নি। (Your username and password have not been activated.)';
         header('Location: ../login.php');
         exit;
     }

@@ -16,9 +16,6 @@ $email   = $_SESSION['setup']['email'] ?? '';
 $slogan_bn = $_SESSION['setup']['slogan_bn'] ?? '';
 $slogan_en = $_SESSION['setup']['slogan_en'] ?? ''; 
 $slogan = $slogan_bn . ($slogan_en ? ' ( ' . $slogan_en . ' )' : '');
-$smart_bn = $_SESSION['setup']['smart_bn'] ?? '';
-$smart_en = $_SESSION['setup']['smart_en'] ?? '';   
-$smart = $smart_bn . ($smart_en ? ' ( ' . $smart_en . ' )' : '');
 
 ?>
 
@@ -41,7 +38,6 @@ $smart = $smart_bn . ($smart_en ? ' ( ' . $smart_en . ' )' : '');
                 </a>
                     <p class="mb-0">ফাইল নং - <?= htmlspecialchars($reg_no); ?></p>
                     <p class="mb-0"><?= htmlspecialchars($slogan); ?></p>
-                    <p class="mb-0"><?= htmlspecialchars($smart); ?></p>
                 </div>
                 <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.3s">
                     <h5 class="text-white mb-4">Get In Touch (যোগাযোগ করুন)</h5>
@@ -50,15 +46,13 @@ $smart = $smart_bn . ($smart_en ? ' ( ' . $smart_en . ' )' : '');
                     <p><i class="fa fa-envelope me-3"></i><?= htmlspecialchars($email); ?></p>
                     <div class="d-flex pt-2">
                         <a class="btn btn-outline-primary btn-square border-2 me-2" href="#!"><i
-                                class="fab fa-twitter"></i></a>
-                        <a class="btn btn-outline-primary btn-square border-2 me-2" href="#!"><i
                                 class="fab fa-facebook-f"></i></a>
                         <a class="btn btn-outline-primary btn-square border-2 me-2" href="#!"><i
                                 class="fab fa-youtube"></i></a>
                         <a class="btn btn-outline-primary btn-square border-2 me-2" href="#!"><i
-                                class="fab fa-instagram"></i></a>
-                        <a class="btn btn-outline-primary btn-square border-2 me-2" href="#!"><i
                                 class="fab fa-linkedin-in"></i></a>
+                        <a class="btn btn-outline-primary btn-square border-2 me-2" href="#!"><i
+                                class="fab fa-instagram"></i></a>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.5s">

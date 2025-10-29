@@ -154,10 +154,11 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
                                             <form method="post" class="d-flex align-items-center">
                                                 <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
                                                 <select name="status" class="form-select form-select-sm me-2">
-                                                    <option value="P" <?= $user['status'] === 'P' ? 'selected' : '' ?>>Processing</option>
-                                                    <option value="A" <?= $user['status'] === 'A' ? 'selected' : '' ?>>Approved</option>
-                                                    <option value="I" <?= $user['status'] === 'I' ? 'selected' : '' ?>>Inactive</option>
-                                                    <option value="R" <?= $user['status'] === 'R' ? 'selected' : '' ?>>Rejected</option>
+                                                    <option value="P" <?= $user['status'] === 'P' ? 'selected' : '' ?>>⏳ Processing</option>
+                                                    <option value="A" <?= $user['status'] === 'A' ? 'selected' : '' ?>>✅ Approved</option>
+                                                    <option value="I" <?= $user['status'] === 'I' ? 'selected' : '' ?>>⏸️ Inactive</option>
+                                                    <option value="R" <?= $user['status'] === 'R' ? 'selected' : '' ?>>❌ Rejected</option>
+
                                                 </select>
                                                 <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
                                             </form>

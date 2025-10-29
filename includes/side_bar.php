@@ -15,18 +15,23 @@ $role = $_SESSION['role'] ?? '';
                     </a>
                 </li>
                 <li class="nav-item mb-3">
+                    <a class="nav-link text-dark fw-bold" href="../admin/setup.php" style="font-size: .8rem;">
+                        <i class="fa fa-cogs me-2 text-secondary"></i> Setup
+                    </a>
+                </li>
+                <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="../admin/approval.php" style="font-size: .8rem;">
                         <i class="fa fa-user-check me-2 text-success"></i> Approval
                     </a>
                 </li>
-                 <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/company.php" style="font-size: .8rem;">
-                        <i class="fa fa-building me-2 text-info"></i> Company
+                <li class="nav-item mb-3">
+                    <a class="nav-link text-dark fw-bold" href="../admin/payment_approved.php" style="font-size: .8rem;">
+                        <i class="fa fa-credit-card me-2 text-info"></i> Payment
                     </a>
                 </li>
                 <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/setup.php" style="font-size: .8rem;">
-                        <i class="fa fa-cogs me-2 text-warning"></i> Setup
+                    <a class="nav-link text-dark fw-bold" href="../admin/company.php" style="font-size: .8rem;">
+                        <i class="fa fa-building me-2 text-warning"></i> Company
                     </a>
                 </li>
                 <li class="nav-item mb-3">
@@ -36,17 +41,17 @@ $role = $_SESSION['role'] ?? '';
                 </li>
                 <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="../admin/service.php" style="font-size: .8rem;">
-                        <i class="fa fa-concierge-bell me-2 text-secondary"></i> Service
+                        <i class="fa fa-concierge-bell me-2 text-purple"></i> Service
                     </a>
                 </li>
                 <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="../admin/committee.php" style="font-size: .8rem;">
-                        <i class="fa fa-users me-2 text-purple"></i> Committee
+                        <i class="fa fa-users me-2 text-success"></i> Committee
                     </a>
                 </li>
                 <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="../admin/project.php" style="font-size: .8rem;">
-                        <i class="fa fa-users me-2 text-purple"></i> Project
+                        <i class="fa fa-project-diagram me-2 text-info"></i> Project
                     </a>
                 </li>
             <?php else: ?>

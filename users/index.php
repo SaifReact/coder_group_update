@@ -7,6 +7,11 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'user') {
 
 include_once __DIR__ . '/../config/config.php';
 
+$ac_title = $_SESSION['setup']['ac_title'] ?? '';
+$ac_no = $_SESSION['setup']['ac_no'] ?? '';
+$bank_name = $_SESSION['setup']['bank_name'] ?? '';
+$bank_address = $_SESSION['setup']['bank_address'] ?? '';
+
  $member_id = isset($_SESSION['member_id'])? $_SESSION['member_id'] : '';
  $user_id = isset($_SESSION['user_id'])? $_SESSION['user_id'] : '';
  $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
@@ -83,7 +88,12 @@ include_once __DIR__ . '/../config/config.php';
                   <div class="col-md-12 text-center">                  
                     <?php if ($status === 'P'): ?>
                     <div class="alert alert-danger mt-2" style="font-size:1rem;">
-                      <b>আপনি সদস্যপদ অনুমোদনের জন্য ডকুমেন্টস ও ভর্তি ফি প্রদান করুন।</b>
+                      <b>সদস্যপদ অনুমোদনের জন্য ডকুমেন্টস ও ভর্তি ফি প্রদান করুন।</b>
+                        <br/>
+                        যৌথ হিসাবের তথ্য (Joint account information): <br/>
+                       <?= htmlspecialchars($ac_title); ?> <br/>
+                        হিসাব নং- <?= htmlspecialchars($ac_no); ?> <br/>
+                        <?= htmlspecialchars($bank_name); ?>, <?= htmlspecialchars($bank_address); ?>
                     </div>
                     <?php endif; ?>
                   </div>  

@@ -40,21 +40,53 @@ $nominees = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 $stmt3 = $pdo->prepare("SELECT * FROM member_documents WHERE member_id = ?");
 $stmt3->execute([$member_id]);
 $docs = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+
+$stmt4 = $pdo->prepare("SELECT * FROM member_share WHERE member_id = ?");
+$stmt4->execute([$member_id]);
+$shares = $stmt4->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <div class="container-fluid">
   <div class="row g-4">
     <div class="col-md-8">
       <div class="card mb-3">
         <div class="card-body position-relative">
-          <img src="../<?php echo htmlspecialchars($member['profile_image'] ?? 'assets/default.png'); ?>" class="rounded-circle position-absolute end-0 top-0 m-3 zoomable-img" style="width:80px;height:80px;" alt="Profile">
-          <h5 class="card-title">Member ID: <span><?php echo htmlspecialchars($member['id'] ?? ''); ?></span></h5>
-          <p>Member Code: <?php echo htmlspecialchars($member['member_code'] ?? ''); ?></p>
-          <p>Name (EN): <?php echo htmlspecialchars($member['name_en'] ?? ''); ?></p>
-          <p>Name (BN): <?php echo htmlspecialchars($member['name_bn'] ?? ''); ?></p>
-          <p>DOB: <?php echo htmlspecialchars($member['dob'] ?? ''); ?></p>
-          <p>Religion: <?php echo htmlspecialchars($member['religion'] ?? ''); ?></p>
-          <p>Father Name: <?php echo htmlspecialchars($member['father_name'] ?? ''); ?></p>
-          <p>Mother Name: <?php echo htmlspecialchars($member['mother_name'] ?? ''); ?></p>
+          <div class="row g-2">
+            <div class="col-md-12 d-flex justify-content-center align-items-center mb-2">
+              <img src="../<?php echo htmlspecialchars($member['profile_image'] ?? 'assets/default.png'); ?>" class="rounded-circle zoomable-img" style="width:80px;height:80px;object-fit:cover;" alt="Profile">
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">Member Id & Code:</h5>
+              <span><?php echo htmlspecialchars($member['id'] ?? ''); ?> - <?php echo htmlspecialchars($member['member_code'] ?? ''); ?></span>
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">Name:</h5>
+              <span><?php echo htmlspecialchars($member['name_en'] ?? ''); ?> - <?php echo htmlspecialchars($member['name_bn'] ?? ''); ?></span>
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">DOB:</h5>
+              <span><?php echo htmlspecialchars($member['dob'] ?? ''); ?></span>
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">Religion:</h5>
+              <span><?php echo htmlspecialchars($member['religion'] ?? ''); ?></span>
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">Father Name:</h5>
+              <span><?php echo htmlspecialchars($member['father_name'] ?? ''); ?></span>
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">Mother Name:</h5>
+              <span><?php echo htmlspecialchars($member['mother_name'] ?? ''); ?></span>
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">Mobile:</h5>
+              <span><?php echo htmlspecialchars($member['mobile'] ?? ''); ?></span>
+            </div>
+            <div class="col-md-6">
+              <h5 class="card-title">Share:</h5>
+              <span><?php echo isset($shares[0]['no_share']) ? htmlspecialchars($shares[0]['no_share']) : ''; ?></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

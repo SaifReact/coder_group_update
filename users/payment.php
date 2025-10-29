@@ -22,7 +22,7 @@ if ($row = $stmt->fetch()) {
 
 // Fetch already paid monthly payments
 $payments = [];
-$stmt2 = $pdo->prepare("SELECT payment_method, payment_year FROM member_payments WHERE member_id = ?");
+$stmt2 = $pdo->prepare("SELECT payment_method, payment_year FROM member_payments WHERE member_id = ? AND status = 'A'");
 $stmt2->execute([$member_id]);
 while($row2 = $stmt2->fetch()) {
     // Use "type-year" key for JS lookup

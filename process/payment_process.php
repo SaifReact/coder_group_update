@@ -94,8 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $other_fee = 150;
 
         // Insert into member_payments table
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'admission', $created_by, $pay_slip]);
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'admission', $created_by, $pay_slip, 'I']);
 
         // Update member_share table
         $stmt = $pdo->prepare("UPDATE member_share SET admission_fee = ?, idcard_fee = ?, passbook_fee = ?, softuses_fee = ?, sms_fee = ?, office_rent = ?, office_staff = ?, other_fee = ? WHERE member_id = ? AND member_code = ?");
@@ -110,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $other_fee = round($amount * 0.02, 2);
 
         // Insert into member_payments table
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'share', $created_by, $pay_slip]);
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'share', $created_by, $pay_slip, 'I']);
 
         // Update member_share table
         $stmt = $pdo->prepare("UPDATE member_share SET share_amount = ?, other_fee = ? WHERE member_id = ? AND member_code = ?");
@@ -126,8 +126,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $other_fee = round($amount * 0.02, 2);
 
         // Fees to insert
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_by, $pay_slip]);
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_by, $pay_slip, 'I']);
 
         // Update member_share table and add previous_amount
         $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
