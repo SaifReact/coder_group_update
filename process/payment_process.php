@@ -41,8 +41,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $amount = floatval($_POST['amount'] ?? 0);
     $bank_pay_date = $_POST['payment_date'] ?? '';
     $bank_trans_no = $_POST['bank_trans'] ?? '';
+    $pay_mode = $_POST['pay_mode'] ?? '';
+    $remarks = $_POST['remarks'] ?? '';
     $created_by = $_SESSION['user_id'];
     $created_at = date('Y-m-d H:i:s');
+
+    // Fetch monthly fee from utils table
+    $monthly_fee = 2000; // Default value
+    $stmt_utils = $pdo->prepare("SELECT * FROM utils WHERE fee_type = 'monthly' AND status = 'A' LIMIT 1");
+    $stmt_utils->execute();
+    if ($row_utils = $stmt_utils->fetch()) {
+        $monthly_fee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
+    }
 
     // Get no_share from member_share table
     $stmt = $pdo->prepare("SELECT no_share, admission_fee FROM member_share WHERE member_id = ? LIMIT 1");
@@ -94,8 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $other_fee = 150;
 
         // Insert into member_payments table
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'admission', $created_by, $pay_slip, 'I']);
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'admission', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
 
         // Update member_share table
         $stmt = $pdo->prepare("UPDATE member_share SET admission_fee = ?, idcard_fee = ?, passbook_fee = ?, softuses_fee = ?, sms_fee = ?, office_rent = ?, office_staff = ?, other_fee = ? WHERE member_id = ? AND member_code = ?");
@@ -110,8 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $other_fee = round($amount * 0.02, 2);
 
         // Insert into member_payments table
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'share', $created_by, $pay_slip, 'I']);
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
 
         // Update member_share table
         $stmt = $pdo->prepare("UPDATE member_share SET share_amount = ?, other_fee = ? WHERE member_id = ? AND member_code = ?");
@@ -121,17 +131,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ../users/payment.php');
         exit;
     } else if ($payment_method != 'admission' && $payment_method != 'share' && $amount > 0) {
-        // Calculate fees for non-admission
+        // Calculate fees for monthly payments
+        // Late fee is the difference between amount and monthly fee
+        $late_fee = 0;
+        if ($amount > $monthly_fee) {
+            $late_fee = round($amount - $monthly_fee, 2);
+        }
+        
         $for_install = round($amount * 0.98, 2);
         $other_fee = round($amount * 0.02, 2);
 
-        // Fees to insert
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_by, $pay_slip, 'I']);
 
-        // Update member_share table and add previous_amount
-        $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$for_install, $other_fee, $created_at, $member_id, $member_code]);
+
+        // Fees to insert
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+
+        // Update member_share table and add previous_amount + late_fee
+        $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
+        $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
         $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful, please wait for approval)';
         header('Location: ../users/payment.php');
         exit;

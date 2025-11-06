@@ -35,13 +35,17 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <label for="project_name_en" class="form-label">Project Name (English)</label>
                                     <input type="text" class="form-control" id="project_name_en" name="project_name_en" required>
                                 </div>
-                                <div class="col-12 col-md-6 mb-3">
+                                <div class="col-12 col-md-4 mb-3">
                                     <label for="project_value" class="form-label">Project Value</label>
                                     <input type="text" class="form-control" id="project_value" name="project_value" required>
                                 </div>
-                                <div class="col-12 col-md-6 mb-3">
+                                <div class="col-12 col-md-4 mb-3">
                                     <label for="project_share" class="form-label">Project Share</label>
                                     <input type="text" class="form-control" id="project_share" name="project_share" required>
+                                </div>
+                                <div class="col-12 col-md-4 mb-3">
+                                    <label for="per_share_value" class="form-label">Per Share Value</label>
+                                    <input type="text" class="form-control" id="per_share_value" name="per_share_value" required>
                                 </div>
                                 <div class="col-12 col-md-12 mb-3">
                                     <label for="about_project" class="form-label">About Service</label>
@@ -63,6 +67,7 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <th>Project Name</th>
                                         <th>Project Value</th>
                                         <th>Project Share</th>
+                                        <th>Per Share Value</th>
                                         <th>About Project</th>
                                         <th>Actions</th>
                                     </tr>
@@ -75,6 +80,7 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <?= htmlspecialchars($project['project_name_bn']); ?></td>
                                         <td><?= htmlspecialchars($project['project_value']); ?></td>
                                         <td><?= htmlspecialchars($project['project_share']); ?></td>
+                                        <td><?= htmlspecialchars($project['per_share_value']); ?></td>
                                         <td><?= strip_tags($project['about_project'], '<p><ul><li><b><i><br>'); ?></td>
                                         <td>
                                             <form action="../process/project_process.php" method="post" style="display:inline-block;">
@@ -90,6 +96,7 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                     <?= json_encode($project["project_name_bn"]); ?>,
                                                     <?= json_encode($project["project_value"]); ?>,
                                                     <?= json_encode($project["project_share"]); ?>,
+                                                    <?= json_encode($project["per_share_value"]); ?>,
                                                     <?= json_encode($project["about_project"]); ?>
                                                 )'>
                                                 <i class="fa fa-edit"></i>
@@ -111,7 +118,7 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                          <input type="text" name="id" id="edit_id">
+                          <input type="hidden" name="id" id="edit_id">
                           <div class="row">
                             <div class="col-12 col-md-6 mb-3">
                                     <label for="edit_project_name_bn" class="form-label">Project Name (Bangla)</label>
@@ -128,6 +135,10 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <div class="col-12 col-md-6 mb-3">
                                     <label for="edit_project_share" class="form-label">Project Share</label>
                                     <input type="text" class="form-control" id="edit_project_share" name="edit_project_share" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="edit_per_share_value" class="form-label">Per Share Value</label>
+                                    <input type="text" class="form-control" id="edit_per_share_value" name="edit_per_share_value" required>
                                 </div>
                                 <div class="col-12 col-md-12 mb-3">
                                     <label for="edit_about_project" class="form-label">About Project</label>
@@ -174,13 +185,14 @@ const editors = {}; // store editors globally
 </script>
 
 <script>
-function editProject(id, project_name_en, project_name_bn, project_value, project_share, about_project) {
+function editProject(id, project_name_en, project_name_bn, project_value, project_share, per_share_value, about_project) {
       
     document.getElementById('edit_id').value = id;
     document.getElementById('edit_project_name_en').value = project_name_en;
     document.getElementById('edit_project_name_bn').value = project_name_bn;
     document.getElementById('edit_project_value').value = project_value;
     document.getElementById('edit_project_share').value = project_share;
+    document.getElementById('edit_per_share_value').value = per_share_value;
     // ✅ update CKEditor instead of textarea value
     if (editors['#edit_about_project']) {
         editors['#edit_about_project'].setData(about_project);

@@ -36,7 +36,7 @@ $slogan = $slogan_bn . ($slogan_en ? ' ( ' . $slogan_en . ' )' : '');
                 <span style="vertical-align:middle;"><?= htmlspecialchars($siteName); ?></span>
             </span>
                 </a>
-                    <p class="mb-0">ফাইল নং - <?= htmlspecialchars($reg_no); ?></p>
+                    <p class="mb-0">নিবন্ধন নং- <?= htmlspecialchars($reg_no); ?></p>
                     <p class="mb-0"><?= htmlspecialchars($slogan); ?></p>
                 </div>
                 <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.3s">

@@ -30,8 +30,8 @@ function convertToBangla($number) {
         <div class="col-md-3">
             <div class="card text-center custom-card">
                 <div class="card-body">
-                    <h4 class="card-title"><b>রেজিস্ট্রেশন নং</b></h4>
-                    <p class="card-text display-6"><?= htmlspecialchars($counts['registration'] ?? 0); ?></p>
+                    <h4 class="card-title"><b>নিবন্ধন নং</b></h4>
+                    <p class="card-text display-10" style="padding-top:23px; color:#FF0000; font-weight:bold"><?= htmlspecialchars($counts['registration'] ?? 0); ?></p>
                 </div>
             </div>
         </div>

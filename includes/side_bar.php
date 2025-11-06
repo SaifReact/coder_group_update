@@ -25,7 +25,7 @@ $role = $_SESSION['role'] ?? '';
                     </a>
                 </li>
                 <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/payment_approved.php" style="font-size: .8rem;">
+                    <a class="nav-link text-dark fw-bold" href="../admin/payment_approval.php" style="font-size: .8rem;">
                         <i class="fa fa-credit-card me-2 text-info"></i> Payment
                     </a>
                 </li>
@@ -35,8 +35,8 @@ $role = $_SESSION['role'] ?? '';
                     </a>
                 </li>
                 <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/images.php" style="font-size: .8rem;">
-                        <i class="fa fa-images me-2 text-danger"></i> Images
+                    <a class="nav-link text-dark fw-bold" href="../admin/imgdocs.php" style="font-size: .8rem;">
+                        <i class="fa fa-images me-2 text-danger"></i> Img & Docs
                     </a>
                 </li>
                 <li class="nav-item mb-3">
@@ -66,18 +66,23 @@ $role = $_SESSION['role'] ?? '';
                     </a>
                 </li>
                 <li class="nav-item mb-3">
+                    <a class="nav-link text-dark fw-bold" href="share.php" style="font-size: .8rem;">
+                        <i class="fa fa-share-alt me-2 text-info"></i> Add Share
+                    </a>
+                </li>
+                <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="payment.php" style="font-size: .8rem;">
-                        <i class="fa fa-credit-card me-2 text-danger"></i> Payment
+                        <i class="fa fa-money-bill-wave me-2 text-danger"></i> Payment
                     </a>
                 </li>
                 <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="receipt.php" style="font-size: .8rem;">
-                        <i class="fa fa-receipt me-2 text-info"></i> Receipt
+                        <i class="fa fa-file-invoice me-2 text-info"></i> Receipt
                     </a>
                 </li>
                 <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="passbook.php" style="font-size: .8rem;">
-                        <i class="fa fa-receipt me-2 text-info"></i> passbook
+                        <i class="fa fa-book me-2 text-info"></i> Passbook
                     </a>
                 </li>
                 <li class="nav-item mb-3">
@@ -85,6 +90,7 @@ $role = $_SESSION['role'] ?? '';
                         <i class="fa fa-key me-2 text-warning"></i> Password
                     </a>
                 </li>
+
             <?php endif; ?>
         </ul>
     </div>

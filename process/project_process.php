@@ -17,11 +17,12 @@ try {
         $about_project = $_POST['about_project'] ?? '';
         $project_value = $_POST['project_value'] ?? 0;
         $project_share = $_POST['project_share'] ?? 0;
+        $per_share_value = $_POST['per_share_value'] ?? 0;
 
         $stmt = $pdo->prepare("INSERT INTO project
-            (project_name_bn, project_name_en, about_project, project_value, project_share) 
+            (project_name_bn, project_name_en, about_project, project_value, project_share, per_share_value) 
             VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share]);
+        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share, $per_share_value]);
 
         $_SESSION['success_msg'] = "✅ Project Added Successfully..! (সফলভাবে যোগ করা হয়েছে..!)";
         header("Location: ../admin/project.php");
@@ -35,12 +36,13 @@ try {
         $about_project = $_POST['edit_about_project'] ?? '';
         $project_value = $_POST['edit_project_value'] ?? 0;
         $project_share = $_POST['edit_project_share'] ?? 0;
+        $per_share_value = $_POST['edit_per_share_value'] ?? 0;
 
         $stmt = $pdo->prepare("UPDATE project
-            SET project_name_bn = ?, project_name_en = ?, about_project = ?, project_value = ?, project_share = ? 
+            SET project_name_bn = ?, project_name_en = ?, about_project = ?, project_value = ?, project_share = ?, per_share_value = ?
             WHERE id = ?");
 
-        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share, $id]);
+        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share, $per_share_value, $id]);
 
         $_SESSION['success_msg'] = "✅ Project Updated Successfully..! (সফলভাবে হালনাগাদ করা হলো..!)";
         header("Location: ../admin/project.php");

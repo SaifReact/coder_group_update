@@ -90,9 +90,9 @@ $bank_address = $_SESSION['setup']['bank_address'] ?? '';
                     <div class="alert alert-danger mt-2" style="font-size:1rem;">
                       <b>সদস্যপদ অনুমোদনের জন্য ডকুমেন্টস ও ভর্তি ফি প্রদান করুন।</b>
                         <br/>
-                        যৌথ হিসাবের তথ্য (Joint account information): <br/>
+                        হিসাবের তথ্য ( Account information): <br/>
                        <?= htmlspecialchars($ac_title); ?> <br/>
-                        হিসাব নং- <?= htmlspecialchars($ac_no); ?> <br/>
+                        ইসলামিক হিসাব নং- <?= htmlspecialchars($ac_no); ?> <br/>
                         <?= htmlspecialchars($bank_name); ?>, <?= htmlspecialchars($bank_address); ?>
                     </div>
                     <?php endif; ?>

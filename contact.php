@@ -56,7 +56,7 @@ $email   = $_SESSION['setup']['email'] ?? '';
                    </div>
                    <div class="col-md-6 mt-4 pl-5">
                      <h4><?= htmlspecialchars($siteName); ?></h4>
-                     <h5>ফাইল নং- <?= htmlspecialchars($reg_no); ?></h5>
+                     <h5>নিবন্ধন নং- <?= htmlspecialchars($reg_no); ?></h5>
                       <p><address>
                           <i class="fa fa-map-marker-alt me-3"></i><?= htmlspecialchars($address); ?>
                       </address></p>

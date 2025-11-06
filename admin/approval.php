@@ -8,8 +8,6 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
 
 include_once __DIR__ . '/../config/config.php';
 
-include_once __DIR__ . '/../includes/open.php';
-
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Helper function to send SMS
@@ -72,9 +70,10 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
         $doc_data = $stmt->fetch(PDO::FETCH_ASSOC);
         $doc_count = (int)$doc_data['doc_count'];
         
-        if ($doc_count < 4) {
-            $_SESSION['error_msg'] = '❌ সদস্যকে অনুমোদন করা যাবে না! সকল ডকুমেন্ট জমা দেওয়া হয়নি। (মোট ' . $doc_count . '/4 টি ছবি পাওয়া গেছে)';
-            header('Location: ../admin/approval.php');
+        if ($doc_count < 3) {
+            $_SESSION['error_msg'] = '❌ সদস্যকে অনুমোদন করা যাবে না! সকল ডকুমেন্ট জমা দেওয়া হয়নি। (মোট ' . $doc_count . '/3 টি ছবি পাওয়া গেছে)';
+            // Stay on the same page
+            header('Location: ' . $_SERVER['REQUEST_URI']);
             exit;
         }
     }
@@ -93,31 +92,35 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
         $_SESSION['success_msg'] = "❌ সমিতির নীতিমালা ভঙ্গ করায় আপনার সদস্যপদ বাতিল করা হইলো !";
     }
     
+    // SMS Sending Logic
     if ($users['mobile']) {
-            $sms_response = sms_send($users['mobile'], $success_msg);
-            if ($sms_response === false) {
-                $sms_error_msg = '❌ SMS পাঠানো যায়নি।';
+        $sms_response = sms_send($users['mobile'], $_SESSION['success_msg']);
+        if ($sms_response === false) {
+            $sms_error_msg = '❌ SMS পাঠানো যায়নি।';
+        } else {
+            $sms_result = json_decode($sms_response, true);
+            if (isset($sms_result['error']) && $sms_result['error'] != 0) {
+                $sms_error_msg = '❌ SMS পাঠানো যায়নি: ' . ($sms_result['message'] ?? 'Unknown error');
             } else {
-                $sms_result = json_decode($sms_response, true);
-                if (isset($sms_result['error']) && $sms_result['error'] != 0) {
-                    $sms_error_msg = '❌ SMS পাঠানো যায়নি: ' . ($sms_result['message'] ?? 'Unknown error');
-                } else {
-                    $sms_success_msg = '✅ SMS সফলভাবে পাঠানো হয়েছে।';
-                    $success_msg .= ' ' . $sms_success_msg;
-                }
-            }    
-        }
+                $sms_success_msg = '✅ SMS সফলভাবে পাঠানো হয়েছে।';
+                $_SESSION['success_msg'] .= ' ' . $sms_success_msg;
+            }
+        }    
+    }
 
-        if (isset($sms_error_msg)) {
-            $success_msg .= ' ' . $sms_error_msg;
-        }
+    // If there was an SMS error, append it to success message
+    if (isset($sms_error_msg)) {
+        $_SESSION['success_msg'] .= ' ' . $sms_error_msg;
+    }
 
-        $_SESSION['success_msg'] = $success_msg;
-
-    header('Location: ../admin/approval.php'); // Redirect to avoid form resubmission
+    // Stay on the same page with success message
+    header('Location: ' . $_SERVER['REQUEST_URI']);
     exit;
 }
+
+include_once __DIR__ . '/../includes/open.php';
 ?>
+
 
 <!-- Hero Start -->
 <div class="container-fluid pb-5 hero-header bg-light">

@@ -7,7 +7,7 @@ include_once __DIR__ . '/../config/config.php';
 
 // Fetch banners from the database
 try {
-    $stmt = $pdo->query("SELECT banner_image FROM banner ORDER BY id ASC");
+    $stmt = $pdo->query("SELECT banner_image FROM banner where banner_category = 'ban' ORDER BY id ASC");
     $banners = $stmt->fetchAll();
 } catch (Exception $e) {
     die('Error fetching banners: ' . $e->getMessage());

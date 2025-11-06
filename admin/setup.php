@@ -90,7 +90,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                                 <div class="col-md-3 d-flex justify-content-center align-items-center position-relative" style="min-height: 90px;">
                                     <?php if (!empty($settings['logo'])): ?>
                                         <img id="imagePreview" 
-                                            src="/coder_group/assets/img/<?= htmlspecialchars($settings['logo']) ?>" 
+                                            src="../assets/img/<?= htmlspecialchars($settings['logo']) ?>" 
                                             alt="Logo Preview" 
                                             style="max-width: 200px; max-height: 75px; border-radius: 5px; box-shadow: 0 2px 8px #0002; background: #fff; padding: 6px;" />
                                         <button type="button" id="profileImgClear" 

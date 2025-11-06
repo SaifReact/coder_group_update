@@ -28,7 +28,7 @@ if ($action === 'insert') {
     }
 
     // Insert into committee_member table
-    $stmt = $pdo->prepare("INSERT INTO committee_member (member_id, member_code, position, fb, li, role) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO committee_member (member_id, member_code, committee_role_id, fb, li, role) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->execute([$member_id, $member_code, $designation, $facebook, $linkedin, $role]);
 
     $_SESSION['success_msg'] = "✅ Committee member added successfully!";
@@ -55,7 +55,7 @@ if ($action === 'insert') {
     }
 
     // Update committee_member table
-    $stmt = $pdo->prepare("UPDATE committee_member SET member_id = ?, member_code = ?, position = ?, fb = ?, li = ?, role = ? WHERE id = ?");
+    $stmt = $pdo->prepare("UPDATE committee_member SET member_id = ?, member_code = ?, committee_role_id = ?, fb = ?, li = ?, role = ? WHERE id = ?");
     $stmt->execute([$member_id, $member_code, $designation, $facebook, $linkedin, $role, $id]);
 
     $_SESSION['success_msg'] = "✅ Committee member updated successfully!";

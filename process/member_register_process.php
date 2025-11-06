@@ -210,7 +210,7 @@ if ($method === 'POST') {
         }
 
         // Insert into member_share
-                $sql_share = "INSERT INTO member_share (member_id, member_code, no_share, admission_fee, idcard_fee, passbook_fee, softuses_fee, project_id, extra_share, created_at) VALUES (?,?,?,?,?,?,?,?,?,NOW())";
+                $sql_share = "INSERT INTO member_share (member_id, member_code, no_share, admission_fee, idcard_fee, passbook_fee, softuses_fee, project_id, extra_share, late_assign, late_fee, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,NOW())";
                 $stmt_share = $pdo->prepare($sql_share);
                 $extraShare = isset($_POST['share']) ? ($_POST['share'] - 2) : 0;
                 $ok_share = $stmt_share->execute([
@@ -222,6 +222,8 @@ if ($method === 'POST') {
                     $_POST['softuses_fee'] ?? 0,
                     $_POST['project'] ?? 0,
                     $extraShare,
+                    'A',
+                    0
                 ]);
         
         if (!$ok_share) throw new Exception('Share Insert Failed');

@@ -8,8 +8,6 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
 
 include_once __DIR__ . '/../config/config.php';
 
-include_once __DIR__ . '/../includes/open.php';
-
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Helper function to send SMS
@@ -29,7 +27,6 @@ function sms_send($mobile, $message) {
     error_log("SMS Data: " . print_r($data, true));
 
     $url = $sms_api_url . '?' . http_build_query($data);
-
     error_log("Generated SMS URL: $url");
     error_log("Sending SMS to: $mobile with message: $message");
 
@@ -59,6 +56,19 @@ if ($method === 'POST' && isset($_POST['pay_id'], $_POST['status'])) {
     $pay_id = (int)$_POST['pay_id'];
     $status = in_array($_POST['status'], ['A', 'I', 'R']) ? $_POST['status'] : 'I';
 
+    // Get payment details for the specific pay_id
+    $stmt = $pdo->prepare("SELECT * FROM member_payments WHERE id = ?");
+    $stmt->execute([$pay_id]);
+    $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$payment) {
+        // Payment not found, set error message and stay on the same page
+        $_SESSION['error_msg'] = "❌ পেমেন্ট তথ্য পাওয়া যায়নি!";
+        header('Location: ' . $_SERVER['REQUEST_URI']);
+        exit;
+    }
+
+    // Update payment status
     $stmt = $pdo->prepare("UPDATE member_payments SET status = ? WHERE id = ?");
     $stmt->execute([$status, $pay_id]);
 
@@ -70,32 +80,35 @@ if ($method === 'POST' && isset($_POST['pay_id'], $_POST['status'])) {
     } elseif ($status === 'R') {
         $_SESSION['success_msg'] = "❌ সমিতিতে আপনার পেমেন্ট এর কোনো তথ্য পাওয়া যায়নি,বাতিল করা হইলো !";
     }
-    
-    if ($payments['mobile']) {
-            $sms_response = sms_send($payments['mobile'], $success_msg);
-            if ($sms_response === false) {
-                $sms_error_msg = '❌ SMS পাঠানো যায়নি।';
+
+    // Send SMS if the mobile number exists
+    if ($payment['mobile']) {
+        $sms_response = sms_send($payment['mobile'], $_SESSION['success_msg']);
+        if ($sms_response === false) {
+            $sms_error_msg = '❌ SMS পাঠানো যায়নি।';
+        } else {
+            $sms_result = json_decode($sms_response, true);
+            if (isset($sms_result['error']) && $sms_result['error'] != 0) {
+                $sms_error_msg = '❌ SMS পাঠানো যায়নি: ' . ($sms_result['message'] ?? 'Unknown error');
             } else {
-                $sms_result = json_decode($sms_response, true);
-                if (isset($sms_result['error']) && $sms_result['error'] != 0) {
-                    $sms_error_msg = '❌ SMS পাঠানো যায়নি: ' . ($sms_result['message'] ?? 'Unknown error');
-                } else {
-                    $sms_success_msg = '✅ SMS সফলভাবে পাঠানো হয়েছে।';
-                    $success_msg .= ' ' . $sms_success_msg;
-                }
-            }    
+                $sms_success_msg = '✅ SMS সফলভাবে পাঠানো হয়েছে।';
+                $_SESSION['success_msg'] .= ' ' . $sms_success_msg;
+            }
         }
+    }
 
-        if (isset($sms_error_msg)) {
-            $success_msg .= ' ' . $sms_error_msg;
-        }
+    // If there was an SMS error, append it to success message
+    if (isset($sms_error_msg)) {
+        $_SESSION['success_msg'] .= ' ' . $sms_error_msg;
+    }
 
-        $_SESSION['success_msg'] = $success_msg;
-
-    header('Location: ../admin/payment_approval.php'); // Redirect to avoid form resubmission
+    // Stay on the same page after submission
+    header('Location: ' . $_SERVER['REQUEST_URI']);
     exit;
 }
+include_once __DIR__ . '/../includes/open.php';
 ?>
+
 
 <!-- Hero Start -->
 <div class="container-fluid pb-5 hero-header bg-light">

@@ -1,0 +1,175 @@
+[05-Nov-2025 07:43:03 UTC] PHP Warning:  Undefined array key "mobile" in /home/cpsslcom/public_html/admin/approval.php on line 96
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:28:08 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_bn" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Warning:  Undefined array key "position_en" in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:30:25 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 88
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:23 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 08:31:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[05-Nov-2025 09:36:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:02:38 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 203
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:07:16 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:08:58 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:06 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:06 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:24 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:24 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:24 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:37 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:37 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:37 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:09:37 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/cpsslcom/public_html/admin/committee.php on line 129
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Undefined array key "position" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:10:02 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:11:46 UTC] PHP Warning:  Array to string conversion in /home/cpsslcom/public_html/admin/committee.php on line 204
+[06-Nov-2025 11:13:35 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:13:35 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:13:35 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156
+[06-Nov-2025 11:13:35 UTC] PHP Warning:  Undefined array key "committee_role_id" in /home/cpsslcom/public_html/admin/committee.php on line 156

@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
                             THEN a.amount ELSE 0 END) AS net_amount
         FROM member_payments a
         JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
-        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ?
+        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'A'
         GROUP BY b.no_share, a.trans_no, a.created_at, a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date
         LIMIT 1
     ");
@@ -267,7 +267,7 @@ include_once __DIR__ . '/../includes/open.php';
                                 </div>
 
             <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-              <div class="alert alert-warning">No payment found for selected type and year. ( নির্বাচিত পেমেন্ট এবং বছরের জন্য কোনও অর্থপ্রদান পাওয়া যায়নি। )</div>
+              <div class="alert alert-warning">If you are payment done, wait for approval then print the receipt. ( যদি আপনার পেমেন্ট হয়ে যায়, তাহলে অনুমোদনের জন্য অপেক্ষা করুন এবং তারপর রসিদটি প্রিন্ট করুন। )</div>
             <?php endif; ?>
 
           </div>

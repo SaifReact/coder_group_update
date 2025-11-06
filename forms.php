@@ -91,7 +91,7 @@ $projects = $stmt->fetchAll();
                        </select>
                      </div>
                      <div class="mb-2">
-                       <label for="ref_no" class="form-label">রেফাঃ নং: <span class="text-secondary small">(Ref. No)</span>
+                       <label for="ref_no" class="form-label">রেফাঃ নাম: <span class="text-secondary small">(Ref. Name)</span>
                        </label>
                        <input type="text" class="form-control" id="ref_no" name="ref_no">
                      </div>
@@ -113,7 +113,6 @@ $projects = $stmt->fetchAll();
                        </label>
                        <select class="form-select" id="memberType" name="memberType" required>
                          <option value="">নির্বাচন করুন (Select)</option>
-                         <option value="OM">শুধুমাত্র সদস্য (Only Member)</option>
                          <option value="MP">সদস্য ও প্রকল্প (Member with Project)</option>
                          <option value="OP">শুধুমাত্র প্রকল্প (Only Project)</option>
                        </select>

@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Oct 29, 2025 at 03:53 PM
--- Server version: 11.4.8-MariaDB
--- PHP Version: 8.4.13
+-- Host: 127.0.0.1
+-- Generation Time: Nov 06, 2025 at 08:05 PM
+-- Server version: 10.4.27-MariaDB
+-- PHP Version: 7.4.33
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -44,7 +44,11 @@ INSERT INTO `banner` (`id`, `banner_name_bn`, `banner_name_en`, `banner_image`, 
 (1, 'ব্যানার-১', 'Banner-1', 'banner_1760121722_5628.jpg', '2025-09-20 17:33:14', 'ban'),
 (2, 'ব্যানার-২', 'Banner-2', 'banner_1759411483_5300.jpg', '2025-09-06 03:30:27', 'ban'),
 (3, 'ব্যানার-৩', 'Banner-3', 'banner_1759411507_3439.jpg', '2025-09-06 02:07:54', 'ban'),
-(4, 'ব্যানার-৪', 'Banner-4', 'banner_1759411534_5124.png', '2025-10-02 13:25:34', 'ban');
+(4, 'ব্যানার-৪', 'Banner-4', 'banner_1759411534_5124.png', '2025-10-02 13:25:34', 'ban'),
+(10, 'নিবন্ধন সনদপত্র', 'Registration Certificate', 'banner_1761845042_5250.pdf', '2025-10-30 17:24:02', 'oth'),
+(14, 'তথ্য বিবরণী', 'Information Statement', 'banner_1762169922_9058.pdf', '2025-11-03 11:38:42', 'oth'),
+(15, 'নিবন্ধিত কমিটি', 'Registered Committee', 'banner_1762169978_9881.pdf', '2025-11-03 11:39:38', 'oth'),
+(16, 'উপ-আইন', 'By-laws', 'banner_1762169992_3139.pdf', '2025-11-03 11:39:52', 'oth');
 
 -- --------------------------------------------------------
 
@@ -56,12 +60,49 @@ CREATE TABLE `committee_member` (
   `id` int(11) NOT NULL,
   `member_id` int(11) NOT NULL,
   `member_code` varchar(50) NOT NULL,
-  `position` varchar(50) NOT NULL,
+  `committee_role_id` int(11) NOT NULL,
   `fb` varchar(100) NOT NULL,
   `li` varchar(100) NOT NULL,
   `role` varchar(100) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `committee_member`
+--
+
+INSERT INTO `committee_member` (`id`, `member_id`, `member_code`, `committee_role_id`, `fb`, `li`, `role`, `created_at`) VALUES
+(11, 1, 'CPSS-00001', 2, 'https://www.facebook.com/md.saifur.rahman.635543/', 'linkedin.com', 'Entrepreneur', NULL),
+(12, 42, 'CPSS-00042', 4, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL),
+(13, 30, 'CPSS-00002', 5, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL),
+(14, 34, 'CPSS-00032', 3, 'facebook.com', 'linkedin.com', 'Committee Member', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `committee_role`
+--
+
+CREATE TABLE `committee_role` (
+  `id` int(11) NOT NULL,
+  `position_en` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `position_bn` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `committee_role`
+--
+
+INSERT INTO `committee_role` (`id`, `position_en`, `position_bn`, `created_at`) VALUES
+(1, 'Advisor', 'উপদেষ্টা', '2025-11-05 08:14:32'),
+(2, 'President', 'সভাপতি', '2025-11-05 08:20:01'),
+(3, 'Vice-President', 'উপ-সভাপতি', '2025-11-05 08:20:01'),
+(4, 'Secretary', 'সম্পাদক', '2025-11-05 08:20:01'),
+(5, 'Joint Secretary', 'যুগ্ম সম্পাদক', '2025-11-05 08:20:01'),
+(6, 'Treasurer', 'কোষাধ্যক্ষ', '2025-11-05 08:20:01'),
+(7, 'Member', 'সদস্য, ব্যবস্থাপনা কমিটি', '2025-11-05 08:23:35'),
+(8, 'Executive', 'কার্যকরী কমিটি', '2025-11-05 08:23:35');
 
 -- --------------------------------------------------------
 
@@ -143,7 +184,11 @@ INSERT INTO `members_info` (`id`, `member_code`, `name_bn`, `name_en`, `father_n
 (52, 'CPSS-00052', 'ফারহানা শিরিন', 'FARHANA SHIRIN', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '3255751624', '1988-10-21', 'ইসলাম', 'Married', 'শাহ মোঃ আশফাক রহমান', '01912504305', 'Female', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00052/profile_image_1761474008_68fdf5d89e2e5.jpg', '2025-10-26 10:20:08', 'D005', '', 'MP'),
 (55, 'CPSS-00053', 'ফয়সাল মাহমুদ', 'FOISAL MAHMUD', 'HABIBUR RAHMAN', 'SHAMIMA SHULTANA', '6412558576', '1992-08-08', 'ইসলাম', 'Married', 'PAPIATUL ZANNAT', '01672443734', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00053/profile_image_1761547308_68ff142c88859.jpg', '2025-10-27 06:41:48', 'Md. Aslam Hossain', 'foisalmahmud34@gmail.com', 'MP'),
 (56, 'CPSS-00056', 'মোঃ মোশারফ হোসেন', 'MD MOSHAROF HOSSAN', 'Md SIRAJUL ISLAM', 'RAMESA KHATUN', '8680630749', '1988-10-20', 'ইসলাম', 'Married', 'SABICUN NAHAR', '01722276090', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00056/profile_image_1761569031_68ff6907f06d4.jpg', '2025-10-27 12:43:51', 'CPSS-00056', 'mithumosharof@gmail.com', 'MP'),
-(57, 'CPSS-00057', 'মোঃ আরিফুল ইসলাম', 'MD ARIFUL ISLAM', 'Md. Shahidul Islam', 'Jahanara Begum', '1025555564', '1986-09-04', 'ইসলাম', 'Married', 'Syeda Tanjila', '01717819612', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00057/profile_image_1761666480_6900e5b0e64d2.jpeg', '2025-10-28 15:48:00', 'CPSS-00057', 'arifultonu007@gmail.com', 'MP');
+(57, 'CPSS-00057', 'মোঃ আরিফুল ইসলাম', 'MD ARIFUL ISLAM', 'Md. Shahidul Islam', 'Jahanara Begum', '1025555564', '1986-09-04', 'ইসলাম', 'Married', 'Syeda Tanjila', '01717819612', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00057/profile_image_1761666480_6900e5b0e64d2.jpeg', '2025-10-28 15:48:00', 'CPSS-00057', 'arifultonu007@gmail.com', 'MP'),
+(59, 'CPSS-00058', 'খন্দকার ফারজানা রহমান', 'KHANDAKER FARZANA RAHMAN', 'Khandaker Habibur Rahman', 'Fahima Khanam', '2854465149', '1993-12-10', 'ইসলাম', 'Married', 'Kazi Mahmud Morshed', '01990839119', 'Female', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00058/profile_image_1761812325_69031f659d8e4.jpg', '2025-10-30 08:18:45', 'Md. Mosharof Hossan', 'swe.merry@gmail.com', 'MP'),
+(62, 'CPSS-00060', 'মোঃ আশিকুর রহমান', 'MD ASHIQUR RAHMAN', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '4159140765', '1992-04-24', 'ইসলাম', 'Single', '', '01829041699', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00060/profile_image_1761928787_6904e6538f721.jpg', '2025-10-31 16:39:47', 'Md. Saifur Rahman', '', 'MP'),
+(63, 'CPSS-00063', 'সাকিফ আব্দুল্লাহ', 'SAKIF ABDULLAH', 'Md. Shamsul Haque Shaheen', 'Mst. Dilara Haque', '8255473053', '1997-12-06', 'ইসলাম', 'Single', '', '01535421765', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00063/profile_image_1762321305_690ae3991f225.jpg', '2025-11-05 05:41:45', 'CPSS-00063', 'sakif4646@gmail.com', 'MP'),
+(65, 'CPSS-00064', 'cpsslcom_samity', 'CPSSLCOMSAMITY', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '3155613156', '1995-11-01', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00064/profile_image_1762454508_690cebec01883.png', '2025-11-06 18:41:48', 'CPSS-00001', 'adminhera@gmail.com', 'MP');
 
 -- --------------------------------------------------------
 
@@ -159,6 +204,16 @@ CREATE TABLE `member_documents` (
   `doc_path` text NOT NULL,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `member_documents`
+--
+
+INSERT INTO `member_documents` (`id`, `member_id`, `member_code`, `doc_type`, `doc_path`, `created_at`) VALUES
+(1, 59, 'CPSS-00058', 101, 'user_images/member_CPSS-00058/doc_101_1762163627_c9235706.jpg', '2025-11-03 15:53:47'),
+(2, 56, 'CPSS-00056', 101, 'user_images/member_CPSS-00056/doc_101_1762243509_ba3a7821.jpg', '2025-11-04 14:05:09'),
+(3, 56, 'CPSS-00056', 102, 'user_images/member_CPSS-00056/doc_102_1762243526_1cb3ee8e.png', '2025-11-04 14:05:26'),
+(4, 56, 'CPSS-00056', 103, 'user_images/member_CPSS-00056/doc_103_1762243785_3fdb4ac1.png', '2025-11-04 14:09:45');
 
 -- --------------------------------------------------------
 
@@ -208,7 +263,12 @@ INSERT INTO `member_nominee` (`id`, `member_id`, `member_code`, `name`, `relatio
 (51, 55, 'CPSS-00053', 'SHAMIMA SHULTANA', 'MOTHER', '5983889295', '1973-11-20 00:00:00', 50, 'user_images/member_CPSS-00053/nominee_1_1761547308_68ff142c88d85.jpg', '2025-10-27 12:41:48'),
 (52, 55, 'CPSS-00053', 'PAPIATUL ZANNAT', 'WIFE', '9552707367', '1992-12-07 00:00:00', 50, 'user_images/member_CPSS-00053/nominee_2_1761547308_68ff142c890a2.jpg', '2025-10-27 12:41:48'),
 (53, 56, 'CPSS-00056', 'SABICUN NAHAR', 'SPOUSE', '4184933754', '1994-01-18 00:00:00', 100, 'user_images/member_CPSS-00056/nominee_1_1761569031_68ff6907f1495.jpeg', '2025-10-27 18:43:51'),
-(54, 57, 'CPSS-00057', 'Syeda Tanjila', 'WIfe', '7315858352', '1988-02-01 00:00:00', 100, 'user_images/member_CPSS-00057/nominee_1_1761666480_6900e5b0e78c7.png', '2025-10-28 21:48:00');
+(54, 57, 'CPSS-00057', 'Syeda Tanjila', 'WIfe', '7315858352', '1988-02-01 00:00:00', 100, 'user_images/member_CPSS-00057/nominee_1_1761666480_6900e5b0e78c7.png', '2025-10-28 21:48:00'),
+(55, 59, 'CPSS-00058', 'Kazi Mahmud Morshed', 'Spouse', '2389056454', '1991-06-27 00:00:00', 100, 'user_images/member_CPSS-00058/nominee_1_1761812325_69031f659dd64.jpg', '2025-10-30 14:18:45'),
+(56, 62, 'CPSS-00060', 'মোঃ ফজলুল হক মোল্লা ', 'বাবা ', '5505742956', '1956-01-01 00:00:00', 50, 'user_images/member_CPSS-00060/nominee_1_1761928787_6904e65390d6b.jpg', '2025-10-31 22:39:47'),
+(57, 62, 'CPSS-00060', 'সেলিনা আক্তার', 'মা', '9552864564', '1982-12-28 00:00:00', 50, 'user_images/member_CPSS-00060/nominee_2_1761928787_6904e653912ba.jpg', '2025-10-31 22:39:47'),
+(58, 63, 'CPSS-00063', 'Mst. Dilara Haque', 'MOTHER', '1469190118', '1970-07-06 00:00:00', 100, 'user_images/member_CPSS-00063/nominee_1_1762321305_690ae39920046.png', '2025-11-05 11:41:45'),
+(59, 65, 'CPSS-00064', 'সুমাইয়া আক্তার', 'Wife', '1654655155', '1998-11-06 00:00:00', 100, 'user_images/member_CPSS-00064/nominee_1_1762454508_690cebec6cbd3.jpg', '2025-11-07 00:41:48');
 
 -- --------------------------------------------------------
 
@@ -252,7 +312,11 @@ INSERT INTO `member_office` (`id`, `member_id`, `member_code`, `office_name`, `o
 (50, 52, 'CPSS-00052', 'মৎস্য অধিদপ্তর', 'মৎস্য অধিদপ্তর, রমনা, ঢাকা', 'একাউন্টস অফিসার', '2025-10-26 16:20:08', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
 (53, 55, 'CPSS-00053', 'Era Infotech Ltd.', 'Fareast Tower, Topkhana road, Paltan ,Dhaka -1000', 'Associate Software Engineer', '2025-10-27 12:41:48', '345/2, Jafrabad , Mohammadpur , Dhaka-1207', 'East Harinahati, Kotalipara, Goplaganj'),
 (54, 56, 'CPSS-00056', 'DBH FINANCE PLC.', '12-14, LANDMARK BUILDING,14 FLOOR,GULSHAN-2, DHAKA-1212', 'ASSISTANT MANAGER', '2025-10-27 18:43:51', 'House : 7/B, Road : 2, Kallyanpur, Dhaka-1207', 'Vill : Ramer Danga, P.O : Baladanga, P.S+Dist : Satkhira-9400'),
-(55, 57, 'CPSS-00057', 'Walton', 'Plot-1088, Block-I, Sabrina Sobhan Road P.O-Khilkhet, P.S-Vatara, Bashundhara R/A', 'Deputy Operative Director', '2025-10-28 21:48:00', 'House No. 416, Road No. 7, Block D, Bashundhara RA', '17/D, Jahanara Garden, Housing State, Goalchamot, Faridpur');
+(55, 57, 'CPSS-00057', 'Walton', 'Plot-1088, Block-I, Sabrina Sobhan Road P.O-Khilkhet, P.S-Vatara, Bashundhara R/A', 'Deputy Operative Director', '2025-10-28 21:48:00', 'House No. 416, Road No. 7, Block D, Bashundhara RA', '17/D, Jahanara Garden, Housing State, Goalchamot, Faridpur'),
+(56, 59, 'CPSS-00058', 'National Housing Finance PLC', 'Plot: 11-A, Road No.- 48, Block- CWN (A), Gulshan- 2, Dhaka- 1212', 'Senior Officer (IT)', '2025-10-30 14:18:45', '394/A, West Nakhalpara, Tejgaon, Dhaka', 'Kazi Bari, Kachua, Kachua, Chandpur, PO : 3630'),
+(58, 62, 'CPSS-00060', 'Crystal International General Trading LLC', 'Gold Souk, Deira, Dubai, UAE', 'Manager', '2025-10-31 22:39:47', '2/F/1, Gold Souk, Deira, Dubai, UAE', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(59, 63, 'CPSS-00063', 'Era InfoTech LTD.', 'Level 3, Fareast Tower, 35 Topkhana Road, Dhaka 1000', 'Associate Engineer, Software Quality Assurance', '2025-11-05 11:41:45', '1ka, Dhanmondi 7/A', '1ka, Dhanmondi 7/A'),
+(60, 65, 'CPSS-00064', 'ERA InfoTech Ltd', '35, Farest Tower, (3rd Floor), Purana Paltan, Dhaka-1000', 'Senior Software Engineer', '2025-11-07 00:41:48', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা');
 
 -- --------------------------------------------------------
 
@@ -275,8 +339,21 @@ CREATE TABLE `member_payments` (
   `serial_no` int(11) DEFAULT NULL,
   `for_fees` varchar(20) DEFAULT NULL,
   `payment_slip` text DEFAULT NULL,
-  `status` varchar(3) DEFAULT NULL
+  `status` varchar(3) DEFAULT NULL,
+  `pay_mode` text DEFAULT NULL,
+  `remarks` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `member_payments`
+--
+
+INSERT INTO `member_payments` (`id`, `member_id`, `member_code`, `payment_method`, `bank_pay_date`, `bank_trans_no`, `trans_no`, `amount`, `payment_year`, `created_at`, `created_by`, `serial_no`, `for_fees`, `payment_slip`, `status`, `pay_mode`, `remarks`) VALUES
+(1, 56, 'CPSS-00056', 'admission', '2025-10-30', '049WB317837', 'TRADMISSION20251', '1500.00', 2025, '2025-11-04 14:02:29', 22, 1, 'admission', 'payment_slip_56_1762243349_6142.jpeg', 'I', NULL, NULL),
+(2, 1, 'CPSS-00001', 'admission', '2025-11-03', 'dggfgdssdgr', 'TRADMISSION20252', '1500.00', 2025, '2025-11-06 23:10:16', 3, 2, 'admission', 'payment_slip_1_1762449016_1993.jpg', 'I', 'AD', 'previous a/c adjustment'),
+(3, 1, 'CPSS-00001', 'january', '2025-11-07', 'dggfgdssdgr', 'TRJANUARY20251', '2200.00', 2025, '2025-11-07 00:29:32', 3, 1, 'january', 'payment_slip_1_1762453772_4906.jpg', 'I', 'BP', 'gdgfgdgfdgfd'),
+(4, 1, 'CPSS-00001', 'february', '2025-11-07', 'ererertetr', 'TRFEBRUARY20251', '2200.00', 2025, '2025-11-07 00:31:49', 3, 1, 'february', 'payment_slip_1_1762453909_3379.jpg', 'I', 'BP', ''),
+(5, 1, 'CPSS-00001', 'march', '2025-11-05', 'jcvbg', 'TRMARCH20251', '2000.00', 2025, '2025-11-07 00:38:28', 3, 1, 'march', 'payment_slip_1_1762454308_7276.jpg', 'I', 'BP', 'dfsdfsdffsd');
 
 -- --------------------------------------------------------
 
@@ -301,34 +378,40 @@ CREATE TABLE `member_share` (
   `project_id` int(11) DEFAULT 0,
   `extra_share` int(11) DEFAULT 0,
   `share_amount` int(11) DEFAULT 0,
-  `created_at` datetime DEFAULT current_timestamp()
+  `late_assign` varchar(3) DEFAULT NULL,
+  `late_fee` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `member_share`
 --
 
-INSERT INTO `member_share` (`id`, `member_id`, `member_code`, `no_share`, `admission_fee`, `idcard_fee`, `passbook_fee`, `softuses_fee`, `sms_fee`, `office_rent`, `office_staff`, `other_fee`, `for_install`, `project_id`, `extra_share`, `share_amount`, `created_at`) VALUES
-(1, 1, 'CPSS-00001', 7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-13 21:31:57'),
-(19, 30, 'CPSS-00002', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-13 22:28:41'),
-(20, 31, 'CPSS-00031', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-13 22:36:03'),
-(22, 34, 'CPSS-00032', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-14 16:04:29'),
-(23, 35, 'CPSS-00035', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-14 16:51:59'),
-(24, 36, 'CPSS-00036', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-14 18:48:46'),
-(25, 39, 'CPSS-00037', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-16 16:35:26'),
-(26, 40, 'CPSS-00040', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-16 17:32:03'),
-(27, 41, 'CPSS-00041', 2, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2025-10-19 11:12:10'),
-(28, 42, 'CPSS-00042', 40, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2025-10-22 11:01:11'),
-(29, 45, 'CPSS-00043', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-23 15:21:30'),
-(30, 46, 'CPSS-00046', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-23 16:19:51'),
-(31, 47, 'CPSS-00047', 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 38, 0, '2025-10-23 22:02:11'),
-(32, 48, 'CPSS-00048', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, '2025-10-25 08:44:27'),
-(33, 50, 'CPSS-00049', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-25 23:00:21'),
-(34, 51, 'CPSS-00051', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-26 12:46:33'),
-(35, 52, 'CPSS-00052', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-26 16:20:08'),
-(36, 55, 'CPSS-00053', 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 0, '2025-10-27 12:41:48'),
-(37, 56, 'CPSS-00056', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, '2025-10-27 18:43:51'),
-(38, 57, 'CPSS-00057', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, '2025-10-28 21:48:00');
+INSERT INTO `member_share` (`id`, `member_id`, `member_code`, `no_share`, `admission_fee`, `idcard_fee`, `passbook_fee`, `softuses_fee`, `sms_fee`, `office_rent`, `office_staff`, `other_fee`, `for_install`, `project_id`, `extra_share`, `share_amount`, `late_assign`, `late_fee`, `created_at`) VALUES
+(1, 1, 'CPSS-00001', 25, 1500, 150, 200, 400, 100, 300, 200, 278, NULL, NULL, 23, NULL, 'I', 400, '2025-11-06 13:38:28'),
+(19, 30, 'CPSS-00002', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
+(20, 31, 'CPSS-00031', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
+(22, 34, 'CPSS-00032', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
+(23, 35, 'CPSS-00035', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
+(24, 36, 'CPSS-00036', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
+(25, 39, 'CPSS-00037', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
+(26, 40, 'CPSS-00040', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
+(27, 41, 'CPSS-00041', 2, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(28, 42, 'CPSS-00042', 40, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(29, 45, 'CPSS-00043', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(30, 46, 'CPSS-00046', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(31, 47, 'CPSS-00047', 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 38, 0, NULL, 0, '2025-11-06 18:09:48'),
+(32, 48, 'CPSS-00048', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, NULL, 0, '2025-11-06 18:09:48'),
+(33, 50, 'CPSS-00049', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(34, 51, 'CPSS-00051', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(35, 52, 'CPSS-00052', 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 0, NULL, 0, '2025-11-06 18:09:48'),
+(36, 55, 'CPSS-00053', 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 0, NULL, 0, '2025-11-06 18:09:48'),
+(37, 56, 'CPSS-00056', 5, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 3, 0, NULL, 0, '2025-11-06 18:09:48'),
+(38, 57, 'CPSS-00057', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, NULL, 0, '2025-11-06 18:09:48'),
+(39, 59, 'CPSS-00058', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(40, 62, 'CPSS-00060', 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 23, 0, NULL, 0, '2025-11-06 18:09:48'),
+(41, 63, 'CPSS-00063', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(42, 65, 'CPSS-00064', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, 'A', 0, '2025-11-06 18:41:48');
 
 -- --------------------------------------------------------
 
@@ -340,15 +423,18 @@ CREATE TABLE `project` (
   `id` int(11) NOT NULL,
   `project_name_bn` text NOT NULL,
   `project_name_en` text NOT NULL,
-  `about_project` text NOT NULL
+  `about_project` text NOT NULL,
+  `project_value` int(11) DEFAULT NULL,
+  `project_share` int(11) DEFAULT NULL,
+  `per_share_value` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `project`
 --
 
-INSERT INTO `project` (`id`, `project_name_bn`, `project_name_en`, `about_project`) VALUES
-(4, 'প্রজেক্ট-১', 'Project-1', '<p>ইকবাল ভাইয়ের ৬ শতাংশ জমি</p>');
+INSERT INTO `project` (`id`, `project_name_bn`, `project_name_en`, `about_project`, `project_value`, `project_share`, `per_share_value`) VALUES
+(4, 'ধলেশ্বরী প্রকল্প-১', 'Dhaleshwari Project-1', '<p>ধলেশ্বরী প্রকল্প এর ৬ শতাংশ জমি ক্রয়</p>', 2500000, 500, 5000);
 
 -- --------------------------------------------------------
 
@@ -418,7 +504,7 @@ CREATE TABLE `setup` (
 --
 
 INSERT INTO `setup` (`id`, `site_name_bn`, `site_name_en`, `registration_no`, `address`, `email`, `phone1`, `phone2`, `about_text`, `about_text_en`, `slogan_bn`, `slogan_en`, `ac_title`, `ac_no`, `logo`, `objectives`, `facebook`, `youtube`, `linkedin`, `instagram`, `bank_name`, `bank_address`) VALUES
-(1, 'কোডার পেশাজীবী সমবায় সমিতি লিঃ (প্রস্তাবিত)', 'Coder Peshajibi Samabay Samity Ltd. (Proposed)', '২৫৫৩৫৮', '10/A-3, (7th Floor), Bardhan Bari, Darus Salam Thana, Mirpur-1, Dhaka-1216 - ( ১০/এ-৩, ( ৮ম তলা ) বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর-১, ঢাকা )', 'codersamity@gmail.com', '01540505646', '01919787839', 'কোডার পেশাজীবী সমবায় সমিতি লিঃ একটি স্বেচ্ছাসেবী, পেশাজীবী ও অরাজনৈতিক প্রতিষ্ঠান, যাহা ২০২৩ইং সালে প্রতিষ্ঠা করা হয়েছে এবং ২০২৫ইং সালে বাংলাদেশ সমবায় অধিদপ্তরে নিবন্ধন প্রক্রিয়া চলমান আছে, যাহার ফাইল নং- ২৫৫৩৫৮। &nbsp;আমাদের লক্ষ্য হলো পেশাজীবীদের মধ্যে সহযোগিতা বৃদ্ধি করা এবং তাদের পেশাগত ও আর্থিক উন্নয়ন সাধনে কাজ &nbsp;করা। আমরা বিভিন্ন প্রশিক্ষণ, কর্মশালা ও সেমিনার আয়োজন করি যাতে সদস্যরা তাদের দক্ষতা বৃদ্ধি করতে পারে এবং পেশাগত জীবনে সফল হতে পারে। আমাদের সদস্যরা বিভিন্ন পেশাগত ক্ষেত্রে কাজ করে এবং আমরা তাদের মধ্যে জ্ঞান ও অভিজ্ঞতা বিনিময় করি। সমিতির সদস্যদের জন্য একটি শক্তিশালী আর্থিক এবং পেশাদার প্ল্যাটফর্ম তৈরি করা, যেখানে সদস্যরা যৌথভাবে বিনিয়োগ করে, ব্যবসা পরিচালনা করে এবং মুনাফা ভাগাভাগি করতে পারে। আমরা বিশ্বাস করি যে, সহযোগিতা ও সমবায় মূলক কাজের মাধ্যমে আমরা আমাদের লক্ষ্য অর্জন করতে পারব এবং আমাদের সদস্যদের জন্য একটি উন্নত ও সমৃদ্ধ ভবিষ্যত গড়ে তুলতে পারব।', 'Coder Peshajibi Samabay Samity Ltd. is a voluntary, professional and non-political organization, which was established in 2023 and is in the process of registration with the Bangladesh Cooperatives Department in 2025, whose file no. is 255358. Our goal is to increase cooperation among professionals and work towards their professional and financial development. We organize various trainings, workshops and seminars so that members can enhance their skills and be successful in their professional lives. Our members work in different professional fields and we exchange knowledge and experience among them. To create a strong financial and professional platform for the members of the association, where members can jointly invest, run businesses and share profits. We believe that through cooperation and cooperative work, we can achieve our goals and build a better and prosperous future for our members.', 'একসাথে যেতে হবে বহুদূরে...', 'We have to go far together...', 'মোঃ সাইফুর রহমান ও সিরাজুল ইসলাম (Md. Saifur Rahman and Sirajul Islam)', '৫০৩১১০১০২৬৫ (50311010265)', 'logo.png', '<ul><li>hello</li><li>bangladesh</li></ul>', 'https://www.facebook.com/profile.php?id=61581789144846', 'youtube.com', 'linkedin.com', 'instagram.com', 'ব্যাংক এশিয়া লিঃ (Bank Asia Ltd.)', 'পুরানা পল্টন, ঢাকা-১০০০ (Purana Paltan, Dhaka-1000)');
+(1, 'কোডার পেশাজীবী সমবায় সমিতি লিঃ', 'Coder Peshajibi Samabay Samity Ltd.', '২০২৫.১.৩২.২৬২৫.২৮২৩', '10/A-3, (7th Floor), Bardhan Bari, Darus Salam Thana, Mirpur-1, Dhaka-1216 - ( ১০/এ-৩, ( ৮ম তলা ) বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর-১, ঢাকা )', 'codersamity@gmail.com', '01540505646', '01919787839', 'কোডার পেশাজীবী সমবায় সমিতি লিঃ একটি স্বেচ্ছাসেবী, পেশাজীবী ও অরাজনৈতিক প্রতিষ্ঠান, যাহা ২০২৩ইং সালে প্রতিষ্ঠা করা হয়েছে এবং ২০২৫ইং সালে বাংলাদেশ সমবায় অধিদপ্তরে নিবন্ধন প্রক্রিয়া চলমান আছে, যাহার নিবন্ধন নং- ২০২৫.১.৩২.২৬২৫.২৮২৩। &nbsp;আমাদের লক্ষ্য হলো পেশাজীবীদের মধ্যে সহযোগিতা বৃদ্ধি করা এবং তাদের পেশাগত ও আর্থিক উন্নয়ন সাধনে কাজ &nbsp;করা। আমরা বিভিন্ন প্রশিক্ষণ, কর্মশালা ও সেমিনার আয়োজন করি যাতে সদস্যরা তাদের দক্ষতা বৃদ্ধি করতে পারে এবং পেশাগত জীবনে সফল হতে পারে। আমাদের সদস্যরা বিভিন্ন পেশাগত ক্ষেত্রে কাজ করে এবং আমরা তাদের মধ্যে জ্ঞান ও অভিজ্ঞতা বিনিময় করি। সমিতির সদস্যদের জন্য একটি শক্তিশালী আর্থিক এবং পেশাদার প্ল্যাটফর্ম তৈরি করা, যেখানে সদস্যরা যৌথভাবে বিনিয়োগ করে, ব্যবসা পরিচালনা করে এবং মুনাফা ভাগাভাগি করতে পারে। আমরা বিশ্বাস করি যে, সহযোগিতা ও সমবায় মূলক কাজের মাধ্যমে আমরা আমাদের লক্ষ্য অর্জন করতে পারব এবং আমাদের সদস্যদের জন্য একটি উন্নত ও সমৃদ্ধ ভবিষ্যত গড়ে তুলতে পারব।', 'Coder Peshajibi Samabay Samity Ltd. is a voluntary, professional and non-political organization, which was established in 2023 and is in the process of registration with the Bangladesh Cooperatives Department in 2025, whose Registration No.- 2025.1.32.2625.2823. Our goal is to increase cooperation among professionals and work towards their professional and financial development. We organize various trainings, workshops and seminars so that members can enhance their skills and be successful in their professional lives. Our members work in different professional fields and we exchange knowledge and experience among them. To create a strong financial and professional platform for the members of the association, where members can jointly invest, run businesses and share profits. We believe that through cooperation and cooperative work, we can achieve our goals and build a better and prosperous future for our members.', 'একসাথে যেতে হবে বহুদূরে...', 'We have to go far together...', 'কোডার পেশাজীবী সমবায় সমিতি লিঃ (Coder Peshajibi Samabay Samity Ltd)', '৫০৩০১০০১৭৬৩ (50301001763)', 'logo.png', '<ul><li>hello</li><li>bangladesh</li></ul>', 'https://www.facebook.com/profile.php?id=61581789144846', 'youtube.com', 'linkedin.com', 'instagram.com', 'ব্যাংক এশিয়া লিঃ (Bank Asia Ltd.)', 'পুরানা পল্টন, ঢাকা-১০০০ (Purana Paltan, Dhaka-1000)');
 
 -- --------------------------------------------------------
 
@@ -472,7 +558,40 @@ INSERT INTO `user_access` (`id`, `user_id`, `member_id`, `login`, `logout`) VALU
 (163, 2, 0, '2025-10-26 15:29:01', '2025-10-26 15:29:25'),
 (164, 3, 1, '2025-10-26 15:29:40', '2025-10-26 15:30:01'),
 (165, 2, 0, '2025-10-26 15:32:30', '2025-10-26 15:32:30'),
-(166, 2, 0, '2025-10-29 15:35:45', '2025-10-29 15:35:45');
+(166, 2, 0, '2025-10-29 15:35:45', '2025-10-29 16:01:19'),
+(167, 2, 0, '2025-10-30 12:42:24', '2025-10-30 12:50:10'),
+(168, 3, 1, '2025-10-30 13:33:33', '2025-10-30 13:34:38'),
+(169, 2, 0, '2025-10-30 13:34:52', '2025-10-30 13:36:25'),
+(170, 2, 0, '2025-10-30 15:55:17', '2025-10-30 15:55:17'),
+(171, 3, 1, '2025-10-30 16:44:43', '2025-10-30 16:55:15'),
+(172, 3, 1, '2025-10-30 16:55:25', '2025-10-30 17:09:47'),
+(173, 3, 1, '2025-10-30 17:22:12', '2025-10-30 17:27:19'),
+(174, 2, 0, '2025-10-30 17:27:33', '2025-10-30 18:09:38'),
+(175, 2, 0, '2025-10-30 21:07:25', '2025-10-30 21:07:25'),
+(176, 2, 0, '2025-10-30 21:07:26', '2025-10-30 21:07:26'),
+(177, 2, 0, '2025-10-30 23:23:36', '2025-10-30 23:29:32'),
+(178, 2, 0, '2025-10-31 00:10:45', '2025-10-31 00:11:58'),
+(179, 2, 0, '2025-10-31 00:33:49', '2025-10-31 00:35:41'),
+(180, 2, 0, '2025-10-31 22:16:35', '2025-10-31 22:16:53'),
+(181, 2, 0, '2025-10-31 22:45:10', '2025-10-31 22:45:35'),
+(182, 20, 52, '2025-10-31 22:47:25', '2025-10-31 22:48:02'),
+(183, 2, 0, '2025-10-31 23:37:58', '2025-10-31 23:37:58'),
+(184, 24, 59, '2025-11-03 15:52:55', '2025-11-03 15:55:16'),
+(185, 24, 59, '2025-11-03 15:56:26', '2025-11-03 15:57:13'),
+(186, 2, 0, '2025-11-03 17:37:01', '2025-11-03 17:40:05'),
+(187, 22, 56, '2025-11-04 13:59:00', '2025-11-04 14:11:17'),
+(188, 3, 1, '2025-11-04 16:59:55', '2025-11-04 17:00:49'),
+(189, 3, 1, '2025-11-05 10:59:31', '2025-11-05 11:01:19'),
+(190, 2, 0, '2025-11-05 13:42:52', '2025-11-05 13:42:52'),
+(191, 2, 0, '2025-11-05 15:35:49', '2025-11-05 15:35:49'),
+(192, 10, 39, '2025-11-05 18:43:17', '2025-11-05 18:43:17'),
+(193, 2, 0, '2025-11-06 17:02:25', '2025-11-06 17:18:49'),
+(194, 3, 1, '2025-11-06 17:19:03', '2025-11-06 17:37:52'),
+(195, 2, 0, '2025-11-06 17:37:59', '2025-11-06 17:49:38'),
+(196, 22, 56, '2025-11-06 17:49:48', '2025-11-06 17:56:25'),
+(197, 2, 0, '2025-11-06 17:56:33', '2025-11-06 17:58:55'),
+(198, 22, 56, '2025-11-06 17:59:05', '2025-11-06 18:03:48'),
+(199, 3, 1, '2025-11-06 23:09:25', '2025-11-07 00:39:41');
 
 -- --------------------------------------------------------
 
@@ -499,25 +618,53 @@ CREATE TABLE `user_login` (
 INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `password`, `re_password`, `role`, `status`, `created_at`) VALUES
 (2, 0, '', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'Admin', 'A', '2025-08-15 19:33:39'),
 (3, 1, 'CPSS-00001', '505646', 'c04c747a06eadb597d44f0a28988f057', 'S#01540a', 'user', 'P', '2025-10-13 21:31:57'),
-(4, 30, 'CPSS-00002', 'coderap', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'I', '2025-10-13 22:28:41'),
-(5, 31, 'CPSS-00031', 'codermk', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'I', '2025-10-13 22:36:03'),
-(7, 34, 'CPSS-00032', 'Saiful1986', '7e45d41d3d93659f5d92a3f964502127', 'Saiful1986', 'user', 'I', '2025-10-14 16:04:29'),
-(8, 35, 'CPSS-00035', 'iqbal@erainfotechbd.com', '374a4198e2f0f5797133c3d28e15d037', 'I*qbal123', 'user', 'I', '2025-10-14 16:51:59'),
-(9, 36, 'CPSS-00036', 'sadin_027', '9c23bdafebf6d7a14ff2e0a7b1bc7590', 'sadin_027', 'user', 'I', '2025-10-14 18:48:46'),
-(10, 39, 'CPSS-00037', 'ashiqur_ruhullah', '3b192651dafa9a384b45d15bdd551c3a', 'Abc@33688', 'user', 'I', '2025-10-16 16:35:26'),
-(11, 40, 'CPSS-00040', 'tariqul@erainfotechbd.com', 'd82f0f7bbb5e126328c20590e8bd8bee', 'Tariqul*sorse4', 'user', 'I', '2025-10-16 17:32:03'),
-(12, 41, 'CPSS-00041', 'Samrat0026@', '6d4a2c2688cbf0b68a09db10bf21c4f0', '25800', 'user', 'I', '2025-10-19 11:12:10'),
-(13, 42, 'CPSS-00042', 'hera', 'cfed9928364182f874060d57295e305c', 'Her@1234', 'user', 'I', '2025-10-22 11:01:11'),
-(14, 45, 'CPSS-00043', 'sraihan68', '90973b6d611e8a9d3e9d6d4c18d99991', 'Pass@123#', 'user', 'I', '2025-10-23 15:21:30'),
-(15, 46, 'CPSS-00046', 'Md. Alauddin', '558d84d0650a49634714a42d46183114', 'Alauddin', 'user', 'I', '2025-10-23 16:19:51'),
-(16, 47, 'CPSS-00047', 'moshid', '13053ed9d25f40b415e709f3023c09b5', '19822006Cm', 'user', 'I', '2025-10-23 22:02:11'),
-(17, 48, 'CPSS-00048', 'mahdi', 'a80efaf2c72ee24985535815fc3f5380', 'Era_321', 'user', 'I', '2025-10-25 08:44:27'),
-(18, 50, 'CPSS-00049', 'aslamtmela', '1553a90b66d50da03d9b082f3880e3ad', 'Aslam@038297', 'user', 'I', '2025-10-25 23:00:21'),
-(19, 51, 'CPSS-00051', 'Sonia Afrose', 'df7c8d1964ca7cc8c13f002afa4864c7', '2468u', 'user', 'I', '2025-10-26 12:46:33'),
-(20, 52, 'CPSS-00052', '504305', '375de4af22691d85fffa4a6f694106c7', '504305', 'user', 'I', '2025-10-26 16:20:08'),
-(21, 55, 'CPSS-00053', 'Foisal Mahmud', '670a7db8e714ea9f6d43ca7b72e8cf09', 'Foisal@3734', 'user', 'I', '2025-10-27 12:41:48'),
-(22, 56, 'CPSS-00056', 'MMHO', '08e3099eac683f3cb2ca7ffea4497f55', 'Fathermother#1988', 'user', 'I', '2025-10-27 18:43:51'),
-(23, 57, 'CPSS-00057', 'ariful', '17278d31f3c882ee29cb095ed6f64cad', 'Ariful@2050#!', 'user', 'I', '2025-10-28 21:48:00');
+(4, 30, 'CPSS-00002', 'coderap', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'P', '2025-10-13 22:28:41'),
+(5, 31, 'CPSS-00031', 'codermk', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'P', '2025-10-13 22:36:03'),
+(7, 34, 'CPSS-00032', 'Saiful1986', '7e45d41d3d93659f5d92a3f964502127', 'Saiful1986', 'user', 'P', '2025-10-14 16:04:29'),
+(8, 35, 'CPSS-00035', 'iqbal@erainfotechbd.com', '374a4198e2f0f5797133c3d28e15d037', 'I*qbal123', 'user', 'P', '2025-10-14 16:51:59'),
+(9, 36, 'CPSS-00036', 'sadin_027', '9c23bdafebf6d7a14ff2e0a7b1bc7590', 'sadin_027', 'user', 'P', '2025-10-14 18:48:46'),
+(10, 39, 'CPSS-00037', 'ashiqur_ruhullah', '3b192651dafa9a384b45d15bdd551c3a', 'Abc@33688', 'user', 'P', '2025-10-16 16:35:26'),
+(11, 40, 'CPSS-00040', 'tariqul@erainfotechbd.com', 'd82f0f7bbb5e126328c20590e8bd8bee', 'Tariqul*sorse4', 'user', 'P', '2025-10-16 17:32:03'),
+(12, 41, 'CPSS-00041', 'Samrat0026@', '6d4a2c2688cbf0b68a09db10bf21c4f0', '25800', 'user', 'P', '2025-10-19 11:12:10'),
+(13, 42, 'CPSS-00042', 'hera', 'cfed9928364182f874060d57295e305c', 'Her@1234', 'user', 'P', '2025-10-22 11:01:11'),
+(14, 45, 'CPSS-00043', 'sraihan68', '90973b6d611e8a9d3e9d6d4c18d99991', 'Pass@123#', 'user', 'P', '2025-10-23 15:21:30'),
+(15, 46, 'CPSS-00046', 'Md. Alauddin', '558d84d0650a49634714a42d46183114', 'Alauddin', 'user', 'P', '2025-10-23 16:19:51'),
+(16, 47, 'CPSS-00047', 'moshid', '13053ed9d25f40b415e709f3023c09b5', '19822006Cm', 'user', 'P', '2025-10-23 22:02:11'),
+(17, 48, 'CPSS-00048', 'mahdi', 'a80efaf2c72ee24985535815fc3f5380', 'Era_321', 'user', 'P', '2025-10-25 08:44:27'),
+(18, 50, 'CPSS-00049', 'aslamtmela', '1553a90b66d50da03d9b082f3880e3ad', 'Aslam@038297', 'user', 'P', '2025-10-25 23:00:21'),
+(19, 51, 'CPSS-00051', 'Sonia Afrose', 'df7c8d1964ca7cc8c13f002afa4864c7', '2468u', 'user', 'P', '2025-10-26 12:46:33'),
+(20, 52, 'CPSS-00052', '504305', '375de4af22691d85fffa4a6f694106c7', '504305', 'user', 'P', '2025-10-26 16:20:08'),
+(21, 55, 'CPSS-00053', 'Foisal Mahmud', '670a7db8e714ea9f6d43ca7b72e8cf09', 'Foisal@3734', 'user', 'P', '2025-10-27 12:41:48'),
+(22, 56, 'CPSS-00056', 'MMHO', '08e3099eac683f3cb2ca7ffea4497f55', 'Fathermother#1988', 'user', 'P', '2025-10-27 18:43:51'),
+(23, 57, 'CPSS-00057', 'ariful', '17278d31f3c882ee29cb095ed6f64cad', 'Ariful@2050#!', 'user', 'P', '2025-10-28 21:48:00'),
+(24, 59, 'CPSS-00058', 'farzana', '136c9221f517422a68e09fed3051ecc7', 'f@rzana123', 'user', 'P', '2025-10-30 14:18:45'),
+(25, 62, 'CPSS-00060', 'Ashiq971', '817327651ecb7f95d02faedb062eeace', '543368166', 'user', 'P', '2025-10-31 22:39:47'),
+(26, 63, 'CPSS-00063', 'Sakif Abdullah', 'cd6d5b15c39e02a814e680ebb86b5c4b', 'Sakif@006', 'user', 'P', '2025-11-05 11:41:45'),
+(27, 65, 'CPSS-00064', 'codersamity', 'fbdfbbe83761ea561344c69f950b5ffc', 'codersamity', 'user', 'I', '2025-11-07 00:41:48');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `utils`
+--
+
+CREATE TABLE `utils` (
+  `id` int(11) NOT NULL,
+  `start_year` int(11) NOT NULL,
+  `end_year` int(11) NOT NULL,
+  `fee` int(11) NOT NULL,
+  `status` varchar(3) NOT NULL,
+  `fee_type` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `utils`
+--
+
+INSERT INTO `utils` (`id`, `start_year`, `end_year`, `fee`, `status`, `fee_type`) VALUES
+(1, 2025, 2026, 1500, 'A', 'admission'),
+(2, 2025, 2026, 2000, 'A', 'monthly'),
+(3, 2025, 2026, 200, 'A', 'late');
 
 --
 -- Indexes for dumped tables
@@ -533,6 +680,12 @@ ALTER TABLE `banner`
 -- Indexes for table `committee_member`
 --
 ALTER TABLE `committee_member`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `committee_role`
+--
+ALTER TABLE `committee_role`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -608,6 +761,12 @@ ALTER TABLE `user_login`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `utils`
+--
+ALTER TABLE `utils`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -615,13 +774,19 @@ ALTER TABLE `user_login`
 -- AUTO_INCREMENT for table `banner`
 --
 ALTER TABLE `banner`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `committee_member`
 --
 ALTER TABLE `committee_member`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `committee_role`
+--
+ALTER TABLE `committee_role`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `company`
@@ -633,37 +798,37 @@ ALTER TABLE `company`
 -- AUTO_INCREMENT for table `members_info`
 --
 ALTER TABLE `members_info`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `member_documents`
 --
 ALTER TABLE `member_documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `member_nominee`
 --
 ALTER TABLE `member_nominee`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT for table `member_office`
 --
 ALTER TABLE `member_office`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `member_payments`
 --
 ALTER TABLE `member_payments`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `member_share`
 --
 ALTER TABLE `member_share`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `project`
@@ -687,13 +852,19 @@ ALTER TABLE `setup`
 -- AUTO_INCREMENT for table `user_access`
 --
 ALTER TABLE `user_access`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=167;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=200;
 
 --
 -- AUTO_INCREMENT for table `user_login`
 --
 ALTER TABLE `user_login`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+
+--
+-- AUTO_INCREMENT for table `utils`
+--
+ALTER TABLE `utils`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

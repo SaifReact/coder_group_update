@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
                             THEN a.amount ELSE 0 END) AS net_amount
         FROM member_payments a
         JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
-        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ?
+        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'A'
         GROUP BY b.no_share, a.trans_no, a.created_at, a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date
         LIMIT 1
     ");
@@ -116,14 +116,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
     }
 }
 
-// Fetch payment summary for the year
-$stmt = $pdo->prepare("SELECT a.payment_year, SUM(CASE WHEN a.for_fees = 'admission' THEN a.amount ELSE 0 END) AS admission, b.no_share, SUM(CASE WHEN a.for_fees = 'share' THEN a.amount ELSE 0 END) AS share FROM member_payments a JOIN member_share b ON a.member_id = b.member_id WHERE a.member_id = ? AND a.payment_year = ? GROUP BY a.payment_year, b.no_share LIMIT 1");
-$stmt->execute([$member_id, $payment_year]);
-$summary = $stmt->fetch(PDO::FETCH_ASSOC);
-
 include_once __DIR__ . '/../includes/open.php';
 ?>
 
+<!-- ===== STYLE ===== -->
+<style>
+:root {
+    --bs-corporate-blue: #002D59;
+    --bs-corporate-orange: #F8971D;
+}
+.receipt-container { width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; }
+.dotted-input-solid { border: none; border-bottom: 1px solid #000; background: transparent; outline: none; padding: 0 5px; flex-grow: 1; }
+.header-bg { background: var(--bs-corporate-orange); position: relative; }
+.header-bg::before { content:''; position:absolute; top:0; left:0; width:35%; height:100%; background:var(--bs-corporate-blue); transform:skewX(-20deg); transform-origin: top left; z-index:1; }
+.header-content { position:relative; z-index:2; }
+.logo-box-custom { width:100px; height:100px; margin-right:10px; }
+.footer-bg { background:var(--bs-corporate-orange); position:relative; z-index:10; }
+.footer-bg::after { content:''; position:absolute; bottom:0; right:0; width:50px; height:100%; background:var(--bs-corporate-blue); clip-path:polygon(100% 0,100% 100%,0 100%); z-index:11; }
+</style>
 
 <div class="container-fluid pb-5 hero-header bg-light">
   <div class="row">
@@ -132,12 +142,30 @@ include_once __DIR__ . '/../includes/open.php';
       <div class="container">
         <div class="card shadow-lg rounded-3 border-0">
           <div class="card-body p-4">
-            <h3 class="mb-3 text-primary fw-bold">Passbook <span class="text-secondary">(পাসবুক)</span></h3>
+            <h3 class="mb-3 text-primary fw-bold">Payment Receipt <span class="text-secondary">(পেমেন্ট রসিদ)</span></h3>
             <hr class="mb-4" />
 
             <!-- ===== Receipt Form ===== -->
             <form method="post" class="mb-4 row g-3">
-              <div class="col-md-7">
+              <div class="col-md-5">
+                <label for="payment_type" class="form-label">Payments (পেমেন্ট)</label>
+                <select class="form-select" id="payment_type" name="payment_type" required>
+                  <option value="">Select (বাছাই করুন)</option>
+                  <?php
+                  $months = [
+                    'admission' => 'Admission-Share Fee (ভর্তি-শেয়ার ফি)',
+                    'january'=>'January (জানুয়ারি)','february'=>'February (ফেব্রুয়ারি)','march'=>'March (মার্চ)',
+                    'april'=>'April (এপ্রিল)','may'=>'May (মে)','june'=>'June (জুন)','july'=>'July (জুলাই)',
+                    'august'=>'August (আগস্ট)','september'=>'September (সেপ্টেম্বর)','october'=>'October (অক্টোবর)',
+                    'november'=>'November (নভেম্বর)','december'=>'December (ডিসেম্বর)'
+                  ];
+                  foreach ($months as $key => $val): ?>
+                    <option value="<?= $key ?>" <?= ($payment_type == $key) ? 'selected' : '' ?>><?= $val ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div class="col-md-4">
                 <label for="payment_year" class="form-label">Year (বছর)</label>
                 <select class="form-select" id="payment_year" name="payment_year" required>
                   <?php for($y=2025;$y<=2027;$y++): ?>
@@ -146,50 +174,77 @@ include_once __DIR__ . '/../includes/open.php';
                 </select>
               </div>
 
-              <div class="col-md-5 d-flex align-items-end">
+              <div class="col-md-3 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">Generate Receipt (রসিদ তৈরি করুন)</button>
               </div>
             </form>
 
-            <!-- ===== Payment Summary Table ===== -->
-            <div class="mt-5">
-              <h4 class="text-center text-primary fw-bold"><?= htmlspecialchars($siteName) ?></h4>
-              <div class="table-responsive">
-                <table border="1" cellpadding="5" style="text-align:center;" class="table table-bordered table-striped">
-                    <tr>
-                        <th rowspan="2">বছর</th>
-                        <th rowspan="2">ভর্তি ফি</th>
-                        <th rowspan="2">শেয়ার সংখ্যা</th>
-                        <th rowspan="2">শেয়ার টাকা পরিমান</th>
-                        <th colspan="12">মাসসমূহ</th>
-                        <th rowspan="2">মোট</th>
-                    </tr>
-                    <tr>
-                        <th>জানুয়ারী</th><th>ফেব্রুয়ারী</th><th>মার্চ</th><th>এপ্রিল</th><th>মে</th><th>জুন</th>
-                        <th>জুলাই</th><th>আগস্ট</th><th>সেপ্টেম্বর</th><th>অক্টোবর</th><th>নভেম্বর</th><th>ডিসেম্বর</th>
-                    </tr>
-                    <tr>
-                        <td><?= htmlspecialchars($summary['payment_year'] ?? '') ?></td>
-                        <td><?= htmlspecialchars($summary['admission'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['no_share'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['share'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['jan'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['feb'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['mar'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['apr'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['may'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['jun'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['jul'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['aug'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['sep'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['oct'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['nov'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['dec'] ?? 0) ?></td>
-                        <td><?= htmlspecialchars($summary['total'] ?? 0) ?></td>
-                    </tr>
-                </table>
-              </div>
-            </div>
+            <!-- ===== Show Receipt or Alert ===== -->
+            <?php if ($receipt): ?>
+              <div class="container receipt-container bg-white mt-5 p-0"> 
+                <div class="row m-0 p-0"> 
+                  <div class="col-12 p-0"> 
+                    <div class="header-bg py-3 px-4 d-flex align-items-center"> 
+                        <div class="col-4 d-flex align-items-center"> 
+                            <div class="header-content d-flex align-items-center"> 
+                                <div class="logo-box-custom d-flex align-items-center"> 
+                                  <div class="p-2 bg-white rounded-circle shadow-sm" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden;"> <img src="/coder_group/assets/img/<?= htmlspecialchars($logo) ?>" alt="Logo" class="img-fluid"> </div> 
+                                  </div> 
+                                  <div class="text-white"> <p class="mb-0 small" style="color: #FFF;"><?= $slogan ?></p> </div> 
+                                  </div> 
+                                </div> 
+                                  <div class="col-4 text-center"> 
+                                      <div class="header-content"> <h1 class="text-white fw-bolder mb-1" style="font-size: 2rem;">MONEY RECEIPT</h1> <p class="mb-0 small" style="color: var(--bs-corporate-blue);"> 📞 <?= $phone ?? '0000-000000' ?> <br/>✉️ <?= $email ?? 'Your Mail Here' ?> </p> </div> 
+                                  </div> 
+                                    <div class="col-4 text-end"> 
+                                      <div class="header-content small"> <p class="fw-bold mb-0" style="color: var(--bs-corporate-blue);"><?= $siteName ?? 'Company Name Here' ?></p> <p class="mb-0"><?= $reg_no ?? 'Your Business Address 0000' ?></p> <p class="mb-0"><?= $address ?? 'Main Street, Unit 000C FEL' ?></p> </div> 
+                                    </div> 
+                                  </div> 
+                                </div> 
+                              </div> 
+                              <hr class="m-0 border border-4" style="border-color: var(--bs-corporate-orange) !important;"> <div class="row my-3 px-4 small"> <div class="col-6 d-flex align-items-center"> <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);">NO :</label> <span class="text-dark"><?= htmlspecialchars($receipt['trans_no'] ?? 'trans_no') ?></span> </div> <div class="col-6 d-flex justify-content-end align-items-center"> <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);">Date : </label> <span class="text-dark"><?= htmlspecialchars($receipt['created_at'] ?? 'created_at') ?></span> </div> </div> 
+                                    <div class="px-4 py-3"> 
+                                        <div class="mb-3 d-flex align-items-center"> <label class="me-2 text-dark">Received with thanks from</label> <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($member['name_bn'] ?? 'Member Name') ?></h5> <span class="text-muted"><small>Member Code: <?= htmlspecialchars($member['member_code'] ?? 'M-0000') ?></small></span> ( <span class="text-muted"><small>Share: <?= htmlspecialchars($receipt['no_share'] ?? '0') ?></small></span> ) </div> </div> 
+                                        <div class="row g-3 mb-3"> <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">For</label> <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['payment_method'] ?? 'Payment Method') ?></h5> </div> </div> 
+                                        <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">Year</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['payment_year'] ?? 'Payment Year') ?></h5> </div> </div> </div> <div class="row g-3 mb-3"> <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">Bank Trans</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['bank_trans_no'] ?? 'bank_trans_no') ?></h5> </div> </div> 
+                                        <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">Bank Pay Date</label> <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['bank_pay_date'] ?? 'bank_pay_date') ?></h5> </div> </div> </div> 
+                                        <div class="row g-3 mb-4"> 
+                                          <div><strong>Expense of Fees:</strong></div> 
+                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">ID Card</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> 
+                                          <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['idcard_fee_amount'] ?? 'idcard_fee_amount') ?></h5> 
+                                        </div> </div> 
+                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">Passbook</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['passbook_fee_amount'] ?? 'passbook_fee_amount') ?></h5> </div> </div> 
+                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">Software</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['softuses_fee_amount'] ?? 'softuses_fee_amount') ?></h5> </div> </div> 
+                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">Other</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['other_fee_amount'] ?? 'other_fee_amount') ?></h5> </div> 
+                                      </div> 
+                                        <div class="mb-2 d-flex align-items-center"> <label class="me-2 text-dark">Due of Amount</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['net_amount'] ?? 'net_amount') ?></h5> </div> 
+                                      </div> 
+                                        <div class="mb-2 d-flex align-items-center"> <label class="me-2 text-dark">In word</label> 
+                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['total_amount_words'] ?? 'total_amount_words') ?></h5> </div> 
+                                      </div> 
+                                    </div> 
+                                  </div> 
+                                  <div class="row m-0 p-0"> <div class="col-12 p-0"> 
+                                    <div class="footer-bg py-3 px-4 d-flex justify-content-between align-items-end"> 
+                                      <div class="d-flex align-items-center me-3" style="z-index: 12;"> <p class="fw-bold mb-0 small" style="color: var(--bs-corporate-blue);">Amount=</p> 
+                                        <div class="bg-white border border-primary ms-2" style="width: 100px; height: 25px;"><?= htmlspecialchars($receipt['total_amount'] ?? 'total_amount') ?></div> </div> 
+                                        <div class="d-flex align-items-end me-3" style="width: 35%; z-index: 12;"> <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);"> Print Date : </label> <span class="text-dark"><?= date('d-m-Y H:i') ?></span> </div> 
+                                        <div class="d-flex align-items-end" style="width: 35%; z-index: 12;"> <p class="text-white fw-bold mb-0 me-2 small">Signature</p> <input type="text" class="dotted-input-solid text-center" style="width: 100%; border-color: white !important;"> </div> 
+                                      </div> 
+                                    </div> 
+                                  </div> 
+                                </div>
+
+            <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+              <div class="alert alert-warning">No payment found for selected type and year. ( নির্বাচিত পেমেন্ট এবং বছরের জন্য কোনও অর্থপ্রদান পাওয়া যায়নি। )</div>
+            <?php endif; ?>
 
           </div>
         </div>

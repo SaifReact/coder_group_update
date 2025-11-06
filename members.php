@@ -23,7 +23,6 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                  <th scope="col">ক্রমিক নং</th>
                  <th scope="col">সদস্য কোড</th>
                  <th scope="col">নাম</th>
-                 <th scope="col">জন্ম তারিখ</th>
                  <th scope="col">শেয়ার সংখ্যা</th>
                  <th scope="col">পিতার নাম</th>
                  <th scope="col">মাতার নাম</th>
@@ -36,7 +35,6 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
               <td class="text-center"><?= $rownum++; ?></td>
               <td><?= htmlspecialchars($member['member_code']); ?></td>
               <td><?= htmlspecialchars($member['name_en']); ?><br/><?= htmlspecialchars($member['name_bn']); ?></td>
-              <td><?= htmlspecialchars($member['dob']); ?></td>
               <td class="text-center"><?= htmlspecialchars($member['no_share']); ?></td>
               <td><?= htmlspecialchars($member['father_name']); ?></td>
               <td><?= htmlspecialchars($member['mother_name']); ?></td>

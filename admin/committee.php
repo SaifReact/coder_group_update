@@ -11,16 +11,8 @@ include_once __DIR__ . '/../config/config.php';
 $memberStmt = $pdo->query("SELECT id, name_bn, name_en, member_code FROM members_info ORDER BY id ASC");
 $members = $memberStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Designation list
-$designations = [
-    'Advisor' => 'Advisor ( উপদেষ্টা )',
-    'president' => 'President ( সভাপতি )',
-    'vice_president' => 'Vice President ( উপ-সভাপতি )',
-    'secretary' => 'Secretary ( সম্পাদক )',
-    'joint_secretary' => 'Joint Secretary ( যুগ্ম সম্পাদক )',
-    'treasurer' => 'Treasurer ( কোষাধ্যক্ষ )',
-    'member' => 'Member ( সদস্য )'
-];
+$committeeStmt = $pdo->query("SELECT * FROM committee_role ORDER BY id ASC");
+$designations = $committeeStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch committee members with members_info details
 $stmt = $pdo->query("
@@ -28,7 +20,8 @@ $stmt = $pdo->query("
         cm.id, 
         cm.member_id, 
         cm.member_code, 
-        cm.position, 
+        cm.committee_role_id,
+        cr.position_bn, 
         cm.fb, 
         cm.li, 
         cm.role, 
@@ -36,6 +29,7 @@ $stmt = $pdo->query("
         mi.name_en 
     FROM 
         committee_member cm
+        JOIN committee_role cr ON cm.committee_role_id = cr.id
     JOIN 
         members_info mi 
     ON 
@@ -79,8 +73,10 @@ $committees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                   <label for="designation" class="form-label">Designation</label>
                   <select class="form-select" id="designation" name="designation" required>
                     <option value="">Select Designation ( পদবি বাছাই করুন )</option>
-                    <?php foreach($designations as $key => $val): ?>
-                      <option value="<?= $key ?>"><?= $val ?></option>
+                   <?php foreach($designations as $designation): ?>
+                      <option value="<?= $designation['id'] ?>">
+                        <?= htmlspecialchars($designation['position_bn']) ?> (<?= htmlspecialchars($designation['position_en']) ?>)
+                      </option>
                     <?php endforeach; ?>
                   </select>
                 </div>
@@ -131,7 +127,7 @@ $committees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                   <?php foreach ($committees as $committee): ?>
                   <tr>
                     <td><?= $committee['id']; ?></td>
-                    <td><?= htmlspecialchars($committee['position']); ?></td>
+                    <td><?= htmlspecialchars($committee['position_bn']); ?></td>
                     <td>
                       <?= htmlspecialchars($committee['member_code']); ?><br>
                       <?= htmlspecialchars($committee['name_en']); ?><br>
@@ -158,7 +154,7 @@ $committees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         onclick='editCommittee(
                           <?= (int)$committee["id"] ?>,
                           <?= json_encode($committee["member_id"]) ?>,
-                          <?= json_encode($committee["position"]) ?>,
+                          <?= json_encode($committee["committee_role_id"]) ?>,
                           <?= json_encode($committee["fb"]) ?>,
                           <?= json_encode($committee["li"]) ?>,
                           <?= json_encode($committee["role"]) ?>
@@ -205,9 +201,11 @@ $committees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                       <label for="edit_designation" class="form-label">Designation</label>
                       <select class="form-select" id="edit_designation" name="edit_designation" required>
                         <option value="">Select Designation ( পদবি বাছাই করুন )</option>
-                        <?php foreach($designations as $key => $val): ?>
-                          <option value="<?= $key ?>"><?= $val ?></option>
-                        <?php endforeach; ?>
+                       <?php foreach($designations as $designation): ?>
+                      <option value="<?= $designation['id'] ?>">
+                        <?= htmlspecialchars($designation['position_bn']) ?> (<?= htmlspecialchars($designation['position_en']) ?>)
+                      </option>
+                    <?php endforeach; ?>
                       </select>
                     </div>
 
@@ -247,7 +245,7 @@ $committees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- Edit JS -->
 <script>
-function editCommittee(id, member_id, designation, fb, li, role) {
+function editCommittee(id, member_id, committee_role_id, fb, li, role) {
     // Set the hidden input for the ID
     document.getElementById('edit_id').value = id;
 
@@ -255,7 +253,7 @@ function editCommittee(id, member_id, designation, fb, li, role) {
     document.getElementById('edit_member_id').value = member_id;
 
     // Set the Designation field
-    document.getElementById('edit_designation').value = designation;
+    document.getElementById('edit_designation').value = committee_role_id;
 
     // Set the Facebook and LinkedIn fields
     document.getElementById('edit_facebook').value = fb || '';
@@ -278,8 +276,5 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<?php include_once __DIR__ . '/../includes/toast.php'; ?>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>
