@@ -61,12 +61,17 @@ $role = $_SESSION['role'] ?? '';
                     </a>
                 </li>
                 <li class="nav-item mb-3">
+                    <a class="nav-link text-dark fw-bold" href="certificate.php" style="font-size: .8rem;">
+                        <i class="fa fa-certificate me-2 text-success"></i> Certificate
+                    </a>
+                </li>
+                <li class="nav-item mb-3">
                     <a class="nav-link text-dark fw-bold" href="documents.php" style="font-size: .8rem;">
                         <i class="fa fa-file-upload me-2 text-success"></i> Documents
                     </a>
                 </li>
                 <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="share.php" style="font-size: .8rem;">
+                    <a class="nav-link text-dark fw-bold" href="project_shares.php" style="font-size: .8rem;">
                         <i class="fa fa-share-alt me-2 text-info"></i> Add Share
                     </a>
                 </li>

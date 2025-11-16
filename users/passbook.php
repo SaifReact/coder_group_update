@@ -7,114 +7,63 @@ if (!isset($_SESSION['user_id'])) {
 
 include_once __DIR__ . '/../config/config.php';
 
-/* --------- Number to Words Function --------- */
-function numberToWords($num) {
-    $ones = [
-        0 => "Zero", 1 => "One", 2 => "Two", 3 => "Three", 4 => "Four",
-        5 => "Five", 6 => "Six", 7 => "Seven", 8 => "Eight", 9 => "Nine",
-        10 => "Ten", 11 => "Eleven", 12 => "Twelve", 13 => "Thirteen",
-        14 => "Fourteen", 15 => "Fifteen", 16 => "Sixteen", 17 => "Seventeen",
-        18 => "Eighteen", 19 => "Nineteen"
-    ];
-
-    $tens = [
-        2 => "Twenty", 3 => "Thirty", 4 => "Forty",
-        5 => "Fifty", 6 => "Sixty", 7 => "Seventy",
-        8 => "Eighty", 9 => "Ninety"
-    ];
-
-    $levels = ["", "Thousand", "Million", "Billion"];
-
-    if ($num == 0) return "Zero";
-
-    $words = "";
-    $level = 0;
-
-    while ($num > 0) {
-        $chunk = $num % 1000;
-        if ($chunk > 0) {
-            $chunkWords = "";
-            $hundreds = floor($chunk / 100);
-            $remainder = $chunk % 100;
-
-            if ($hundreds > 0) {
-                $chunkWords .= $ones[$hundreds] . " Hundred ";
-            }
-
-            if ($remainder > 0) {
-                if ($remainder < 20) {
-                    $chunkWords .= $ones[$remainder] . " ";
-                } else {
-                    $chunkWords .= $tens[floor($remainder / 10)] . " ";
-                    if ($remainder % 10 > 0) {
-                        $chunkWords .= $ones[$remainder % 10] . " ";
-                    }
-                }
-            }
-
-            $words = $chunkWords . $levels[$level] . " " . $words;
-        }
-
-        $num = floor($num / 1000);
-        $level++;
-    }
-
-    return trim($words);
+/* --------- English to Bangla Number Converter --------- */
+function englishToBanglaNumber($number) {
+    $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ','];
+    $bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯', '.', ','];
+    return str_replace($en, $bn, $number);
 }
-
-/* --------- Setup Info from Session --------- */
-$logo     = $_SESSION['setup']['logo'] ?? '';
-$siteName = $_SESSION['setup']['site_name_bn'] ?? '';
-$slogan_bn = $_SESSION['setup']['slogan_bn'] ?? '';
-$slogan_en = $_SESSION['setup']['slogan_en'] ?? ''; 
-$slogan   = $slogan_bn . ($slogan_en ? ' ( ' . $slogan_en . ' )' : '');
-$reg_no   = $_SESSION['setup']['registration_no'] ?? '';
-$address  = $_SESSION['setup']['address'] ?? '';
-$phone1   = $_SESSION['setup']['phone1'] ?? '';
-$phone2   = $_SESSION['setup']['phone2'] ?? '';
-$phone    = $phone1 . ($phone2 ? ', ' . $phone2 : '');
-$email    = $_SESSION['setup']['email'] ?? '';
-
 $member_id = $_SESSION['member_id'];
+
+// Get selected year from POST or default to current year
+$selected_year = isset($_POST['payment_year']) ? (int)$_POST['payment_year'] : (int)date('Y');
 
 /* --------- Fetch Member Info --------- */
 $stmt = $pdo->prepare("SELECT name_bn, member_code FROM members_info WHERE id = ?");
 $stmt->execute([$member_id]);
 $member = $stmt->fetch();
 
-/* --------- Fetch Receipt if POST --------- */
-$receipt = null;
-$payment_type = '';
-$payment_year = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POST['payment_year'])) {
-    $payment_type = $_POST['payment_type'];
-    $payment_year = $_POST['payment_year'];
-
-    $stmt = $pdo->prepare("
-        SELECT b.no_share, a.trans_no, DATE_FORMAT(a.created_at, '%d-%m-%Y %H:%i') AS created_at,  
-               a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date,
-               SUM(a.amount) AS total_amount,
-               SUM(CASE WHEN a.for_fees = 'idcard_fee' THEN a.amount ELSE 0 END) AS idcard_fee_amount,
-               SUM(CASE WHEN a.for_fees = 'passbook_fee' THEN a.amount ELSE 0 END) AS passbook_fee_amount,
-               SUM(CASE WHEN a.for_fees = 'other_fee' THEN a.amount ELSE 0 END) AS other_fee_amount,
-               SUM(CASE WHEN a.for_fees = 'softuses_fee' THEN a.amount ELSE 0 END) AS softuses_fee_amount,
-               SUM(a.amount) 
-                 - SUM(CASE WHEN a.for_fees IN ('idcard_fee','passbook_fee','other_fee','softuses_fee') 
-                            THEN a.amount ELSE 0 END) AS net_amount
-        FROM member_payments a
-        JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
-        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'A'
-        GROUP BY b.no_share, a.trans_no, a.created_at, a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date
-        LIMIT 1
-    ");
-    $stmt->execute([$member_id, $payment_type, $payment_year]);
-    $receipt = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($receipt) {
-        $receipt['total_amount_words'] = numberToWords((int)$receipt['total_amount']) . ' Taka Only';
-    }
-}
+/* --------- Fetch All Payment Records --------- */
+$stmt = $pdo->prepare("
+    SELECT a.payment_method, a.payment_year, a.trans_no, 
+           DATE_FORMAT(
+               CASE 
+                   WHEN a.bank_pay_date = '0000-00-00' OR a.bank_pay_date IS NULL 
+                   THEN a.created_at 
+                   ELSE a.bank_pay_date 
+               END, 
+               '%d-%m-%Y'
+           ) AS payment_date,
+           a.amount,
+           a.serial_no,
+           CASE 
+               WHEN a.amount > (SELECT fee FROM utils WHERE fee_type = 'monthly' LIMIT 1) 
+               THEN a.amount - (SELECT fee FROM utils WHERE fee_type = 'monthly' LIMIT 1)
+               ELSE 0 
+           END AS late_fee
+    FROM member_payments a
+    WHERE a.member_id = ? AND a.status = 'I' AND a.payment_year = ?
+    ORDER BY 
+        CASE a.payment_method
+            WHEN 'admission' THEN 1
+            WHEN 'share' THEN 2
+            WHEN 'january' THEN 3
+            WHEN 'february' THEN 4
+            WHEN 'march' THEN 5
+            WHEN 'april' THEN 6
+            WHEN 'may' THEN 7
+            WHEN 'june' THEN 8
+            WHEN 'july' THEN 9
+            WHEN 'august' THEN 10
+            WHEN 'september' THEN 11
+            WHEN 'october' THEN 12
+            WHEN 'november' THEN 13
+            WHEN 'december' THEN 14
+        END,
+        a.serial_no
+");
+$stmt->execute([$member_id, $selected_year]);
+$payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 include_once __DIR__ . '/../includes/open.php';
 ?>
@@ -125,132 +74,269 @@ include_once __DIR__ . '/../includes/open.php';
     --bs-corporate-blue: #002D59;
     --bs-corporate-orange: #F8971D;
 }
-.receipt-container { width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; }
-.dotted-input-solid { border: none; border-bottom: 1px solid #000; background: transparent; outline: none; padding: 0 5px; flex-grow: 1; }
-.header-bg { background: var(--bs-corporate-orange); position: relative; }
-.header-bg::before { content:''; position:absolute; top:0; left:0; width:35%; height:100%; background:var(--bs-corporate-blue); transform:skewX(-20deg); transform-origin: top left; z-index:1; }
-.header-content { position:relative; z-index:2; }
-.logo-box-custom { width:100px; height:100px; margin-right:10px; }
-.footer-bg { background:var(--bs-corporate-orange); position:relative; z-index:10; }
-.footer-bg::after { content:''; position:absolute; bottom:0; right:0; width:50px; height:100%; background:var(--bs-corporate-blue); clip-path:polygon(100% 0,100% 100%,0 100%); z-index:11; }
+
+/* Passbook Styles */
+.passbook-page {
+    min-height: 600px;
+    border: 2px solid #333;
+}
+.passbook-page table {
+    font-size: 0.85rem;
+}
+.passbook-page table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    padding: 8px 4px;
+}
+.passbook-page table td {
+    padding: 8px 4px;
+    vertical-align: middle;
+}
+.passbook-page table tbody tr {
+    height: 40px;
+}
 </style>
 
 <div class="container-fluid pb-5 hero-header bg-light">
   <div class="row">
     <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-    <main class="col-12 col-md-9 col-lg-9 px-md-4">
+    <main class="col-12 col-md-9 col-lg-9">
       <div class="container">
-        <div class="card shadow-lg rounded-3 border-0">
-          <div class="card-body p-4">
-            <h3 class="mb-3 text-primary fw-bold">Payment Receipt <span class="text-secondary">(পেমেন্ট রসিদ)</span></h3>
-            <hr class="mb-4" />
-
-            <!-- ===== Receipt Form ===== -->
-            <form method="post" class="mb-4 row g-3">
-              <div class="col-md-5">
-                <label for="payment_type" class="form-label">Payments (পেমেন্ট)</label>
-                <select class="form-select" id="payment_type" name="payment_type" required>
-                  <option value="">Select (বাছাই করুন)</option>
-                  <?php
-                  $months = [
-                    'admission' => 'Admission-Share Fee (ভর্তি-শেয়ার ফি)',
-                    'january'=>'January (জানুয়ারি)','february'=>'February (ফেব্রুয়ারি)','march'=>'March (মার্চ)',
-                    'april'=>'April (এপ্রিল)','may'=>'May (মে)','june'=>'June (জুন)','july'=>'July (জুলাই)',
-                    'august'=>'August (আগস্ট)','september'=>'September (সেপ্টেম্বর)','october'=>'October (অক্টোবর)',
-                    'november'=>'November (নভেম্বর)','december'=>'December (ডিসেম্বর)'
-                  ];
-                  foreach ($months as $key => $val): ?>
-                    <option value="<?= $key ?>" <?= ($payment_type == $key) ? 'selected' : '' ?>><?= $val ?></option>
-                  <?php endforeach; ?>
-                </select>
+            <div class="row">
+              <!-- Passbook Page -->
+              <div class="col-md-12">
+                <div class="card border passbook-page">
+                  <div class="card-body p-3">
+                    <!-- Year Selection and PDF Download -->
+                    <div class="row mb-3">
+                      <div class="col-12 col-md-6">
+                        <form method="POST" class="mb-0">
+                          <label for="payment_year" class="form-label fw-bold">বছর নির্বাচন করুন:</label>
+                          <select name="payment_year" id="payment_year" class="form-select" onchange="this.form.submit()">
+                            <?php
+                            $current_year = (int)date('Y');
+                            for ($i = 0; $i < 2; $i++) {
+                                $year = $current_year - $i;
+                                $selected = ($year == $selected_year) ? 'selected' : '';
+                                echo '<option value="' . $year . '" ' . $selected . '>' . englishToBanglaNumber($year) . '</option>';
+                            }
+                            ?>
+                          </select>
+                        </form>
+                      </div>
+                      <div class="col-12 col-md-6 text-end align-self-end">
+                        <button type="button" class="btn btn-danger" onclick="downloadPDF()">
+                          <i class="fas fa-file-pdf me-2"></i>PDF ডাউনলোড করুন
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div id="passbook-content">
+                      <h6 class="text-center fw-bold my-3">পাশবুক বিবরণী - <?= englishToBanglaNumber($selected_year) ?></h6>
+                      <p class="text-center mb-2"><strong>সদস্য নাম:</strong> <?= htmlspecialchars($member['name_bn']) ?> | <strong>সদস্য কোড:</strong> <?= englishToBanglaNumber(htmlspecialchars($member['member_code'])) ?></p>
+                    <table class="table table-bordered table-sm">
+                      <thead>
+                        <tr>
+                          <th>মাস</th>
+                          <th style="text-align: center;">তারিখ</th>
+                          <th style="text-align: center;">ট্রান্সেকশন নং</th>
+                          <th style="text-align: right;">টাকা/কিস্তির পরিমান</th>
+                          <th style="text-align: right;">জরিমানা</th>
+                          <th style="text-align: right;">সর্বমোট</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php
+                        // Define all months in order
+                        $all_months = [
+                            'admission' => 'ভর্তি ফি',
+                            'share' => 'শেয়ার ফি',
+                            'january' => 'জানুয়ারি',
+                            'february' => 'ফেব্রুয়ারি',
+                            'march' => 'মার্চ',
+                            'april' => 'এপ্রিল',
+                            'may' => 'মে',
+                            'june' => 'জুন',
+                            'july' => 'জুলাই',
+                            'august' => 'আগস্ট',
+                            'september' => 'সেপ্টেম্বর',
+                            'october' => 'অক্টোবর',
+                            'november' => 'নভেম্বর',
+                            'december' => 'ডিসেম্বর'
+                        ];
+                        
+                        // Calculate totals
+                        $total_installment = 0;
+                        $total_late_fee = 0;
+                        $total_amount = 0;
+                        
+                        foreach ($payments as $payment) {
+                            // For admission and share, show full amount as installment (no late fee)
+                            if ($payment['payment_method'] == 'admission' || $payment['payment_method'] == 'share') {
+                                $installment = $payment['amount'];
+                                $late_fee = 0;
+                            } else {
+                                // For monthly payments, calculate late fee
+                                $installment = $payment['amount'] - $payment['late_fee'];
+                                $late_fee = $payment['late_fee'];
+                            }
+                            
+                            $total_installment += $installment;
+                            $total_late_fee += $late_fee;
+                            $total_amount += $payment['amount'];
+                        }
+                        
+                        // Display all months with data if available
+                        $share_transaction_count = 0;
+                        $share_total = 0;
+                        
+                        foreach ($all_months as $method => $month_name) {
+                            // For share payments, display all transactions
+                            if ($method === 'share') {
+                                $share_payments = array_filter($payments, function($p) {
+                                    return $p['payment_method'] === 'share';
+                                });
+                                
+                                if (count($share_payments) > 0) {
+                                    foreach ($share_payments as $payment) {
+                                        $share_transaction_count++;
+                                        $installment = $payment['amount'];
+                                        $late_fee = 0;
+                                        $share_total += $installment;
+                                        ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($month_name) ?> (<?= englishToBanglaNumber($share_transaction_count) ?>)</td>
+                                            <td style="text-align: center;"><?= englishToBanglaNumber(htmlspecialchars($payment['payment_date'])) ?></td>
+                                            <td style="text-align: center;"><?= englishToBanglaNumber(htmlspecialchars($payment['trans_no'])) ?></td>
+                                            <td style="text-align: right;"><?= englishToBanglaNumber(number_format($installment, 2)) ?></td>
+                                            <td style="text-align: right;"><?= englishToBanglaNumber(number_format($late_fee, 2)) ?></td>
+                                            <td style="text-align: right;"><?= englishToBanglaNumber(number_format($payment['amount'], 2)) ?></td>
+                                        </tr>
+                                        <?php
+                                    }
+                                } else {
+                                    // No share payment found
+                                    ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($month_name) ?></td>
+                                        <td style="text-align: center;"></td>
+                                        <td style="text-align: center;"></td>
+                                        <td style="text-align: right;"></td>
+                                        <td style="text-align: right;"></td>
+                                        <td style="text-align: right;"></td>
+                                    </tr>
+                                    <?php
+                                }
+                                continue; // Skip to next method
+                            }
+                            
+                            // For non-share payments, find matching payment
+                            $found = false;
+                            foreach ($payments as $payment) {
+                                if ($payment['payment_method'] === $method) {
+                                    $found = true;
+                                    
+                                    // For admission, show full amount as installment (no late fee)
+                                    if ($method == 'admission') {
+                                        $installment = $payment['amount'];
+                                        $late_fee = 0;
+                                    } else {
+                                        // For monthly payments, calculate late fee
+                                        $installment = $payment['amount'] - $payment['late_fee'];
+                                        $late_fee = $payment['late_fee'];
+                                    }
+                                    ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($month_name) ?></td>
+                                        <td style="text-align: center;"><?= englishToBanglaNumber(htmlspecialchars($payment['payment_date'])) ?></td>
+                                        <td style="text-align: center;"><?= englishToBanglaNumber(htmlspecialchars($payment['trans_no'])) ?></td>
+                                        <td style="text-align: right;"><?= englishToBanglaNumber(number_format($installment, 2)) ?></td>
+                                        <td style="text-align: right;"><?= englishToBanglaNumber(number_format($late_fee, 2)) ?></td>
+                                        <td style="text-align: right;"><?= englishToBanglaNumber(number_format($payment['amount'], 2)) ?></td>
+                                    </tr>
+                                    <?php
+                                    break;
+                                }
+                            }
+                            
+                            // If no payment found, show empty row
+                            if (!$found) {
+                                ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($month_name) ?></td>
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                </tr>
+                                <?php
+                            }
+                        }
+                        ?>
+                        <!-- Total Row -->
+                        <tr class="fw-bold" style="background-color: #f0f0f0;">
+                            <td colspan="3" style="text-align: right;">সর্বমোট:</td>
+                            <td style="text-align: right;"><?= englishToBanglaNumber(number_format($total_installment, 2)) ?></td>
+                            <td style="text-align: right;"><?= englishToBanglaNumber(number_format($total_late_fee, 2)) ?></td>
+                            <td style="text-align: right;"><?= englishToBanglaNumber(number_format($total_amount, 2)) ?></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div><!-- End passbook-content -->
+                  </div>
+                </div>
               </div>
-
-              <div class="col-md-4">
-                <label for="payment_year" class="form-label">Year (বছর)</label>
-                <select class="form-select" id="payment_year" name="payment_year" required>
-                  <?php for($y=2025;$y<=2027;$y++): ?>
-                    <option value="<?= $y ?>" <?= ($payment_year==$y)?'selected':'' ?>><?= $y ?></option>
-                  <?php endfor; ?>
-                </select>
-              </div>
-
-              <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">Generate Receipt (রসিদ তৈরি করুন)</button>
-              </div>
-            </form>
-
-            <!-- ===== Show Receipt or Alert ===== -->
-            <?php if ($receipt): ?>
-              <div class="container receipt-container bg-white mt-5 p-0"> 
-                <div class="row m-0 p-0"> 
-                  <div class="col-12 p-0"> 
-                    <div class="header-bg py-3 px-4 d-flex align-items-center"> 
-                        <div class="col-4 d-flex align-items-center"> 
-                            <div class="header-content d-flex align-items-center"> 
-                                <div class="logo-box-custom d-flex align-items-center"> 
-                                  <div class="p-2 bg-white rounded-circle shadow-sm" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden;"> <img src="/coder_group/assets/img/<?= htmlspecialchars($logo) ?>" alt="Logo" class="img-fluid"> </div> 
-                                  </div> 
-                                  <div class="text-white"> <p class="mb-0 small" style="color: #FFF;"><?= $slogan ?></p> </div> 
-                                  </div> 
-                                </div> 
-                                  <div class="col-4 text-center"> 
-                                      <div class="header-content"> <h1 class="text-white fw-bolder mb-1" style="font-size: 2rem;">MONEY RECEIPT</h1> <p class="mb-0 small" style="color: var(--bs-corporate-blue);"> 📞 <?= $phone ?? '0000-000000' ?> <br/>✉️ <?= $email ?? 'Your Mail Here' ?> </p> </div> 
-                                  </div> 
-                                    <div class="col-4 text-end"> 
-                                      <div class="header-content small"> <p class="fw-bold mb-0" style="color: var(--bs-corporate-blue);"><?= $siteName ?? 'Company Name Here' ?></p> <p class="mb-0"><?= $reg_no ?? 'Your Business Address 0000' ?></p> <p class="mb-0"><?= $address ?? 'Main Street, Unit 000C FEL' ?></p> </div> 
-                                    </div> 
-                                  </div> 
-                                </div> 
-                              </div> 
-                              <hr class="m-0 border border-4" style="border-color: var(--bs-corporate-orange) !important;"> <div class="row my-3 px-4 small"> <div class="col-6 d-flex align-items-center"> <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);">NO :</label> <span class="text-dark"><?= htmlspecialchars($receipt['trans_no'] ?? 'trans_no') ?></span> </div> <div class="col-6 d-flex justify-content-end align-items-center"> <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);">Date : </label> <span class="text-dark"><?= htmlspecialchars($receipt['created_at'] ?? 'created_at') ?></span> </div> </div> 
-                                    <div class="px-4 py-3"> 
-                                        <div class="mb-3 d-flex align-items-center"> <label class="me-2 text-dark">Received with thanks from</label> <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($member['name_bn'] ?? 'Member Name') ?></h5> <span class="text-muted"><small>Member Code: <?= htmlspecialchars($member['member_code'] ?? 'M-0000') ?></small></span> ( <span class="text-muted"><small>Share: <?= htmlspecialchars($receipt['no_share'] ?? '0') ?></small></span> ) </div> </div> 
-                                        <div class="row g-3 mb-3"> <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">For</label> <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['payment_method'] ?? 'Payment Method') ?></h5> </div> </div> 
-                                        <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">Year</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['payment_year'] ?? 'Payment Year') ?></h5> </div> </div> </div> <div class="row g-3 mb-3"> <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">Bank Trans</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['bank_trans_no'] ?? 'bank_trans_no') ?></h5> </div> </div> 
-                                        <div class="col-6 d-flex align-items-center"> <label class="me-2 text-dark">Bank Pay Date</label> <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['bank_pay_date'] ?? 'bank_pay_date') ?></h5> </div> </div> </div> 
-                                        <div class="row g-3 mb-4"> 
-                                          <div><strong>Expense of Fees:</strong></div> 
-                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">ID Card</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> 
-                                          <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['idcard_fee_amount'] ?? 'idcard_fee_amount') ?></h5> 
-                                        </div> </div> 
-                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">Passbook</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['passbook_fee_amount'] ?? 'passbook_fee_amount') ?></h5> </div> </div> 
-                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">Software</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['softuses_fee_amount'] ?? 'softuses_fee_amount') ?></h5> </div> </div> 
-                                        <div class="col-3 d-flex align-items-center"> <label class="me-2 text-dark">Other</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['other_fee_amount'] ?? 'other_fee_amount') ?></h5> </div> 
-                                      </div> 
-                                        <div class="mb-2 d-flex align-items-center"> <label class="me-2 text-dark">Due of Amount</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['net_amount'] ?? 'net_amount') ?></h5> </div> 
-                                      </div> 
-                                        <div class="mb-2 d-flex align-items-center"> <label class="me-2 text-dark">In word</label> 
-                                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1"> <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['total_amount_words'] ?? 'total_amount_words') ?></h5> </div> 
-                                      </div> 
-                                    </div> 
-                                  </div> 
-                                  <div class="row m-0 p-0"> <div class="col-12 p-0"> 
-                                    <div class="footer-bg py-3 px-4 d-flex justify-content-between align-items-end"> 
-                                      <div class="d-flex align-items-center me-3" style="z-index: 12;"> <p class="fw-bold mb-0 small" style="color: var(--bs-corporate-blue);">Amount=</p> 
-                                        <div class="bg-white border border-primary ms-2" style="width: 100px; height: 25px;"><?= htmlspecialchars($receipt['total_amount'] ?? 'total_amount') ?></div> </div> 
-                                        <div class="d-flex align-items-end me-3" style="width: 35%; z-index: 12;"> <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);"> Print Date : </label> <span class="text-dark"><?= date('d-m-Y H:i') ?></span> </div> 
-                                        <div class="d-flex align-items-end" style="width: 35%; z-index: 12;"> <p class="text-white fw-bold mb-0 me-2 small">Signature</p> <input type="text" class="dotted-input-solid text-center" style="width: 100%; border-color: white !important;"> </div> 
-                                      </div> 
-                                    </div> 
-                                  </div> 
-                                </div>
-
-            <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-              <div class="alert alert-warning">No payment found for selected type and year. ( নির্বাচিত পেমেন্ট এবং বছরের জন্য কোনও অর্থপ্রদান পাওয়া যায়নি। )</div>
-            <?php endif; ?>
-
-          </div>
-        </div>
+            </div>
       </div>
     </main>
   </div>
 </div>
+
+<!-- html2pdf.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+function downloadPDF() {
+    const element = document.getElementById('passbook-content');
+    const memberCode = '<?= htmlspecialchars($member['member_code']) ?>';
+    const year = '<?= $selected_year ?>';
+    
+    // Create a wrapper for proper sizing
+    const wrapper = document.createElement('div');
+    wrapper.style.width = '210mm'; // A4 width
+    wrapper.style.padding = '15mm';
+    wrapper.style.boxSizing = 'border-box';
+    wrapper.style.backgroundColor = 'white';
+    wrapper.innerHTML = element.innerHTML;
+    
+    // Temporarily add to body
+    document.body.appendChild(wrapper);
+    
+    const opt = {
+        margin: 0,
+        filename: `Passbook_${memberCode}_${year}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            scrollY: -window.scrollY,
+            scrollX: 0
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait'
+        }
+    };
+    
+    html2pdf().set(opt).from(wrapper).save().then(() => {
+        // Remove temporary wrapper
+        document.body.removeChild(wrapper);
+    });
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

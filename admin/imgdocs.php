@@ -28,6 +28,7 @@ include_once __DIR__ . '/../includes/open.php';
                                         <option value="" disabled selected>Select Category ( নির্বাচন করুন )</option>
                                         <option value="ban">Banner ( ব্যানার )</option>
                                         <option value="oth">Other ( অন্যান্য )</option>
+                                        <option value="sig">Sign ( স্বাক্ষর )</option>
                                     </select>
                                 </div>
                                 <!-- Existing Banner Name Fields -->

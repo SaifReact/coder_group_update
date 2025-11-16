@@ -305,7 +305,7 @@
 
 .team-overlay small {
     display: inline-block;
-    padding: 3px 15px;
+    padding: 3px 10px;
     color: var(--bs-white);
     background: var(--bs-primary);
 }

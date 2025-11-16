@@ -49,7 +49,7 @@ $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
                     <a href="/" class="nav-item nav-link active">প্রচ্ছদ (Home)</a>
                     <a href="members.php" class="nav-item nav-link active">সদস্য (Members)</a>
                     <a href="docs.php" class="nav-item nav-link active">ডকুমেন্টস (Documents)</a>
-                    <a href="executive.php" class="nav-item nav-link active">কার্যনির্বাহী (Executive)</a>
+                    <a href="projects.php" class="nav-item nav-link active">প্রকল্পসমূহ (Projects)</a>
                     <a href="form.php" class="nav-item nav-link">নিবন্ধন (Registration)</a>
                     <a href="login.php" class="nav-item nav-link">লগইন (Login)</a>
                 <?php endif; ?>

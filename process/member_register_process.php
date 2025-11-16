@@ -137,7 +137,7 @@ if ($method === 'POST') {
             $profile_image_path,
             $ref_no,
             $data['email'],
-            $data['memberType']
+            'MP'
         ]);
         if (!$ok) throw new Exception('Insert failed (members_info)');
 
@@ -209,24 +209,72 @@ if ($method === 'POST') {
             
         }
 
+        $stmtUtils = $pdo->query("SELECT * FROM utils WHERE fee_type = 'samity_share' AND status = 'A' ORDER BY id ASC LIMIT 1");
+        $stmtUtils = $stmtUtils->fetch(PDO::FETCH_ASSOC);
+        $per_share_value = $stmtUtils ? $stmtUtils['fee'] : 0;
+
         // Insert into member_share
-                $sql_share = "INSERT INTO member_share (member_id, member_code, no_share, admission_fee, idcard_fee, passbook_fee, softuses_fee, project_id, extra_share, late_assign, late_fee, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,NOW())";
+                $sql_share = "INSERT INTO member_share (member_id, member_code, no_share, samity_share, samity_share_amt, admission_fee, idcard_fee, passbook_fee, softuses_fee, extra_share, sundry_samity_share, late_assign, late_fee, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())";
                 $stmt_share = $pdo->prepare($sql_share);
-                $extraShare = isset($_POST['share']) ? ($_POST['share'] - 2) : 0;
+                $samityShare = 2;
+                $samityShareAmount = $samityShare * $per_share_value;
+                $extraShare = isset($_POST['share']) ? ($_POST['share'] - $samityShare) : 0;
                 $ok_share = $stmt_share->execute([
                     $member_id, $member_code,
                     $_POST['share'] ?? 0,
+                    $samityShare,
+                    0,
                     $_POST['admission_fee'] ?? 0,
                     $_POST['idcard_fee'] ?? 0,
                     $_POST['passbook_fee'] ?? 0,
                     $_POST['softuses_fee'] ?? 0,
-                    $_POST['project'] ?? 0,
                     $extraShare,
+                    $samityShareAmount,
                     'A',
                     0
                 ]);
         
         if (!$ok_share) throw new Exception('Share Insert Failed');
+
+        // Fetch extra_share from member_share table after insert
+        $stmtGetShare = $pdo->prepare("SELECT samity_share FROM member_share WHERE member_id = ? ORDER BY id DESC LIMIT 1");
+        $stmtGetShare->execute([$member_id]);
+        $rowShare = $stmtGetShare->fetch(PDO::FETCH_ASSOC);
+
+        $samityShareFromDb = $rowShare ? (int)$rowShare['samity_share'] : 0;
+
+        // Insert into member_project
+        $project_id = 1;
+        $member_project_id = null;
+
+        if ($project_id > 0) {
+            $stmtProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, ?, ?, ?, now())");
+            $insert_project_id = ($project_id > 0) ? $project_id : 1;
+            $ok_project = $stmtProject->execute([
+                $member_id,
+                $member_code,
+                $insert_project_id,
+                0,
+                0
+            ]);
+            if (!$ok_project) throw new Exception('Project Insert Failed');
+            $member_project_id = $pdo->lastInsertId();
+        }
+
+        // Insert into project_share for samity_share and extra_share
+        if ($samityShare > 0) {
+            $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+            // First, insert samity shares if samityShare > 0
+            if ($samityShare > 0 ) {
+                for ($i = 0; $i < $samityShare; $i++) {
+                    $samityShareNumber = str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+                    // Format: samity{member_code}{member_project_id}001, samity{member_code}{member_project_id}002
+                    $share_id = 'samity' . $member_id . $member_project_id . $project_id . $samityShareNumber;
+                    $ok_samity_share = $stmtInsert->execute([$member_project_id, $member_id, $member_code, $insert_project_id, $share_id]);
+                    if (!$ok_samity_share) throw new Exception('Samity Share Insert Failed');
+                }
+            }
+        }
 
         $username = trim($_POST['username'] ?? '');
         $password = md5(trim($_POST['password'] ?? ''));
@@ -241,7 +289,7 @@ if ($method === 'POST') {
 
         $pdo->commit();
 
-        $success_msg = '✅ আপনার আবেদনটি সফলভাবে সিস্টেমে সংরক্ষিত হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন অথবা ওয়েবসাইট এর মোবাইল নম্বরে যোগাযোগ করে অনুমোদনের তথ্য জানুন। আপনার সদস্য নং-' . $member_code . ', সদস্য নাম- ' . $data['name_bn'] . ', কোডার পেশাজীবী সমবায় সমিতি লিঃ নিবন্ধন করার জন্য, আপনাকে ধন্যবাদ।';
+       $success_msg = '✅ আপনার আবেদনটি সফলভাবে সিস্টেমে সংরক্ষিত হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন অথবা ব্যাংক হিসাব নামঃ কোডার পেশাজীবী সমবায় সমিতি লিঃ, হিসাব নং- ৫০৩০১০০১৭৬৩, পল্টন ব্রাঞ্চ, ব্যাংক এশিয়া পিএলসি, ঢাকা- ডিপোজিট করুন।  আপনার সদস্য নং-' . $member_code . ', সদস্য নাম- ' . $data['name_bn'] . ', সমিতি শেয়ার সংখ্যা- ' . $samityShareFromDb . ', সর্বমোট শেয়ার সংখ্যা- ' . $_POST['share'] ?? 0 . ', কোডার পেশাজীবী সমবায় সমিতি লিঃ নিবন্ধন করার জন্য, আপনাকে ধন্যবাদ।';
         
         if ($data['mobile']) {
             $sms_response = sms_send($data['mobile'], $success_msg);

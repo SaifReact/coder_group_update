@@ -18,11 +18,15 @@ try {
         $project_value = $_POST['project_value'] ?? 0;
         $project_share = $_POST['project_share'] ?? 0;
         $per_share_value = $_POST['per_share_value'] ?? 0;
+        $start_date = $_POST['start_date'] ?? null;
+        $end_date = $_POST['end_date'] ?? null;
+        $member_last_entry_date = $_POST['member_last_entry_date'] ?? null;
+        $project_priority = $_POST['project_priority'] ?? 0;
 
         $stmt = $pdo->prepare("INSERT INTO project
-            (project_name_bn, project_name_en, about_project, project_value, project_share, per_share_value) 
-            VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share, $per_share_value]);
+            (project_name_bn, project_name_en, about_project, project_value, project_share, per_share_value, start_date, end_date, member_last_entry_date, priority) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share, $per_share_value, $start_date, $end_date, $member_last_entry_date, $project_priority]);
 
         $_SESSION['success_msg'] = "✅ Project Added Successfully..! (সফলভাবে যোগ করা হয়েছে..!)";
         header("Location: ../admin/project.php");
@@ -37,12 +41,16 @@ try {
         $project_value = $_POST['edit_project_value'] ?? 0;
         $project_share = $_POST['edit_project_share'] ?? 0;
         $per_share_value = $_POST['edit_per_share_value'] ?? 0;
+        $start_date = $_POST['edit_start_date'] ?? null;
+        $end_date = $_POST['edit_end_date'] ?? null;
+        $member_last_entry_date = $_POST['edit_member_last_entry_date'] ?? null;
+        $project_priority = $_POST['edit_priority'] ?? 0;
 
         $stmt = $pdo->prepare("UPDATE project
-            SET project_name_bn = ?, project_name_en = ?, about_project = ?, project_value = ?, project_share = ?, per_share_value = ?
+            SET project_name_bn = ?, project_name_en = ?, about_project = ?, project_value = ?, project_share = ?, per_share_value = ?, start_date = ?, end_date = ?, member_last_entry_date = ?, priority = ?
             WHERE id = ?");
 
-        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share, $per_share_value, $id]);
+        $stmt->execute([$project_name_bn, $project_name_en, $about_project, $project_value, $project_share, $per_share_value, $start_date, $end_date, $member_last_entry_date, $project_priority, $id]);
 
         $_SESSION['success_msg'] = "✅ Project Updated Successfully..! (সফলভাবে হালনাগাদ করা হলো..!)";
         header("Location: ../admin/project.php");

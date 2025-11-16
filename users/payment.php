@@ -13,7 +13,7 @@ $admission_paid = false;
 $current_year = (int)date('Y');
 
 // Fetch project data (per_share_value)
-$per_share_value = 5000; // Default value
+$per_share_value = 0; // Default value
 $stmt = $pdo->prepare("SELECT * FROM project LIMIT 1");
 $stmt->execute();
 if ($row = $stmt->fetch()) {
@@ -21,9 +21,10 @@ if ($row = $stmt->fetch()) {
 }
 
 // Fetch all data from utils table and extract fee types
-$admissionfee = 1500; // Default value
-$monthly = 2000; // Default value
+$admissionfee = 0; // Default value
+$monthly = 0; // Default value
 $late = 0; // Default value
+$samityShare = 0;
 
 $stmt_utils = $pdo->prepare("SELECT * FROM utils where status = 'A'");
 $stmt_utils->execute();
@@ -34,19 +35,29 @@ while ($row_utils = $stmt_utils->fetch()) {
         } elseif ($row_utils['fee_type'] === 'monthly') {
             $monthly = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
         } elseif ($row_utils['fee_type'] === 'late') {
-            $late = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 0;
-        }
+            $late = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 200;
+        } elseif ($row_utils['fee_type'] === 'samity_share') {
+            $samityShare = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 5000;
     }
+  }
 }
 
-// Fetch admission info
-$late_assign = ''; // Default value
-$stmt1 = $pdo->prepare("SELECT no_share, admission_fee, late_assign FROM member_share WHERE member_id = ? LIMIT 1");
+$stmt1 = $pdo->prepare("SELECT * FROM member_share a JOIN member_project b ON a.member_id = b.member_id WHERE a.member_id = ? LIMIT 1");
 $stmt1->execute([$member_id]);
 if ($row1 = $stmt1->fetch()) {
     $no_share = (float)$row1['no_share'];
+    $samity_share = (float)$row1['samity_share'];
+    $samity_share_amt = (float)$row1['samity_share_amt'];
+    $extra_share = isset($row1['extra_share']) ? (float)$row1['extra_share'] : 0;
     $admission_paid = isset($row1['admission_fee']) && (float)$row1['admission_fee'] > 0;
     $late_assign = isset($row1['late_assign']) ? $row1['late_assign'] : '';
+    $late_fee = isset($row1['late_fee']) ? (float)$row1['late_fee'] : 0;
+    $sundry_samity_share = isset($row1['sundry_samity_share']) ? (float)$row1['sundry_samity_share'] : 0;
+    $install_advance = isset($row1['install_advance']) ? (float)$row1['install_advance'] : 0;
+    $project_share = isset($row1['project_share']) ? (float)$row1['project_share'] : 0;
+    $share_amount = isset($row1['share_amount']) ? (float)$row1['share_amount'] : 0;
+    $paid_amount = isset($row1['paid_amount']) ? (float)$row1['paid_amount'] : 0;
+    $sundry_share = isset($row1['sundry_share']) ? (float)$row1['sundry_share'] : 0;
 }
 
 // Fetch already paid monthly payments
@@ -81,7 +92,8 @@ include_once __DIR__ . '/../includes/open.php';
                   if ($status === 'P') {
                       $months = [
                           'admission' => 'Admission Fee (ভর্তি ফি)',
-                          'share'     => 'Share Fee (শেয়ার ফি)'
+                          'Samity Share'     => 'Samity Share Fee (শেয়ার ফি)',
+                          'Project Share'     => 'Project Share Fee (প্রকল্প শেয়ার ফি)'
                       ];
                   } else {
                       $months = [
@@ -124,11 +136,19 @@ include_once __DIR__ . '/../includes/open.php';
                 <div class="col-md-6 mb-3">
                   <label for="amount" class="form-label">Amount (টাকার পরিমাণ)</label>
                   <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                  
+                  <div id="admissionPaidMsg" class="form-text text-danger" style="display:none;"></div>
+                </div>
+                
+                <!-- Total Share Value (readonly) -->
+                <div class="col-md-6 mb-3" id="totalShareDiv" style="display:none;">
+                  <label for="total_share_value" class="form-label">Total Share Value (মোট শেয়ার মূল্য)</label>
+                  <input type="text" class="form-control" id="total_share_value" name="total_share_value" readonly>
                   <div id="admissionInfo" class="form-text text-info" style="display:none;">
                     প্রতি শেয়ার মূল্য <?php echo json_encode($per_share_value); ?> টাকা এবং আপনার মোট শেয়ার সংখ্যা: <span id="shareCount"></span>
                   </div>
-                  <div id="admissionPaidMsg" class="form-text text-danger" style="display:none;"></div>
                 </div>
+                
                 <div class="col-md-6 mb-3">
                   <label for="payment_mode" class="form-label">Payment Mode (পেমেন্ট মোড)</label><br/>
                   <div class="form-check form-check-inline">
@@ -140,22 +160,22 @@ include_once __DIR__ . '/../includes/open.php';
                       <label class="form-check-label" for="BP">Bank Pay</label>
                     </div>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-3" id="bankTransDiv" style="display:none;">
                   <label for="bank_trans" class="form-label">Bank Transaction (ব্যাংক লেনদেন নং)</label>
-                  <input type="text" class="form-control" id="bank_trans" name="bank_trans" required>
+                  <input type="text" class="form-control" id="bank_trans" name="bank_trans">
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-3" id="paymentDateDiv" style="display:none;">
                   <label for="payment_date" class="form-label">Bank Deposit Date (ব্যাংকে জমার তারিখ)</label>
-                  <input type="date" class="form-control" id="payment_date" name="payment_date" required>
+                  <input type="date" class="form-control" id="payment_date" name="payment_date">
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-4 mb-3" id="paymentSlipDiv" style="display:none;">
                   <label for="payment_slip" class="form-label">Payment Slip</label>
-                  <input type="file" class="form-control" id="payment_slip" name="payment_slip" accept="image/*" required onchange="previewPaymentSlip(event)">
+                  <input type="file" class="form-control" id="payment_slip" name="payment_slip" accept="image/*" onchange="previewPaymentSlip(event)">
                 </div>
                 <div class="col-md-3 mb-3">
                   <img id="paymentSlipPreview" src="#" alt="Preview" style="display:none;max-height:80px;margin-top:8px;">
                 </div>
-                <div class="col-12 col-md-5 mb-3">
+                <div class="col-12 col-md-12 mb-3">
                     <label for="remarks" class="form-label">Remarks (মন্তব্য)</label>
                     <textarea class="form-control" id="remarks" name="remarks" rows="5"></textarea>
                 </div>
@@ -174,25 +194,42 @@ include_once __DIR__ . '/../includes/open.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  var paymentType = document.getElementById('payment_type');
-  var paymentYear = document.getElementById('payment_year');
-  var amountInput = document.getElementById('amount');
-  var paymentMode = document.getElementById('payment_date');
-  var admissionInfo = document.getElementById('admissionInfo');
-  var admissionPaidMsg = document.getElementById('admissionPaidMsg');
-  var bankTrans = document.getElementById('bank_trans');
-  var paymentDate = document.getElementById('payment_date');
-  var submitButton = document.getElementById('submit');
-  var shareCount = document.getElementById('shareCount');
+    var paymentType = document.getElementById('payment_type');
+    var paymentYear = document.getElementById('payment_year');
+    var amountInput = document.getElementById('amount');
+    var paymentMode = document.getElementById('payment_date');
+    var admissionInfo = document.getElementById('admissionInfo');
+    var admissionPaidMsg = document.getElementById('admissionPaidMsg');
+    var bankTrans = document.getElementById('bank_trans');
+    var paymentDate = document.getElementById('payment_date');
+    var paymentSlip = document.getElementById('payment_slip');
+    var submitButton = document.getElementById('submit');
+    var shareCount = document.getElementById('shareCount');
+    var payModeAD = document.getElementById('AD');
+    var payModeBP = document.getElementById('BP');
+    var bankTransDiv = document.getElementById('bankTransDiv');
+    var paymentDateDiv = document.getElementById('paymentDateDiv');
+    var paymentSlipDiv = document.getElementById('paymentSlipDiv');
 
-  var noShare = <?php echo json_encode($no_share); ?>;
-  var admissionPaid = <?php echo json_encode($admission_paid); ?>;
-  var existingPayments = <?php echo json_encode($payments); ?>; // "month-year" format
-  var perShareValue = <?php echo json_encode($per_share_value); ?>;
-  var admissionfee = <?php echo json_encode($admissionfee); ?>;
-  var monthly = <?php echo json_encode($monthly); ?>;
-  var late = <?php echo json_encode($late); ?>;
-  var lateAssign = <?php echo json_encode($late_assign); ?>;
+    var noShare = <?php echo json_encode($no_share); ?>;
+    var samityShare = <?php echo json_encode($samity_share); ?>;
+    var samityShareAmount = <?php echo json_encode($samity_share_amt); ?>;
+    var extraShare = <?php echo json_encode($extra_share); ?>;
+    var admissionPaid = <?php echo json_encode($admission_paid); ?>;
+    var lateAssign = <?php echo json_encode($late_assign); ?>;
+    var lateFee = <?php echo json_encode($late_fee); ?>;
+    var sundrySamityShare = <?php echo json_encode($sundry_samity_share); ?>;
+    var installAdvance = <?php echo json_encode($install_advance); ?>;
+    var projectShare = <?php echo json_encode($project_share); ?>;
+    var shareAmount = <?php echo json_encode($share_amount); ?>;
+    var paidAmount = <?php echo json_encode($paid_amount); ?>;
+    var sundryShare = <?php echo json_encode($sundry_share); ?>;
+    var admissionPaid = <?php echo json_encode($admission_paid); ?>;
+    var existingPayments = <?php echo json_encode($payments); ?>; // "month-year" format
+    var perShareValue = <?php echo json_encode($per_share_value); ?>;
+    var admissionfee = <?php echo json_encode($admissionfee); ?>;
+    var monthly = <?php echo json_encode($monthly); ?>;
+ 
   
   // Get current month (0-11) and convert to month name
   var currentDate = new Date();
@@ -200,20 +237,75 @@ document.addEventListener('DOMContentLoaded', function() {
   var monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 
                     'july', 'august', 'september', 'october', 'november', 'december'];
   var currentMonthName = monthNames[currentMonth];
+  
+  // Function to toggle bank fields based on payment mode
+  function toggleBankFields() {
+    if(payModeBP.checked) {
+      bankTransDiv.style.display = 'block';
+      paymentDateDiv.style.display = 'block';
+      paymentSlipDiv.style.display = 'block';
+      bankTrans.required = true;
+      paymentDate.required = true;
+      paymentSlip.required = true;
+    } else if(payModeAD.checked) {
+      bankTransDiv.style.display = 'none';
+      paymentDateDiv.style.display = 'none';
+      paymentSlipDiv.style.display = 'none';
+      bankTrans.required = false;
+      paymentDate.required = false;
+      paymentSlip.required = false;
+    }
+  }
+  
+  // Add event listeners to payment mode radio buttons
+  payModeAD.addEventListener('change', toggleBankFields);
+  payModeBP.addEventListener('change', toggleBankFields);
 
   function updateForm() {
     var type = paymentType.value;
     var year = paymentYear.value;
+    
+    // Get share div
+    var totalShareDiv = document.getElementById('totalShareDiv');
 
     // First check if payment exists
     var key = type + '-' + year;
-    if(existingPayments.includes(key) || (type === 'admission' && admissionPaid)) {
-      // Payment already exists
+    
+    // For Samity Share payment, block if samity_share_amt > 0 and sundry_samity_share == 0
+    if(type === 'Samity Share' && samityShareAmount > 0 && sundrySamityShare == 0) {
+        amountInput.value = '';
+        amountInput.disabled = true;
+        bankTrans.disabled = true;
+        paymentDate.disabled = true;
+        paymentSlip.disabled = true;
+        admissionInfo.style.display = 'none';
+        totalShareDiv.style.display = 'none';
+        admissionPaidMsg.textContent = "সমিতি শেয়ার ফি ইতিমধ্যেই প্রদান করা হয়েছে";
+        admissionPaidMsg.style.display = 'block';
+        submitButton.style.display = 'none';
+        return;
+    } else if(type === 'Project Share' && existingPayments.includes(key) && sundryProjectShare <= 0) {
+      // Project Share payment already completed (no balance remaining)
       amountInput.value = '';
       amountInput.disabled = true;
       bankTrans.disabled = true;
       paymentDate.disabled = true;
+      paymentSlip.disabled = true;
       admissionInfo.style.display = 'none';
+      totalShareDiv.style.display = 'none';
+      admissionPaidMsg.textContent = "প্রকল্প শেয়ার ফি ইতিমধ্যেই প্রদান করা হয়েছে";
+      admissionPaidMsg.style.display = 'block';
+      submitButton.style.display = 'none';
+      return;
+    } else if(type !== 'Samity Share' && type !== 'Project Share' && (existingPayments.includes(key) || (type === 'admission' && admissionPaid))) {
+      // For non-share payments, block if already paid
+      amountInput.value = '';
+      amountInput.disabled = true;
+      bankTrans.disabled = true;
+      paymentDate.disabled = true;
+      paymentSlip.disabled = true;
+      admissionInfo.style.display = 'none';
+      totalShareDiv.style.display = 'none';
       admissionPaidMsg.textContent = type === 'admission' ? 
         "ভর্তি ফি ইতিমধ্যেই প্রদান করা হয়েছে" : 
         "এই মাসের পেমেন্ট ইতিমধ্যেই প্রদান করা হয়েছে";
@@ -226,6 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
     amountInput.disabled = false;
     bankTrans.disabled = false;
     paymentDate.disabled = false;
+    paymentSlip.disabled = false;
     admissionPaidMsg.style.display = 'none';
     submitButton.style.display = 'inline-block';
 
@@ -233,10 +326,52 @@ document.addEventListener('DOMContentLoaded', function() {
     if(type === 'admission') {
       amountInput.value = (admissionfee).toFixed(2);
       admissionInfo.style.display = 'none';
-    } else if(type === 'share') {
-      amountInput.value = (noShare * perShareValue).toFixed(2);
-      shareCount.textContent = noShare;
+      totalShareDiv.style.display = 'none';
+    } else if(type === 'Samity Share') {
+      // Samity Share = (no_share - extra_share) * per_share_value
+      var samityShareCount = no_share - extra_share;
+      var totalShareValue = samityShareCount * perShareValue;
+      console.log('Samity Share Count:', samityShareCount, totalShareValue);
+      amountInput.value = ''; // User will enter amount manually
+      shareCount.textContent = samityShareCount;
       admissionInfo.style.display = 'block';
+      
+      // Show total share value field
+      totalShareDiv.style.display = 'block';
+      
+      // Set initial value - show sundry_share if exists, otherwise show calculated total
+      if(sundry_samity_share > 0) {
+        // Second or subsequent transaction - show sundry_share from database
+        document.getElementById('total_share_value').value = sundry_samity_share.toFixed(2);
+      } else {
+        // First transaction - show (no_share - extra_share) * per_share_value
+        document.getElementById('total_share_value').value = totalShareValue.toFixed(2);
+      }
+      
+      // Calculate remaining on amount change
+      updateTotalShareValue();
+    } else if(type === 'Project Share') {
+      // Project Share = extra_share * per_share_value
+      var projectShareCount = projectShare;
+      var totalProjectShareValue = projectShareCount * perShareValue;
+      amountInput.value = ''; // User will enter amount manually
+      shareCount.textContent = projectShareCount;
+      admissionInfo.style.display = 'block';
+      
+      // Show total share value field
+      totalShareDiv.style.display = 'block';
+      
+      // Set initial value - show sundry_project_share if exists, otherwise show calculated total
+      if(sundryProjectShare > 0) {
+        // Second or subsequent transaction - show sundry_project_share from database
+        document.getElementById('total_share_value').value = sundryProjectShare.toFixed(2);
+      } else {
+        // First transaction - show projectShareCount * per_share_value
+        document.getElementById('total_share_value').value = totalProjectShareValue.toFixed(2);
+      }
+      
+      // Calculate remaining on amount change
+      updateTotalShareValue();
     } else if(type !== '') { // Monthly payments (january-december)
       var paymentAmount = monthly;
       
@@ -252,14 +387,53 @@ document.addEventListener('DOMContentLoaded', function() {
       
       amountInput.value = paymentAmount.toFixed(2);
       admissionInfo.style.display = 'none';
+      totalShareDiv.style.display = 'none';
     } else {
       amountInput.value = '';
       admissionInfo.style.display = 'none';
+      totalShareDiv.style.display = 'none';
+    }
+  }
+  
+  function updateTotalShareValue() {
+    var type = paymentType.value;
+    if(type === 'Samity Share') {
+      var amountPaid = parseFloat(amountInput.value) || 0;
+      var initialTotal = 0;
+      
+      // Get initial total based on whether sundry_share exists
+      if(sundryShare > 0) {
+        // Second or subsequent transaction - use sundry_share
+        initialTotal = sundryShare;
+      } else {
+        // First transaction - use (no_share - extra_share) * per_share_value
+        var samityShareCount = noShare - extraShare;
+        initialTotal = samityShareCount * perShareValue;
+      }
+      
+      var remainingTotal = initialTotal - amountPaid;
+      document.getElementById('total_share_value').value = remainingTotal.toFixed(2);
+    } else if(type === 'Project Share') {
+      var amountPaid = parseFloat(amountInput.value) || 0;
+      var initialTotal = 0;
+      
+      // Get initial total based on whether sundry_project_share exists
+      if(sundryProjectShare > 0) {
+        // Second or subsequent transaction - use sundry_project_share
+        initialTotal = sundryProjectShare;
+      } else {
+        // First transaction - use extra_share * per_share_value
+        initialTotal = extraShare * perShareValue;
+      }
+      
+      var remainingTotal = initialTotal - amountPaid;
+      document.getElementById('total_share_value').value = remainingTotal.toFixed(2);
     }
   }
 
   paymentType.addEventListener('change', updateForm);
   paymentYear.addEventListener('change', updateForm);
+  amountInput.addEventListener('input', updateTotalShareValue);
 
   // Initial load
   updateForm();

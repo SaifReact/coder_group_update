@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 06, 2025 at 08:05 PM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 7.4.33
+-- Generation Time: Nov 16, 2025 at 12:31 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -48,7 +48,9 @@ INSERT INTO `banner` (`id`, `banner_name_bn`, `banner_name_en`, `banner_image`, 
 (10, 'নিবন্ধন সনদপত্র', 'Registration Certificate', 'banner_1761845042_5250.pdf', '2025-10-30 17:24:02', 'oth'),
 (14, 'তথ্য বিবরণী', 'Information Statement', 'banner_1762169922_9058.pdf', '2025-11-03 11:38:42', 'oth'),
 (15, 'নিবন্ধিত কমিটি', 'Registered Committee', 'banner_1762169978_9881.pdf', '2025-11-03 11:39:38', 'oth'),
-(16, 'উপ-আইন', 'By-laws', 'banner_1762169992_3139.pdf', '2025-11-03 11:39:52', 'oth');
+(16, 'উপ-আইন', 'By-laws', 'banner_1762169992_3139.pdf', '2025-11-03 11:39:52', 'oth'),
+(17, 'সভাপতি', 'President', 'banner_1762658898_2437.png', '2025-11-09 03:28:18', 'sig'),
+(18, 'সম্পাদক', 'Secretary', 'banner_1762660714_3211.png', '2025-11-09 03:58:34', 'sig');
 
 -- --------------------------------------------------------
 
@@ -75,7 +77,9 @@ INSERT INTO `committee_member` (`id`, `member_id`, `member_code`, `committee_rol
 (11, 1, 'CPSS-00001', 2, 'https://www.facebook.com/md.saifur.rahman.635543/', 'linkedin.com', 'Entrepreneur', NULL),
 (12, 42, 'CPSS-00042', 4, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL),
 (13, 30, 'CPSS-00002', 5, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL),
-(14, 34, 'CPSS-00032', 3, 'facebook.com', 'linkedin.com', 'Committee Member', NULL);
+(14, 34, 'CPSS-00032', 3, 'facebook.com', 'linkedin.com', 'Committee Member', NULL),
+(15, 87, 'CPSS-00087', 7, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL),
+(16, 89, 'CPSS-00089', 7, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL);
 
 -- --------------------------------------------------------
 
@@ -188,7 +192,15 @@ INSERT INTO `members_info` (`id`, `member_code`, `name_bn`, `name_en`, `father_n
 (59, 'CPSS-00058', 'খন্দকার ফারজানা রহমান', 'KHANDAKER FARZANA RAHMAN', 'Khandaker Habibur Rahman', 'Fahima Khanam', '2854465149', '1993-12-10', 'ইসলাম', 'Married', 'Kazi Mahmud Morshed', '01990839119', 'Female', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00058/profile_image_1761812325_69031f659d8e4.jpg', '2025-10-30 08:18:45', 'Md. Mosharof Hossan', 'swe.merry@gmail.com', 'MP'),
 (62, 'CPSS-00060', 'মোঃ আশিকুর রহমান', 'MD ASHIQUR RAHMAN', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '4159140765', '1992-04-24', 'ইসলাম', 'Single', '', '01829041699', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00060/profile_image_1761928787_6904e6538f721.jpg', '2025-10-31 16:39:47', 'Md. Saifur Rahman', '', 'MP'),
 (63, 'CPSS-00063', 'সাকিফ আব্দুল্লাহ', 'SAKIF ABDULLAH', 'Md. Shamsul Haque Shaheen', 'Mst. Dilara Haque', '8255473053', '1997-12-06', 'ইসলাম', 'Single', '', '01535421765', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00063/profile_image_1762321305_690ae3991f225.jpg', '2025-11-05 05:41:45', 'CPSS-00063', 'sakif4646@gmail.com', 'MP'),
-(65, 'CPSS-00064', 'cpsslcom_samity', 'CPSSLCOMSAMITY', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '3155613156', '1995-11-01', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00064/profile_image_1762454508_690cebec01883.png', '2025-11-06 18:41:48', 'CPSS-00001', 'adminhera@gmail.com', 'MP');
+(65, 'CPSS-00064', 'cpsslcom_samity', 'CPSSLCOMSAMITY', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '3155613156', '1995-11-01', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00064/profile_image_1762454508_690cebec01883.png', '2025-11-06 18:41:48', 'CPSS-00001', 'adminhera@gmail.com', 'MP'),
+(69, 'CPSS-00066', 'cpsslcom_samity', 'CPSSLCOM SAMITY', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '7516548451654454654', '2000-01-01', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00066/profile_image_1762772807_6911c7473f224.png', '2025-11-10 11:06:47', 'Md. Saifur Rahman', 'adminhera@gmail.com', 'MP'),
+(78, 'CPSS-00070', 'ulla', 'ULLA', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '1236547892', '2000-11-01', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00070/profile_image_1762802127_691239cfc976e.png', '2025-11-10 19:15:27', 'Md. Saifur Rahman', 'adminhera@gmail.com', 'MP'),
+(80, 'CPSS-00079', 'lila', 'LILA', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '7412589632', '1998-11-01', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00079/profile_image_1762880848_69136d50396eb.png', '2025-11-11 17:07:28', 'Md. Saifur Rahman', 'adminhera@gmail.com', 'MP'),
+(84, 'CPSS-00081', 'Saif', 'SAIF', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '1243533344555443543', '1995-11-05', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00081/profile_image_1763271557_6919638510155.png', '2025-11-16 05:39:17', 'Md. Saifur Rahman', 'saif@gmail.com', 'MP'),
+(85, 'CPSS-00085', 'saifur', 'SAIFUR', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '5135445454545646465', '1998-11-04', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00085/profile_image_1763272227_69196623352a6.png', '2025-11-16 05:50:27', 'Md. Saifur Rahman', 'saif@gmail.com', 'MP'),
+(86, 'CPSS-00086', 'saifur', 'SAIFUR', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '4545465454654646546', '1998-11-04', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00086/profile_image_1763272895_691968bfe269e.png', '2025-11-16 06:01:35', 'Md. Saifur Rahman', 'saif@gmail.com', 'MP'),
+(88, 'CPSS-00087', 'saifur', 'SAIFUR', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '1593574682', '1995-11-03', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00087/profile_image_1763275101_6919715dc3266.png', '2025-11-16 06:38:21', 'Md. Saifur Rahman', 'saif@gmail.com', 'MP'),
+(89, 'CPSS-00089', 'saifur', 'SAIFUR', 'মোঃ ফজলুল হক মোল্লা', 'সেলিনা আক্তার', '7412589630', '1995-11-08', 'ইসলাম', 'Single', '', '01810547599', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00089/profile_image_1763275490_691972e298388.png', '2025-11-16 06:44:50', 'Md. Saifur Rahman', 'saif@gmail.com', 'MP');
 
 -- --------------------------------------------------------
 
@@ -268,7 +280,15 @@ INSERT INTO `member_nominee` (`id`, `member_id`, `member_code`, `name`, `relatio
 (56, 62, 'CPSS-00060', 'মোঃ ফজলুল হক মোল্লা ', 'বাবা ', '5505742956', '1956-01-01 00:00:00', 50, 'user_images/member_CPSS-00060/nominee_1_1761928787_6904e65390d6b.jpg', '2025-10-31 22:39:47'),
 (57, 62, 'CPSS-00060', 'সেলিনা আক্তার', 'মা', '9552864564', '1982-12-28 00:00:00', 50, 'user_images/member_CPSS-00060/nominee_2_1761928787_6904e653912ba.jpg', '2025-10-31 22:39:47'),
 (58, 63, 'CPSS-00063', 'Mst. Dilara Haque', 'MOTHER', '1469190118', '1970-07-06 00:00:00', 100, 'user_images/member_CPSS-00063/nominee_1_1762321305_690ae39920046.png', '2025-11-05 11:41:45'),
-(59, 65, 'CPSS-00064', 'সুমাইয়া আক্তার', 'Wife', '1654655155', '1998-11-06 00:00:00', 100, 'user_images/member_CPSS-00064/nominee_1_1762454508_690cebec6cbd3.jpg', '2025-11-07 00:41:48');
+(59, 65, 'CPSS-00064', 'সুমাইয়া আক্তার', 'Wife', '1654655155', '1998-11-06 00:00:00', 100, 'user_images/member_CPSS-00064/nominee_1_1762454508_690cebec6cbd3.jpg', '2025-11-07 00:41:48'),
+(63, 69, 'CPSS-00066', 'son', 'son', '34548465165754465', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00066/nominee_1_1762772807_6911c74794423.png', '2025-11-10 17:06:47'),
+(73, 78, 'CPSS-00070', 'son', 'son', '31654651654654665', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00070/nominee_1_1762802128_691239d02a6d9.png', '2025-11-11 01:15:28'),
+(75, 80, 'CPSS-00079', 'son', 'son', '1234567891', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00079/nominee_1_1762880848_69136d508c8c4.png', '2025-11-11 23:07:28'),
+(79, 84, 'CPSS-00081', 'son', 'son', '23344534345354354', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00081/nominee_1_1763271557_6919638518145.png', '2025-11-16 11:39:17'),
+(80, 85, 'CPSS-00085', 'son', 'son', '54654684646548465', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00085/nominee_1_1763272227_6919662336dac.png', '2025-11-16 11:50:27'),
+(81, 86, 'CPSS-00086', 'son', 'son', '45315646454646546', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00086/nominee_1_1763272896_691968c04724d.png', '2025-11-16 12:01:36'),
+(83, 88, 'CPSS-00087', 'son', 'son', '8523697410', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00087/nominee_1_1763275101_6919715dc4632.png', '2025-11-16 12:38:21'),
+(84, 89, 'CPSS-00089', 'son', 'son', '46546545454654654', '2025-11-01 00:00:00', 100, 'user_images/member_CPSS-00089/nominee_1_1763275490_691972e299881.png', '2025-11-16 12:44:50');
 
 -- --------------------------------------------------------
 
@@ -316,7 +336,15 @@ INSERT INTO `member_office` (`id`, `member_id`, `member_code`, `office_name`, `o
 (56, 59, 'CPSS-00058', 'National Housing Finance PLC', 'Plot: 11-A, Road No.- 48, Block- CWN (A), Gulshan- 2, Dhaka- 1212', 'Senior Officer (IT)', '2025-10-30 14:18:45', '394/A, West Nakhalpara, Tejgaon, Dhaka', 'Kazi Bari, Kachua, Kachua, Chandpur, PO : 3630'),
 (58, 62, 'CPSS-00060', 'Crystal International General Trading LLC', 'Gold Souk, Deira, Dubai, UAE', 'Manager', '2025-10-31 22:39:47', '2/F/1, Gold Souk, Deira, Dubai, UAE', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
 (59, 63, 'CPSS-00063', 'Era InfoTech LTD.', 'Level 3, Fareast Tower, 35 Topkhana Road, Dhaka 1000', 'Associate Engineer, Software Quality Assurance', '2025-11-05 11:41:45', '1ka, Dhanmondi 7/A', '1ka, Dhanmondi 7/A'),
-(60, 65, 'CPSS-00064', 'ERA InfoTech Ltd', '35, Farest Tower, (3rd Floor), Purana Paltan, Dhaka-1000', 'Senior Software Engineer', '2025-11-07 00:41:48', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা');
+(60, 65, 'CPSS-00064', 'ERA InfoTech Ltd', '35, Farest Tower, (3rd Floor), Purana Paltan, Dhaka-1000', 'Senior Software Engineer', '2025-11-07 00:41:48', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(64, 69, 'CPSS-00066', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-10 17:06:47', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(73, 78, 'CPSS-00070', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-11 01:15:28', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(75, 80, 'CPSS-00079', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-11 23:07:28', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(79, 84, 'CPSS-00081', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-16 11:39:17', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(80, 85, 'CPSS-00085', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-16 11:50:27', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(81, 86, 'CPSS-00086', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-16 12:01:36', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(83, 88, 'CPSS-00087', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-16 12:38:21', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা'),
+(84, 89, 'CPSS-00089', 'ERA InfoTech Ltd', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', 'Senior Software Engineer', '2025-11-16 12:44:50', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা', '১০/এ-৩, বর্ধন বাড়ি, দারুস সালাম থানা, মিরপুর, ঢাকা');
 
 -- --------------------------------------------------------
 
@@ -349,11 +377,38 @@ CREATE TABLE `member_payments` (
 --
 
 INSERT INTO `member_payments` (`id`, `member_id`, `member_code`, `payment_method`, `bank_pay_date`, `bank_trans_no`, `trans_no`, `amount`, `payment_year`, `created_at`, `created_by`, `serial_no`, `for_fees`, `payment_slip`, `status`, `pay_mode`, `remarks`) VALUES
-(1, 56, 'CPSS-00056', 'admission', '2025-10-30', '049WB317837', 'TRADMISSION20251', '1500.00', 2025, '2025-11-04 14:02:29', 22, 1, 'admission', 'payment_slip_56_1762243349_6142.jpeg', 'I', NULL, NULL),
-(2, 1, 'CPSS-00001', 'admission', '2025-11-03', 'dggfgdssdgr', 'TRADMISSION20252', '1500.00', 2025, '2025-11-06 23:10:16', 3, 2, 'admission', 'payment_slip_1_1762449016_1993.jpg', 'I', 'AD', 'previous a/c adjustment'),
-(3, 1, 'CPSS-00001', 'january', '2025-11-07', 'dggfgdssdgr', 'TRJANUARY20251', '2200.00', 2025, '2025-11-07 00:29:32', 3, 1, 'january', 'payment_slip_1_1762453772_4906.jpg', 'I', 'BP', 'gdgfgdgfdgfd'),
-(4, 1, 'CPSS-00001', 'february', '2025-11-07', 'ererertetr', 'TRFEBRUARY20251', '2200.00', 2025, '2025-11-07 00:31:49', 3, 1, 'february', 'payment_slip_1_1762453909_3379.jpg', 'I', 'BP', ''),
-(5, 1, 'CPSS-00001', 'march', '2025-11-05', 'jcvbg', 'TRMARCH20251', '2000.00', 2025, '2025-11-07 00:38:28', 3, 1, 'march', 'payment_slip_1_1762454308_7276.jpg', 'I', 'BP', 'dfsdfsdffsd');
+(1, 56, 'CPSS-00056', 'admission', '2025-10-30', '049WB317837', 'TRADMISSION20251', 1500.00, 2025, '2025-11-04 14:02:29', 22, 1, 'admission', 'payment_slip_56_1762243349_6142.jpeg', 'I', NULL, NULL),
+(15, 1, 'CPSS-00001', 'share', '0000-00-00', '', 'TRSHARE20251', 50000.00, 2025, '2025-11-09 15:52:03', 3, 1, 'share', NULL, 'I', 'AD', 'Adjust'),
+(16, 1, 'CPSS-00001', 'share', '2025-11-05', 'dggfgdssdgr', 'TRSHARE20252', 50000.00, 2025, '2025-11-09 15:52:58', 3, 2, 'share', 'payment_slip_1_1762681978_8790.png', 'I', 'BP', 'bank pay'),
+(17, 1, 'CPSS-00001', 'share', '0000-00-00', '', 'TRSHARE20253', 25000.00, 2025, '2025-11-09 15:56:21', 3, 3, 'share', NULL, 'I', 'AD', 'Adjust'),
+(18, 1, 'CPSS-00001', 'admission', '0000-00-00', '', 'TRADMISSION20252', 1500.00, 2025, '2025-11-10 13:24:39', 3, 2, 'admission', NULL, 'I', 'AD', 'Admission Fee');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `member_project`
+--
+
+CREATE TABLE `member_project` (
+  `id` int(11) NOT NULL,
+  `member_id` int(11) NOT NULL,
+  `member_code` varchar(50) NOT NULL,
+  `project_id` int(11) NOT NULL,
+  `project_share` int(11) NOT NULL,
+  `share_amount` decimal(12,2) NOT NULL,
+  `paid_amount` int(11) DEFAULT 0,
+  `sundry_amount` int(11) DEFAULT 0,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `member_project`
+--
+
+INSERT INTO `member_project` (`id`, `member_id`, `member_code`, `project_id`, `project_share`, `share_amount`, `paid_amount`, `sundry_amount`, `created_at`) VALUES
+(23, 84, 'CPSS-00081', 4, 0, 0.00, 0, 0, '2025-11-16 11:39:17'),
+(25, 88, 'CPSS-00087', 1, 0, 0.00, 0, 0, '2025-11-16 12:38:21'),
+(26, 89, 'CPSS-00089', 1, 0, 0.00, 0, 0, '2025-11-16 12:44:50');
 
 -- --------------------------------------------------------
 
@@ -366,6 +421,8 @@ CREATE TABLE `member_share` (
   `member_id` int(11) NOT NULL,
   `member_code` varchar(50) NOT NULL,
   `no_share` int(11) NOT NULL,
+  `samity_share` int(11) DEFAULT 0,
+  `samity_share_amt` int(11) DEFAULT 0,
   `admission_fee` int(11) DEFAULT 0,
   `idcard_fee` int(11) DEFAULT 0,
   `passbook_fee` int(11) DEFAULT 0,
@@ -375,9 +432,9 @@ CREATE TABLE `member_share` (
   `office_staff` int(11) DEFAULT 0,
   `other_fee` int(11) DEFAULT 0,
   `for_install` int(11) DEFAULT 0,
-  `project_id` int(11) DEFAULT 0,
   `extra_share` int(11) DEFAULT 0,
-  `share_amount` int(11) DEFAULT 0,
+  `install_advance` int(11) UNSIGNED NOT NULL DEFAULT 0,
+  `sundry_samity_share` int(11) UNSIGNED NOT NULL DEFAULT 0,
   `late_assign` varchar(3) DEFAULT NULL,
   `late_fee` int(11) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -387,31 +444,39 @@ CREATE TABLE `member_share` (
 -- Dumping data for table `member_share`
 --
 
-INSERT INTO `member_share` (`id`, `member_id`, `member_code`, `no_share`, `admission_fee`, `idcard_fee`, `passbook_fee`, `softuses_fee`, `sms_fee`, `office_rent`, `office_staff`, `other_fee`, `for_install`, `project_id`, `extra_share`, `share_amount`, `late_assign`, `late_fee`, `created_at`) VALUES
-(1, 1, 'CPSS-00001', 25, 1500, 150, 200, 400, 100, 300, 200, 278, NULL, NULL, 23, NULL, 'I', 400, '2025-11-06 13:38:28'),
-(19, 30, 'CPSS-00002', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
-(20, 31, 'CPSS-00031', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
-(22, 34, 'CPSS-00032', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
-(23, 35, 'CPSS-00035', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
-(24, 36, 'CPSS-00036', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
-(25, 39, 'CPSS-00037', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
-(26, 40, 'CPSS-00040', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-06 18:09:48'),
-(27, 41, 'CPSS-00041', 2, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(28, 42, 'CPSS-00042', 40, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(29, 45, 'CPSS-00043', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(30, 46, 'CPSS-00046', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(31, 47, 'CPSS-00047', 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 38, 0, NULL, 0, '2025-11-06 18:09:48'),
-(32, 48, 'CPSS-00048', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, NULL, 0, '2025-11-06 18:09:48'),
-(33, 50, 'CPSS-00049', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(34, 51, 'CPSS-00051', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(35, 52, 'CPSS-00052', 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 0, NULL, 0, '2025-11-06 18:09:48'),
-(36, 55, 'CPSS-00053', 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 0, NULL, 0, '2025-11-06 18:09:48'),
-(37, 56, 'CPSS-00056', 5, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 3, 0, NULL, 0, '2025-11-06 18:09:48'),
-(38, 57, 'CPSS-00057', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, NULL, 0, '2025-11-06 18:09:48'),
-(39, 59, 'CPSS-00058', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(40, 62, 'CPSS-00060', 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 23, 0, NULL, 0, '2025-11-06 18:09:48'),
-(41, 63, 'CPSS-00063', 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
-(42, 65, 'CPSS-00064', 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, 'A', 0, '2025-11-06 18:41:48');
+INSERT INTO `member_share` (`id`, `member_id`, `member_code`, `no_share`, `samity_share`, `samity_share_amt`, `admission_fee`, `idcard_fee`, `passbook_fee`, `softuses_fee`, `sms_fee`, `office_rent`, `office_staff`, `other_fee`, `for_install`, `extra_share`, `install_advance`, `sundry_samity_share`, `late_assign`, `late_fee`, `created_at`) VALUES
+(1, 1, 'CPSS-00001', 100, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, NULL, 98, 0, 0, 'I', 0, '2025-11-11 15:20:56'),
+(19, 30, 'CPSS-00002', 100, 2, 10000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 80, 0, 0, NULL, 0, '2025-11-11 19:02:37'),
+(20, 31, 'CPSS-00031', 2, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, '2025-11-09 09:41:03'),
+(22, 34, 'CPSS-00032', 2, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, '2025-11-09 09:41:01'),
+(23, 35, 'CPSS-00035', 2, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, '2025-11-09 09:41:00'),
+(24, 36, 'CPSS-00036', 10, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, '2025-11-09 09:41:05'),
+(25, 39, 'CPSS-00037', 4, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, '2025-11-09 09:41:06'),
+(26, 40, 'CPSS-00040', 10, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, '2025-11-09 09:41:08'),
+(27, 41, 'CPSS-00041', 2, 0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-08 17:13:42'),
+(28, 42, 'CPSS-00042', 40, 0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-08 17:13:46'),
+(29, 45, 'CPSS-00043', 2, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(30, 46, 'CPSS-00046', 2, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(31, 47, 'CPSS-00047', 40, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(32, 48, 'CPSS-00048', 10, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(33, 50, 'CPSS-00049', 2, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(34, 51, 'CPSS-00051', 2, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(35, 52, 'CPSS-00052', 5, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(36, 55, 'CPSS-00053', 4, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(37, 56, 'CPSS-00056', 5, 0, NULL, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 3, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(38, 57, 'CPSS-00057', 10, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(39, 59, 'CPSS-00058', 2, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(40, 62, 'CPSS-00060', 25, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(41, 63, 'CPSS-00063', 2, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, '2025-11-06 18:09:48'),
+(42, 65, 'CPSS-00064', 10, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 'A', 0, '2025-11-06 18:41:48'),
+(44, 69, 'CPSS-00066', 30, 2, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 0, 0, 'A', 0, '2025-11-10 11:50:59'),
+(52, 78, 'CPSS-00070', 15, 2, 10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 'A', 0, '2025-11-10 19:29:57'),
+(54, 80, 'CPSS-00079', 100, 2, 10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 0, 0, 'A', 0, '2025-11-11 17:07:28'),
+(56, 84, 'CPSS-00081', 20, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 10000, 'A', 0, '2025-11-16 05:39:17'),
+(57, 85, 'CPSS-00085', 20, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 'A', 0, '2025-11-16 05:50:27'),
+(58, 86, 'CPSS-00086', 20, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 10000, 'A', 0, '2025-11-16 06:01:36'),
+(60, 88, 'CPSS-00087', 10, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 10000, 'A', 0, '2025-11-16 06:38:21'),
+(61, 89, 'CPSS-00089', 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75000, 'A', 0, '2025-11-16 07:41:39');
 
 -- --------------------------------------------------------
 
@@ -426,15 +491,60 @@ CREATE TABLE `project` (
   `about_project` text NOT NULL,
   `project_value` int(11) DEFAULT NULL,
   `project_share` int(11) DEFAULT NULL,
-  `per_share_value` int(11) DEFAULT NULL
+  `per_share_value` int(11) DEFAULT NULL,
+  `start_date` timestamp NULL DEFAULT NULL,
+  `end_date` timestamp NULL DEFAULT NULL,
+  `member_last_entry_date` timestamp NULL DEFAULT NULL,
+  `priority` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `project`
 --
 
-INSERT INTO `project` (`id`, `project_name_bn`, `project_name_en`, `about_project`, `project_value`, `project_share`, `per_share_value`) VALUES
-(4, 'ধলেশ্বরী প্রকল্প-১', 'Dhaleshwari Project-1', '<p>ধলেশ্বরী প্রকল্প এর ৬ শতাংশ জমি ক্রয়</p>', 2500000, 500, 5000);
+INSERT INTO `project` (`id`, `project_name_bn`, `project_name_en`, `about_project`, `project_value`, `project_share`, `per_share_value`, `start_date`, `end_date`, `member_last_entry_date`, `priority`) VALUES
+(4, 'ধলেশ্বরী প্রকল্প-১', 'Dhaleshwari Project-1', '<p>ধলেশ্বরী প্রকল্প এর ৬ শতাংশ জমি ক্রয়</p>', 2500000, 500, 5000, '2025-10-14 18:00:00', '2030-10-13 18:00:00', '2025-11-29 18:00:00', 1),
+(5, 'ধলেশ্বরী প্রকল্প-2', 'Dhaleshwari Project-2', '<p>dcxvvcxcxvcvx</p>', 2500000, 500, 5000, '2025-10-14 18:00:00', '2030-10-13 18:00:00', '2025-11-29 18:00:00', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `project_share`
+--
+
+CREATE TABLE `project_share` (
+  `id` int(11) NOT NULL,
+  `member_project_id` int(11) DEFAULT NULL,
+  `member_id` int(11) NOT NULL,
+  `member_code` varchar(50) NOT NULL,
+  `project_id` int(11) NOT NULL,
+  `share_id` varchar(20) NOT NULL,
+  `status` varchar(3) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `project_share`
+--
+
+INSERT INTO `project_share` (`id`, `member_project_id`, `member_id`, `member_code`, `project_id`, `share_id`, `status`, `created_at`) VALUES
+(694, 25, 88, 'CPSS-00087', 1, 'samity8825001', NULL, '2025-11-16 06:38:21'),
+(695, 25, 88, 'CPSS-00087', 1, 'samity8825002', NULL, '2025-11-16 06:38:21'),
+(696, 26, 89, 'CPSS-00089', 1, 'samity89261001', NULL, '2025-11-16 06:44:50'),
+(697, 26, 89, 'CPSS-00089', 1, 'samity89261002', NULL, '2025-11-16 06:44:50'),
+(722, 26, 89, 'CPSS-00089', 1, 'samity89261003', NULL, '2025-11-16 07:03:50'),
+(723, 26, 89, 'CPSS-00089', 1, 'samity89261004', NULL, '2025-11-16 07:03:50'),
+(724, 26, 89, 'CPSS-00089', 1, 'samity89261005', NULL, '2025-11-16 07:03:51'),
+(725, 26, 89, 'CPSS-00089', 1, 'samity89261006', NULL, '2025-11-16 07:03:51'),
+(726, 26, 89, 'CPSS-00089', 1, 'samity89261007', NULL, '2025-11-16 07:03:51'),
+(727, 26, 89, 'CPSS-00089', 1, 'samity89261008', NULL, '2025-11-16 07:03:51'),
+(728, 26, 89, 'CPSS-00089', 1, 'samity89261009', NULL, '2025-11-16 07:03:51'),
+(729, 26, 89, 'CPSS-00089', 1, 'samity89261010', NULL, '2025-11-16 07:03:51'),
+(735, 26, 89, 'CPSS-00089', 1, 'samity89261011', NULL, '2025-11-16 07:27:52'),
+(736, 26, 89, 'CPSS-00089', 1, 'samity89261012', NULL, '2025-11-16 07:27:52'),
+(737, 26, 89, 'CPSS-00089', 1, 'samity89261013', NULL, '2025-11-16 07:27:52'),
+(738, 26, 89, 'CPSS-00089', 1, 'samity89261014', NULL, '2025-11-16 07:27:52'),
+(739, 26, 89, 'CPSS-00089', 1, 'samity89261015', NULL, '2025-11-16 07:27:52');
 
 -- --------------------------------------------------------
 
@@ -591,7 +701,51 @@ INSERT INTO `user_access` (`id`, `user_id`, `member_id`, `login`, `logout`) VALU
 (196, 22, 56, '2025-11-06 17:49:48', '2025-11-06 17:56:25'),
 (197, 2, 0, '2025-11-06 17:56:33', '2025-11-06 17:58:55'),
 (198, 22, 56, '2025-11-06 17:59:05', '2025-11-06 18:03:48'),
-(199, 3, 1, '2025-11-06 23:09:25', '2025-11-07 00:39:41');
+(199, 3, 1, '2025-11-06 23:09:25', '2025-11-07 00:39:41'),
+(200, 3, 1, '2025-11-07 21:28:04', '2025-11-07 21:32:30'),
+(201, 2, 0, '2025-11-07 21:32:48', '2025-11-07 21:36:57'),
+(202, 3, 1, '2025-11-07 21:47:20', '2025-11-07 21:47:20'),
+(203, 3, 1, '2025-11-07 21:47:52', '2025-11-07 21:47:52'),
+(204, 3, 1, '2025-11-08 09:27:08', '2025-11-08 09:57:02'),
+(205, 3, 1, '2025-11-08 21:50:07', '2025-11-08 21:50:07'),
+(206, 3, 1, '2025-11-08 22:35:03', '2025-11-08 22:35:03'),
+(207, 3, 1, '2025-11-09 00:10:08', '2025-11-09 01:08:57'),
+(208, 3, 1, '2025-11-09 09:13:37', '2025-11-09 09:16:41'),
+(209, 2, 0, '2025-11-09 09:16:52', '2025-11-09 09:32:15'),
+(210, 3, 1, '2025-11-09 09:32:25', '2025-11-09 09:57:20'),
+(211, 2, 0, '2025-11-09 09:57:38', '2025-11-09 09:58:48'),
+(212, 3, 1, '2025-11-09 09:59:07', '2025-11-09 09:59:07'),
+(213, 3, 1, '2025-11-09 12:00:48', '2025-11-09 12:00:48'),
+(214, 2, 0, '2025-11-10 09:39:28', '2025-11-10 10:25:18'),
+(215, 3, 1, '2025-11-10 13:21:27', '2025-11-10 16:39:47'),
+(216, 2, 0, '2025-11-10 17:11:38', '2025-11-10 17:12:05'),
+(217, 29, 69, '2025-11-10 17:12:16', '2025-11-10 17:12:16'),
+(218, 29, 69, '2025-11-10 17:49:14', '2025-11-10 17:51:36'),
+(219, 29, 69, '2025-11-10 17:57:38', '2025-11-10 20:57:20'),
+(220, 2, 0, '2025-11-10 21:12:01', '2025-11-10 21:56:53'),
+(221, 34, 75, '2025-11-11 00:18:19', '2025-11-11 00:29:00'),
+(222, 35, 76, '2025-11-11 00:32:31', '2025-11-11 01:11:36'),
+(223, 36, 78, '2025-11-11 01:17:34', '2025-11-11 01:17:34'),
+(224, 36, 78, '2025-11-11 18:46:49', '2025-11-11 18:48:55'),
+(225, 2, 0, '2025-11-11 18:49:05', '2025-11-11 18:49:56'),
+(226, 36, 78, '2025-11-11 18:50:06', '2025-11-11 19:46:56'),
+(227, 3, 1, '2025-11-11 19:47:23', '2025-11-11 22:53:10'),
+(228, 2, 0, '2025-11-11 23:07:47', '2025-11-11 23:08:23'),
+(229, 37, 80, '2025-11-11 23:09:03', '2025-11-11 23:45:55'),
+(230, 4, 30, '2025-11-11 23:46:05', '2025-11-11 23:46:05'),
+(231, 37, 80, '2025-11-15 22:18:11', '2025-11-15 22:19:18'),
+(232, 36, 78, '2025-11-16 10:16:14', '2025-11-16 10:28:02'),
+(233, 3, 1, '2025-11-16 10:40:10', '2025-11-16 10:40:27'),
+(234, 36, 78, '2025-11-16 10:47:31', '2025-11-16 10:47:39'),
+(235, 3, 1, '2025-11-16 10:47:51', '2025-11-16 11:06:47'),
+(236, 36, 78, '2025-11-16 11:06:57', '2025-11-16 11:07:21'),
+(237, 3, 1, '2025-11-16 11:07:32', '2025-11-16 11:20:44'),
+(238, 42, 87, '2025-11-16 12:09:51', '2025-11-16 12:10:15'),
+(239, 2, 0, '2025-11-16 12:10:26', '2025-11-16 12:11:08'),
+(240, 42, 87, '2025-11-16 12:11:20', '2025-11-16 12:36:45'),
+(241, 44, 89, '2025-11-16 12:46:53', '2025-11-16 12:48:38'),
+(242, 2, 0, '2025-11-16 12:48:48', '2025-11-16 12:49:17'),
+(243, 44, 89, '2025-11-16 12:49:26', '2025-11-16 12:49:26');
 
 -- --------------------------------------------------------
 
@@ -640,7 +794,15 @@ INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `passwo
 (24, 59, 'CPSS-00058', 'farzana', '136c9221f517422a68e09fed3051ecc7', 'f@rzana123', 'user', 'P', '2025-10-30 14:18:45'),
 (25, 62, 'CPSS-00060', 'Ashiq971', '817327651ecb7f95d02faedb062eeace', '543368166', 'user', 'P', '2025-10-31 22:39:47'),
 (26, 63, 'CPSS-00063', 'Sakif Abdullah', 'cd6d5b15c39e02a814e680ebb86b5c4b', 'Sakif@006', 'user', 'P', '2025-11-05 11:41:45'),
-(27, 65, 'CPSS-00064', 'codersamity', 'fbdfbbe83761ea561344c69f950b5ffc', 'codersamity', 'user', 'I', '2025-11-07 00:41:48');
+(27, 65, 'CPSS-00064', 'codersamity', 'fbdfbbe83761ea561344c69f950b5ffc', 'codersamity', 'user', 'P', '2025-11-07 00:41:48'),
+(29, 69, 'CPSS-00066', '5056461', '25d55ad283aa400af464c76d713c07ad', '12345678', 'user', 'P', '2025-11-10 17:06:47'),
+(36, 78, 'CPSS-00070', '555555', '96e79218965eb72c92a549dd5a330112', '111111', 'user', 'P', '2025-11-11 01:15:28'),
+(37, 80, 'CPSS-00079', '111111', '96e79218965eb72c92a549dd5a330112', '111111', 'user', 'P', '2025-11-11 23:07:28'),
+(39, 84, 'CPSS-00081', 'saif', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'user', 'I', '2025-11-16 11:39:17'),
+(40, 85, 'CPSS-00085', 'saifur', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'user', 'I', '2025-11-16 11:50:27'),
+(41, 86, 'CPSS-00086', 'saifur', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'user', 'I', '2025-11-16 12:01:36'),
+(43, 88, 'CPSS-00087', 'saifur', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'user', 'I', '2025-11-16 12:38:21'),
+(44, 89, 'CPSS-00089', 'saifur', '25d55ad283aa400af464c76d713c07ad', '12345678', 'user', 'P', '2025-11-16 12:44:50');
 
 -- --------------------------------------------------------
 
@@ -664,7 +826,8 @@ CREATE TABLE `utils` (
 INSERT INTO `utils` (`id`, `start_year`, `end_year`, `fee`, `status`, `fee_type`) VALUES
 (1, 2025, 2026, 1500, 'A', 'admission'),
 (2, 2025, 2026, 2000, 'A', 'monthly'),
-(3, 2025, 2026, 200, 'A', 'late');
+(3, 2025, 2026, 200, 'A', 'late'),
+(4, 2025, 2026, 5000, 'A', 'samity_share');
 
 --
 -- Indexes for dumped tables
@@ -725,6 +888,12 @@ ALTER TABLE `member_payments`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `member_project`
+--
+ALTER TABLE `member_project`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `member_share`
 --
 ALTER TABLE `member_share`
@@ -735,6 +904,14 @@ ALTER TABLE `member_share`
 --
 ALTER TABLE `project`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `project_share`
+--
+ALTER TABLE `project_share`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`),
+  ADD KEY `project_id` (`project_id`);
 
 --
 -- Indexes for table `services`
@@ -774,13 +951,13 @@ ALTER TABLE `utils`
 -- AUTO_INCREMENT for table `banner`
 --
 ALTER TABLE `banner`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `committee_member`
 --
 ALTER TABLE `committee_member`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `committee_role`
@@ -798,7 +975,7 @@ ALTER TABLE `company`
 -- AUTO_INCREMENT for table `members_info`
 --
 ALTER TABLE `members_info`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
 
 --
 -- AUTO_INCREMENT for table `member_documents`
@@ -810,31 +987,43 @@ ALTER TABLE `member_documents`
 -- AUTO_INCREMENT for table `member_nominee`
 --
 ALTER TABLE `member_nominee`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
 
 --
 -- AUTO_INCREMENT for table `member_office`
 --
 ALTER TABLE `member_office`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
 
 --
 -- AUTO_INCREMENT for table `member_payments`
 --
 ALTER TABLE `member_payments`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT for table `member_project`
+--
+ALTER TABLE `member_project`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `member_share`
 --
 ALTER TABLE `member_share`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT for table `project`
 --
 ALTER TABLE `project`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `project_share`
+--
+ALTER TABLE `project_share`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=758;
 
 --
 -- AUTO_INCREMENT for table `services`
@@ -852,19 +1041,19 @@ ALTER TABLE `setup`
 -- AUTO_INCREMENT for table `user_access`
 --
 ALTER TABLE `user_access`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=200;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=244;
 
 --
 -- AUTO_INCREMENT for table `user_login`
 --
 ALTER TABLE `user_login`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `utils`
 --
 ALTER TABLE `utils`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

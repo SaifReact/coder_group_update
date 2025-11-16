@@ -40,11 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_method = $_POST['payment_type'] ?? '';
     $amount = floatval($_POST['amount'] ?? 0);
     $bank_pay_date = $_POST['payment_date'] ?? '';
+    // Convert empty date to NULL
+    $bank_pay_date = !empty($bank_pay_date) ? $bank_pay_date : null;
     $bank_trans_no = $_POST['bank_trans'] ?? '';
     $pay_mode = $_POST['pay_mode'] ?? '';
     $remarks = $_POST['remarks'] ?? '';
     $created_by = $_SESSION['user_id'];
     $created_at = date('Y-m-d H:i:s');
+    $total_share_value = floatval($_POST['total_share_value'] ?? 0);
 
     // Fetch monthly fee from utils table
     $monthly_fee = 2000; // Default value
@@ -54,11 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $monthly_fee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
     }
 
-    // Get no_share from member_share table
-    $stmt = $pdo->prepare("SELECT no_share, admission_fee FROM member_share WHERE member_id = ? LIMIT 1");
+    // Get no_share and extra_share from member_share table
+    $stmt = $pdo->prepare("SELECT no_share, extra_share, admission_fee FROM member_share WHERE member_id = ? LIMIT 1");
     $stmt->execute([$member_id]);
     $share_data = $stmt->fetch();
     $no_share = $share_data ? (float)$share_data['no_share'] : 1;
+    $extra_share = $share_data ? (float)$share_data['extra_share'] : 0;
 
     // Check if admission_fee already paid for this user
     if ($payment_method === 'admission') {
@@ -70,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Check if payment already exists for this month and year
-    if ($payment_method !== 'admission' && $payment_method !== 'share') {
+    if ($payment_method !== 'admission' && $payment_method !== 'Samity Share' && $payment_method !== 'Project Share') {
         $stmt = $pdo->prepare("SELECT id FROM member_payments WHERE member_id = ? AND payment_method = ? AND payment_year = ? LIMIT 1");
         $stmt->execute([$member_id, $payment_method, $payment_year]);
         if ($stmt->fetch()) {
@@ -114,23 +118,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['success_msg'] = '✅ Admission Fee Payment Successfully..! (সফলভাবে ভর্তি ফি পেমেন্ট করা হলো..!)';
         header('Location: ../users/payment.php');
         exit;
-    } else if ($payment_method === 'share' && $amount > 0) {
-        // Fixed admission fees
-        $share_amount = round($amount * 0.98, 2);
-        $other_fee = round($amount * 0.02, 2);
+    } else if ($payment_method === 'Samity Share' && $amount > 0) {
+        
+        $sundry_samity_share = $total_share_value;
 
         // Insert into member_payments table
         $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Samity Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
 
-        // Update member_share table
-        $stmt = $pdo->prepare("UPDATE member_share SET share_amount = ?, other_fee = ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$share_amount, $other_fee, $member_id, $member_code]);
+        // Update member_share table - SET sundry_share to the remaining balance
+        $stmt = $pdo->prepare("UPDATE member_share SET samity_share_amt = samity_share_amt + ?, sundry_samity_share = ? WHERE member_id = ? AND member_code = ?");
+        $stmt->execute([$amount, $sundry_samity_share, $member_id, $member_code]);
 
-        $_SESSION['success_msg'] = '✅ Share Fee Payment Successfully..! (সফলভাবে শেয়ার ফি পেমেন্ট করা হলো..!)';
+        // Update project_share table
+
+        // Update payment_status = 'Y' for 2 project_share rows for this member
+        $stmt_ps = $pdo->prepare("SELECT id FROM project_share WHERE member_id = ? AND member_code = ? AND project_id = 0 LIMIT 2");
+        $stmt_ps->execute([$member_id, $member_code]);
+        $ids = $stmt_ps->fetchAll(PDO::FETCH_COLUMN);
+        if ($ids) {
+            foreach ($ids as $id) {
+                $stmt_upd = $pdo->prepare("UPDATE project_share SET payment_status = 'Y' WHERE id = ?");
+                $stmt_upd->execute([$id]);
+            }
+        }
+
+        $_SESSION['success_msg'] = '✅ Samity Share Fee Payment Successfully..! (সফলভাবে সমিতি শেয়ার ফি পেমেন্ট করা হলো..!)';
         header('Location: ../users/payment.php');
         exit;
-    } else if ($payment_method != 'admission' && $payment_method != 'share' && $amount > 0) {
+    } else if ($payment_method === 'Project Share' && $amount > 0) {
+        
+        $sundry_project_share = $total_share_value;
+
+        // Insert into member_payments table
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+
+        // Update member_share table - SET sundry_project_share to the remaining balance
+        $stmt = $pdo->prepare("UPDATE member_project SET paid_amount = paid_amount + ?, sundry_amount = sundry_amount + ? WHERE member_id = ? AND member_code = ?");
+        $stmt->execute([$amount, $other_fee, $sundry_project_share, $member_id, $member_code]);
+
+        $_SESSION['success_msg'] = '✅ Project Share Fee Payment Successfully..! (সফলভাবে প্রকল্প শেয়ার ফি পেমেন্ট করা হলো..!)';
+        header('Location: ../users/payment.php');
+        exit;
+    } else if ($payment_method != 'admission' && $payment_method != 'Samity Share' && $payment_method != 'Project Share' && $amount > 0) {
         // Calculate fees for monthly payments
         // Late fee is the difference between amount and monthly fee
         $late_fee = 0;
