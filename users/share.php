@@ -8,13 +8,14 @@ if (!isset($_SESSION['user_id'])) {
 include_once __DIR__ . '/../config/config.php';
 
 $member_id = $_SESSION['member_id'];
+$member_code = $_SESSION['member_code'];
 
 $stmt = $pdo->prepare("SELECT * FROM member_share WHERE member_id = ?");
 $stmt->execute([$member_id]);
 $share = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt_member_project = $pdo->prepare("SELECT * FROM member_project WHERE member_id = ?");
-$stmt_member_project->execute([$member_id]);
+$stmt_member_project = $pdo->prepare("SELECT * FROM member_project WHERE member_id = ? AND member_code = ?");
+$stmt_member_project->execute([$member_id, $member_code]);
 $member_projects = $stmt_member_project->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch all projects
@@ -71,13 +72,13 @@ include_once __DIR__ . '/../includes/open.php';
                             </div>
 
                             <div class="col-md-6 mb-3">
-                              <label class="form-label">Samity Share <span class="text-secondary small">(সমিতি শেয়ার)</span>
+                              <label class="form-label">Shares purchased by the Samity <span class="text-secondary small">(সমিতির ক্রয়কৃত শেয়ার)</span>
                               </label>
                                <input type="text" class="form-control" name="samityShare" id="samityShare" value="<?php echo isset($samityShare) ? htmlspecialchars($samityShare) : 0; ?>" readOnly>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                              <label class="form-label">Sold Share <span class="text-secondary small">(বিক্রিত শেয়ার)</span>
+                              <label class="form-label">Purchased shares of the project <span class="text-secondary small">(প্রকল্পের ক্রয়কৃত শেয়ার)</span>
                               </label>
                                <input type="text" class="form-control" name="sellingShare" id="sellingShare" value="<?php echo isset($member_projects[0]['project_share']) ? htmlspecialchars($member_projects[0]['project_share']) : 0; ?>" readOnly>
                             </div>
@@ -118,13 +119,17 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   projectSelect.addEventListener('change', function() {
     var pid = this.value;
+    var sellingShareInput = document.getElementById('sellingShare');
+    
     if (!pid) {
       infoBox.style.display = 'none';
       infoBox.innerHTML = '';
       if (findProjectInput) findProjectInput.value = '0';
       addShareDiv.style.display = 'none';
+      if (sellingShareInput) sellingShareInput.value = '0';
       return;
     }
+    
     // Check if project exists in member_project for this member
     var exists = 0;
     <?php
@@ -136,9 +141,30 @@ document.addEventListener('DOMContentLoaded', function() {
       exists = pid;
     }
     if (findProjectInput) findProjectInput.value = exists ? exists : '0';
+    
     // Show/hide addShare input based on findProject value
     if (parseInt(findProjectInput.value)) {
       addShareDiv.style.display = '';
+    }
+    
+    // Update sellingShare value based on selected project
+    if (parseInt(pid) > 1) {
+      // Fetch member's share for this specific project
+      fetch('get_member_project_share.php?project_id=' + encodeURIComponent(pid))
+        .then(r => r.json())
+        .then(function(data) {
+          if (data.project_share) {
+            if (sellingShareInput) sellingShareInput.value = data.project_share;
+          } else {
+            if (sellingShareInput) sellingShareInput.value = '0';
+          }
+        })
+        .catch(function() {
+          if (sellingShareInput) sellingShareInput.value = '0';
+        });
+    } else {
+      // For project_id = 1 (CPSSL), keep the original samity share value
+      if (sellingShareInput) sellingShareInput.value = '0';
     } 
     fetch('project_info.php?project_id=' + encodeURIComponent(pid))
       .then(r => r.json())
