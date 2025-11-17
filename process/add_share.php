@@ -90,71 +90,87 @@ try {
         header('Location: ../users/project_shares.php');
         exit;
        
-    } elseif ($project_id > 1 && $buyingShare > 0 && empty($share)) {   
-        // For other projects
-        $stmtGetPerShare = $pdo->prepare("SELECT per_share_value FROM project WHERE id = ? LIMIT 1");
-        $stmtGetPerShare->execute([$project_id]);
-        $rowPerShare = $stmtGetPerShare->fetch(PDO::FETCH_ASSOC);
-        $per_share_value = isset($rowPerShare['per_share_value']) ? (float)$rowPerShare['per_share_value'] : 0;
-       
-        // get samity share
-        $stmtGetSamityShare = $pdo->prepare("SELECT no_share, extra_share, samity_share FROM member_share WHERE member_id = ? AND member_code = ? LIMIT 1");
-        $stmtGetSamityShare->execute([$member_id, $member_code]);
-        $rowSamityShare = $stmtGetSamityShare->fetch(PDO::FETCH_ASSOC);
-        $samity_share = isset($rowSamityShare['samity_share']) ? (int)$rowSamityShare['samity_share'] : 0;
-        $currentExtra = isset($rowSamityShare['extra_share']) ? (int)$rowSamityShare['extra_share'] : 0;
-        $currentNoShare = isset($rowSamityShare['no_share']) ? (int)$rowSamityShare['no_share'] : 0;
+    } else if ($project_id > 1 && $buyingShare > 0 && empty($share)) {   
+    // For other projects
+    $stmtGetPerShare = $pdo->prepare("SELECT per_share_value FROM project WHERE id = ? LIMIT 1");
+    $stmtGetPerShare->execute([$project_id]);
+    $rowPerShare = $stmtGetPerShare->fetch(PDO::FETCH_ASSOC);
+    $per_share_value = isset($rowPerShare['per_share_value']) ? (float)$rowPerShare['per_share_value'] : 0;
 
-        $share_amount = $buyingShare * $per_share_value;
+    // get samity share
+    $stmtGetSamityShare = $pdo->prepare("SELECT no_share, extra_share, samity_share FROM member_share WHERE member_id = ? AND member_code = ? LIMIT 1");
+    $stmtGetSamityShare->execute([$member_id, $member_code]);
+    $rowSamityShare = $stmtGetSamityShare->fetch(PDO::FETCH_ASSOC);
+    $samity_share = isset($rowSamityShare['samity_share']) ? (int)$rowSamityShare['samity_share'] : 0;
+    $currentExtra = isset($rowSamityShare['extra_share']) ? (int)$rowSamityShare['extra_share'] : 0;
+    $currentNoShare = isset($rowSamityShare['no_share']) ? (int)$rowSamityShare['no_share'] : 0;
 
-        // Insert into member_project
-        $stmtInsert = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-        $stmtInsert->execute([$member_id, $member_code, $project_id, $buyingShare, $share_amount]);
-        $member_project_id = $pdo->lastInsertId();
+    $share_amount = $buyingShare * $per_share_value;
 
-        if ($member_project_id) {
-           // Check if this member already has CPSSL shares in project_share table
-           $stmtCheckCPSSL = $pdo->prepare("SELECT COUNT(*) as count FROM project_share WHERE member_id = ? AND member_code = ? AND project_id = 1");
-           $stmtCheckCPSSL->execute([$member_id, $member_code]);
-           $cpsslCount = $stmtCheckCPSSL->fetch(PDO::FETCH_ASSOC);
-           $hasCPSSLShares = ($cpsslCount['count'] > 0);
-           
-           $stmtInsertShare = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-           
-           // Only insert samity shares if member doesn't have CPSSL shares already
-           if ($samity_share > 0 && !$hasCPSSLShares) {
-                for ($i = 0; $i < $samity_share; $i++) {
-                    $samityShareNumber = str_pad(($i + 1), 2, '0', STR_PAD_LEFT);
-                    $share_id = 'samity' . $member_id . $member_project_id . $samityShareNumber;
-                    $ok_samity_share = $stmtInsertShare->execute([$member_project_id, $member_id, $member_code, 1, $share_id]);
-                    if (!$ok_samity_share) throw new Exception('Samity Share Insert Failed');
-                }
-            }
+    // Insert into member_project for the selected project
+    $stmtInsert = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+    $stmtInsert->execute([$member_id, $member_code, $project_id, $buyingShare, $share_amount]);
+    $member_project_id = $pdo->lastInsertId();
 
-        // Insert into project_share
-        if ($buyingShare > 0) {
-        $startingNumber = 1;    
+    // Check if this member already has CPSSL shares in project_share table (project_id = 1)
+    $stmtCheckCPSSL = $pdo->prepare("SELECT COUNT(*) as count FROM project_share WHERE member_id = ? AND member_code = ? AND project_id = 1");
+    $stmtCheckCPSSL->execute([$member_id, $member_code]);
+    $cpsslCount = $stmtCheckCPSSL->fetch(PDO::FETCH_ASSOC);
+    $hasCPSSLShares = ($cpsslCount['count'] > 0);
+
+    // If samity_share exists, handle the samity shares insertion
+    if ($samity_share > 0) {
+        // Check if the member has no `project_id = 1` in member_project
+        $stmtFindSamityProject = $pdo->prepare("SELECT id FROM member_project WHERE member_id = ? AND project_id = 1 ORDER BY id DESC LIMIT 1");
+        $stmtFindSamityProject->execute([$member_id]);
+        $samity_member_project = $stmtFindSamityProject->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$samity_member_project) {
+            // If no such entry exists, create a new row with project_id = 1
+            $stmtInsertSamityProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+            $stmtInsertSamityProject->execute([$member_id, $member_code, 1, 0, 0]);
+            $samity_member_project_id = $pdo->lastInsertId();
+        } else {
+            $samity_member_project_id = $samity_member_project['id'];
+        }
+
+        // Insert samity share records into project_share
+        $stmtInsertShare = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+
+        for ($i = 0; $i < $samity_share; $i++) {
+            $samityShareNumber = str_pad(($i + 1), 2, '0', STR_PAD_LEFT);
+            $share_id = 'samity' . $member_id . $samity_member_project_id . $samityShareNumber;
+            $stmtInsertShare->execute([$samity_member_project_id, $member_id, $member_code, 1, $share_id]);
+        }
+    }
+
+    // Insert project share for the selected project (for project_id > 1)
+    if ($buyingShare > 0) {
+        $startingNumber = 1;
         for ($i = 0; $i < $buyingShare; $i++) {
             $currentShareNumber = $startingNumber + $i;
             $share_id = 'share' . $member_id . $member_project_id . $project_id . str_pad($currentShareNumber, 3, '0', STR_PAD_LEFT);
             $stmtInsertShare->execute([$member_project_id, $member_id, $member_code, $project_id, $share_id]);
         }
     }
-    }
-        // Update no_share only if currentExtra is 0, otherwise keep current value
-        if ($currentExtra == 0) {
-           $newNoShare = $currentNoShare + $buyingShare;
-        } else {
-           $newNoShare = $currentNoShare; // Keep current no_share value unchanged
-        }
 
-        $newExtra = $currentExtra - $buyingShare;
-        if ($newExtra < 0) $newExtra = 0;
-        $stmtUpdate = $pdo->prepare("UPDATE member_share SET no_share = ?, extra_share = ? WHERE member_id = ? AND member_code = ?");
-        $stmtUpdate->execute([$newNoShare, $newExtra, $member_id, $member_code]);
-        $_SESSION['success_msg'] = '✅ আপনার শেয়ার যোগ করা হয়েছে এবং ' . $buyingShare . ' টি প্রকল্প শেয়ার যোগ করা হয়েছে (Your Share Added and ' . $buyingShare . ' Project Shares Added Successfully)';
-        header('Location: ../users/project_shares.php'); // Redirect to the appropriate page
-        exit;
+    // Update `no_share` and `extra_share` in `member_share` based on the current values and buyingShare
+    if ($currentExtra == 0) {
+        $newNoShare = $currentNoShare + $buyingShare;
+    } else {
+        $newNoShare = $currentNoShare; // Keep current no_share value unchanged
+    }
+
+    $newExtra = $currentExtra - $buyingShare;
+    if ($newExtra < 0) $newExtra = 0;
+
+    // Update member share table
+    $stmtUpdate = $pdo->prepare("UPDATE member_share SET no_share = ?, extra_share = ? WHERE member_id = ? AND member_code = ?");
+    $stmtUpdate->execute([$newNoShare, $newExtra, $member_id, $member_code]);
+
+    $_SESSION['success_msg'] = '✅ আপনার শেয়ার যোগ করা হয়েছে এবং ' . $buyingShare . ' টি প্রকল্প শেয়ার যোগ করা হয়েছে (Your Share Added and ' . $buyingShare . ' Project Shares Added Successfully)';
+    header('Location: ../users/project_shares.php'); // Redirect to the appropriate page
+    exit;
     } elseif ($project_id > 1 && $buyingShare > 0 && $share) {
         // For other projects when member_project exists
         $stmtGetExtra = $pdo->prepare("SELECT no_share, extra_share FROM member_share WHERE member_id = ? AND member_code = ? LIMIT 1");
