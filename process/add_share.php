@@ -229,7 +229,7 @@ try {
         $_SESSION['success_msg'] = '✅ আপনার শেয়ার হালনাগাদ করা হয়েছে এবং ' . $buyingShare . ' টি প্রকল্প শেয়ার যোগ করা হয়েছে (Your Share Updated and ' . $buyingShare . ' Project Shares Added Successfully)';
         header('Location: ../users/project_shares.php');
         exit;
-    }
+    } 
     else {
         throw new Exception('Invalid share purchase request.');
     }    
