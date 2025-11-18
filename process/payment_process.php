@@ -35,8 +35,9 @@ function uploadPaymentSlip($file) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_year = $_POST['payment_year'] ?? '';
-    $member_id = $_SESSION['member_id'];
-    $member_code = $_SESSION['member_code'];
+    $project_id = $_POST['project_id'] ?? 0;
+    $member_id = $_SESSION['member_id'] ?? 0;
+    $member_code = $_SESSION['member_code'] ?? '';
     $payment_method = $_POST['payment_type'] ?? '';
     $amount = floatval($_POST['amount'] ?? 0);
     $bank_pay_date = $_POST['payment_date'] ?? '';
@@ -50,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $total_share_value = floatval($_POST['total_share_value'] ?? 0);
 
     // Fetch monthly fee from utils table
-    $monthly_fee = 2000; // Default value
+    $monthly_fee = 0; // Default value
     $stmt_utils = $pdo->prepare("SELECT * FROM utils WHERE fee_type = 'monthly' AND status = 'A' LIMIT 1");
     $stmt_utils->execute();
     if ($row_utils = $stmt_utils->fetch()) {
@@ -146,17 +147,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['success_msg'] = '✅ Samity Share Fee Payment Successfully..! (সফলভাবে সমিতি শেয়ার ফি পেমেন্ট করা হলো..!)';
         header('Location: ../users/payment.php');
         exit;
-    } else if ($payment_method === 'Project Share' && $amount > 0) {
+    } else if ($payment_method === 'Project Share' && $amount > 0 && $project_id > 1) {
         
         $sundry_project_share = $total_share_value;
+
+        echo $sundry_project_share;
+        echo $project_id;
+        echo $payment_method;
+        echo $amount;
 
         // Insert into member_payments table
         $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
 
         // Update member_share table - SET sundry_project_share to the remaining balance
-        $stmt = $pdo->prepare("UPDATE member_project SET paid_amount = paid_amount + ?, sundry_amount = sundry_amount + ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$amount, $other_fee, $sundry_project_share, $member_id, $member_code]);
+        $stmt = $pdo->prepare("UPDATE member_project SET paid_amount = paid_amount + ?, sundry_amount = sundry_amount + ? WHERE member_id = ? AND member_code = ? AND project_id = ?");
+        $stmt->execute([$amount, $sundry_project_share, $member_id, $member_code, $project_id]);
 
         $_SESSION['success_msg'] = '✅ Project Share Fee Payment Successfully..! (সফলভাবে প্রকল্প শেয়ার ফি পেমেন্ট করা হলো..!)';
         header('Location: ../users/payment.php');

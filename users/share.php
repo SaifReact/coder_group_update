@@ -69,26 +69,25 @@ include_once __DIR__ . '/../includes/open.php';
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                              <label class="form-label">Remaining Share <span class="text-secondary small">(অবশিষ্ট শেয়ার)</span>
+                              <label class="form-label"> অবশিষ্ট শেয়ার <span class="text-secondary small">(Remaining Share)</span>
                               </label>
                                <input type="text" class="form-control" name="previousShare" id="previousShare" value="<?php echo isset($remainingShare) ? htmlspecialchars($remainingShare) : 0; ?>" readOnly>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                              <label class="form-label">Shares purchased by the Samity <span class="text-secondary small">(সমিতির ক্রয়কৃত শেয়ার)</span>
+                              <label class="form-label"> সমিতির ক্রয়কৃত শেয়ার <span class="text-secondary small">(Shares purchased by the Samity)</span>
                               </label>
                                <input type="text" class="form-control" name="samityShare" id="samityShare" value="<?php echo isset($samityShare) ? htmlspecialchars($samityShare) : 0; ?>" readOnly>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                              <label class="form-label">Purchased shares of the project <span class="text-secondary small">(প্রকল্পের ক্রয়কৃত শেয়ার)</span>
+                              <label class="form-label"> প্রকল্পের ক্রয়কৃত শেয়ার <span class="text-secondary small">(Purchased shares of the project)</span>
                               </label>
                                <input type="text" class="form-control" name="sellingShare" id="sellingShare" value="<?php echo isset($member_projects[0]['project_share']) ? htmlspecialchars($member_projects[0]['project_share']) : 0; ?>" readOnly>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                              <label class="form-label">Add Share <span class="text-secondary small">(শেয়ার যোগ করুন)</span></label>
-                              </label>
+                              <label class="form-label"> শেয়ার যোগ করুন <span class="text-secondary small">(Add Share)</span></label>
                                <input type="text" class="form-control" name="buyingShare" id="buyingShare" value="0" required>
                             </div> 
 
