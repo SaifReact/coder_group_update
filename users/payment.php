@@ -297,7 +297,7 @@ include_once __DIR__ . '/../includes/open.php';
                   // Populate project select
                   projectSelect.innerHTML = '<option value="">প্রকল্প নির্বাচন করুন (Select Project)</option>';
                   memberProjects.forEach(function(p) {
-                    projectSelect.innerHTML += `<option value="${p.project_id}" data-share-amount="${p.share_amount}" data-paid-amount="${p.paid_amount}" data-sundry-share="${p.sundry_share}">${p.project_name_bn}</option>`;
+                    projectSelect.innerHTML += `<option value="${p.project_id}" data-share-amount="${p.share_amount}" data-paid-amount="${p.paid_amount}" data-sundry-amount="${p.sundry_amount}">${p.project_name_bn}</option>`;
                   });
                   projectSelect.style.display = '';
                   totalShareDiv.style.display = '';
@@ -327,7 +327,7 @@ include_once __DIR__ . '/../includes/open.php';
                   totalShareValue.value = Math.max(base - val, 0);
                 } else if (type === 'Project Share') {
                   var selected = projectSelect.options[projectSelect.selectedIndex];
-                  base = selected ? parseFloat(selected.getAttribute('data-share-amount')) || 0 : 0;
+                  base = selected ? parseFloat(selected.getAttribute('data-sundry-amount')) || 0 : 0;
                   totalShareValue.value = Math.max(base - val, 0);
                 }
                 // Prevent amount > total share value
@@ -352,8 +352,8 @@ include_once __DIR__ . '/../includes/open.php';
                 var selected = projectSelect.options[projectSelect.selectedIndex];
                 var base = selected ? parseFloat(selected.getAttribute('data-share-amount')) || 0 : 0;
                 var paid = selected ? parseFloat(selected.getAttribute('data-paid-amount')) || 0 : 0;
-                var sundry = selected ? parseFloat(selected.getAttribute('data-sundry-share')) || 0 : 0;
-                totalShareValue.value = base;
+                var sundry = selected ? parseFloat(selected.getAttribute('data-sundry-amount')) || 0 : 0;
+                totalShareValue.value = sundry;
                 if (paid > 0 && sundry == 0) {
                   admissionPaidMsg.style.display = '';
                   admissionPaidMsg.innerText = 'আপনার প্রকল্প শেয়ার ফি প্রদান করা হয়েছে। (Your Project Share Fee has already been paid.)';

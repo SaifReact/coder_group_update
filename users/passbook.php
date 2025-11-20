@@ -13,6 +13,7 @@ function englishToBanglaNumber($number) {
     $bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯', '.', ','];
     return str_replace($en, $bn, $number);
 }
+
 $member_id = $_SESSION['member_id'];
 
 // Get selected year from POST or default to current year
@@ -46,24 +47,43 @@ $stmt = $pdo->prepare("
     ORDER BY 
         CASE a.payment_method
             WHEN 'admission' THEN 1
-            WHEN 'share' THEN 2
-            WHEN 'january' THEN 3
-            WHEN 'february' THEN 4
-            WHEN 'march' THEN 5
-            WHEN 'april' THEN 6
-            WHEN 'may' THEN 7
-            WHEN 'june' THEN 8
-            WHEN 'july' THEN 9
-            WHEN 'august' THEN 10
-            WHEN 'september' THEN 11
-            WHEN 'october' THEN 12
-            WHEN 'november' THEN 13
-            WHEN 'december' THEN 14
+            WHEN 'Samity Share' THEN 2
+            WHEN 'Project Share' THEN 3
+            WHEN 'january' THEN 4
+            WHEN 'february' THEN 5
+            WHEN 'march' THEN 6
+            WHEN 'april' THEN 7
+            WHEN 'may' THEN 8
+            WHEN 'june' THEN 9
+            WHEN 'july' THEN 10
+            WHEN 'august' THEN 11
+            WHEN 'september' THEN 12
+            WHEN 'october' THEN 13
+            WHEN 'november' THEN 14
+            WHEN 'december' THEN 15
         END,
         a.serial_no
 ");
 $stmt->execute([$member_id, $selected_year]);
 $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get President signature
+$stmt = $pdo->prepare("SELECT banner_image FROM banner WHERE banner_name_en = ? LIMIT 1");
+$stmt->execute(['president']);
+$president_sign = $stmt->fetch(PDO::FETCH_ASSOC);
+$president_signature = $president_sign ? $president_sign['banner_image'] : '';
+
+// Get Secretary signature
+$stmt = $pdo->prepare("SELECT banner_image FROM banner WHERE banner_name_en = ? LIMIT 1");
+$stmt->execute(['secretary']);
+$secretary_sign = $stmt->fetch(PDO::FETCH_ASSOC);
+$secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
+
+// Get Cashier signature
+$stmt = $pdo->prepare("SELECT banner_image FROM banner WHERE banner_name_en = ? LIMIT 1");
+$stmt->execute(['cashier']);
+$cashier_sign = $stmt->fetch(PDO::FETCH_ASSOC);
+$cashier_signature = $cashier_sign ? $cashier_sign['banner_image'] : '';
 
 include_once __DIR__ . '/../includes/open.php';
 ?>
@@ -149,8 +169,9 @@ include_once __DIR__ . '/../includes/open.php';
                         <?php
                         // Define all months in order
                         $all_months = [
-                            'admission' => 'ভর্তি ফি',
-                            'share' => 'শেয়ার ফি',
+                            'admission' => 'সদস্য এন্ট্রি ফি',
+                            'Samity Share' => 'সমিতি শেয়ার ফি',
+                            'Project Share' => 'প্রকল্প শেয়ার ফি',
                             'january' => 'জানুয়ারি',
                             'february' => 'ফেব্রুয়ারি',
                             'march' => 'মার্চ',
@@ -171,8 +192,8 @@ include_once __DIR__ . '/../includes/open.php';
                         $total_amount = 0;
                         
                         foreach ($payments as $payment) {
-                            // For admission and share, show full amount as installment (no late fee)
-                            if ($payment['payment_method'] == 'admission' || $payment['payment_method'] == 'share') {
+                            // For admission, Samity Share, and Project Share, show full amount as installment (no late fee)
+                            if ($payment['payment_method'] == 'admission' || $payment['payment_method'] == 'Samity Share' || $payment['payment_method'] == 'Project Share') {
                                 $installment = $payment['amount'];
                                 $late_fee = 0;
                             } else {
@@ -192,9 +213,9 @@ include_once __DIR__ . '/../includes/open.php';
                         
                         foreach ($all_months as $method => $month_name) {
                             // For share payments, display all transactions
-                            if ($method === 'share') {
-                                $share_payments = array_filter($payments, function($p) {
-                                    return $p['payment_method'] === 'share';
+                            if ($method === 'Samity Share' || $method === 'Project Share') {
+                                $share_payments = array_filter($payments, function($p) use ($method) {
+                                    return $p['payment_method'] === $method;
                                 });
                                 
                                 if (count($share_payments) > 0) {
@@ -237,7 +258,7 @@ include_once __DIR__ . '/../includes/open.php';
                                     $found = true;
                                     
                                     // For admission, show full amount as installment (no late fee)
-                                    if ($method == 'admission') {
+                                    if ($method == 'admission' || $method == 'Samity Share' || $method == 'Project Share') {
                                         $installment = $payment['amount'];
                                         $late_fee = 0;
                                     } else {
@@ -283,6 +304,35 @@ include_once __DIR__ . '/../includes/open.php';
                         </tr>
                       </tbody>
                     </table>
+                    <div class="signature-section">
+                        <div class="signature-box">
+                            <?php if (!empty($president_signature)): ?>
+                            <img src="<?php echo BASE_URL; ?>banner/<?= htmlspecialchars($president_signature) ?>" alt="President Signature" class="signature-image">
+                            <?php else: ?>
+                            <div class="signature-line"></div>
+                            <?php endif; ?>
+                            <div class="signature-line"></div>
+                          <div class="signature-label">সভাপতি</div>
+                        </div>
+                        <div class="signature-box">
+                            <?php if (!empty($cashier_signature)): ?>
+                            <img src="<?php echo BASE_URL; ?>banner/<?= htmlspecialchars($cashier_signature) ?>" alt="Cashier Signature" class="signature-image">
+                            <?php else: ?>
+                            <div class="signature-line"></div>
+                            <?php endif; ?>
+                            <div class="signature-line"></div>
+                          <div class="signature-label">কোষাধ্যক্ষ</div>
+                        </div>
+                        <div class="signature-box">
+                            <?php if (!empty($secretary_signature)): ?>
+                            <img src="<?php echo BASE_URL; ?>banner/<?= htmlspecialchars($secretary_signature) ?>" alt="Secretary Signature" class="signature-image">
+                            <?php else: ?>
+                            <div class="signature-line"></div>
+                            <?php endif; ?>
+                            <div class="signature-line"></div>
+                          <div class="signature-label">সম্পাদক</div>
+                        </div>
+                      </div>
                     </div><!-- End passbook-content -->
                   </div>
                 </div>

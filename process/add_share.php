@@ -70,7 +70,7 @@ try {
         
         if (!$existingMemberProjectId) {
             $stmtInsertProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-            $stmtInsertProject->execute([$member_id, $member_code, 1, 0, 0]);
+            $stmtInsertProject->execute([$member_id, $member_code, $project_id, 0, 0]);
             $member_project_id = $pdo->lastInsertId();
         } else {
             $member_project_id = $existingMemberProjectId;
@@ -92,7 +92,7 @@ try {
         header('Location: ../users/project_shares.php');
         exit;
 
-    } elseif ($project_id > 1 && $buyingShare > 0) {
+    } elseif ($project_id > 1 && $buyingShare > 0 && $previousShare > 0) {
 
         $original_project_id = (int)$project_id; // Preserve original project_id
 
@@ -143,8 +143,8 @@ try {
                 if (!$buyingProject) {
                     // Create a new project for buying shares
                     $stmtInsert2 = $pdo->prepare("
-                        INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at)
-                        VALUES (?, ?, $original_project_id, $buyingShare, $buyingShareAmount, NOW())
+                        INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, sundry_amount, created_at)
+                        VALUES (?, ?, $original_project_id, $buyingShare, $buyingShareAmount, $buyingShareAmount, NOW())
                     ");
                     $stmtInsert2->execute([$member_id, $member_code]);
                     $buying_member_project_id = $pdo->lastInsertId();
@@ -199,8 +199,8 @@ try {
                 $startingNumber = intval($lastThreeDigits) + 1;
             }
 
-            $stmtUpdateProject = $pdo->prepare("UPDATE member_project SET project_share = project_share + ?, share_amount = share_amount + ? WHERE id = ? AND member_id = ? AND member_code = ? AND project_id = ?");
-            $stmtUpdateProject->execute([$buyingShare, $share_amount, $id, $member_id, $member_code, $project_id]);
+            $stmtUpdateProject = $pdo->prepare("UPDATE member_project SET project_share = project_share + ?, share_amount = share_amount + ?, sundry_amount = sundry_amount + ? WHERE id = ? AND member_id = ? AND member_code = ? AND project_id = ?");
+            $stmtUpdateProject->execute([$buyingShare, $share_amount, $share_amount, $id, $member_id, $member_code, $project_id]);
 
             // Insert rows into project_share table based on addShare count
             $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
@@ -227,6 +227,31 @@ try {
         }
 
         $_SESSION['success_msg'] = '✅ আপনার শেয়ার হালনাগাদ করা হয়েছে এবং ' . $buyingShare . ' টি প্রকল্প শেয়ার যোগ করা হয়েছে (Your Share Updated and ' . $buyingShare . ' Project Shares Added Successfully)';
+        header('Location: ../users/project_shares.php');
+        exit;
+    } elseif ($project_id == 2 && $previousShare == 0 && $buyingShare > 0) {
+
+        $currentNoShare = $currentNoShare + $buyingShare;
+        $currentExtraShare = $currentExtraShare + $buyingShare;
+
+        // Check if either of the conditions is met
+        if ($currentNoShare > 100 || $currentExtraShare > 98) {
+            // Handle the case where noShare exceeds 100
+            if ($currentNoShare > 100) {
+                $currentNoShare = 100;
+                // $_SESSION['error_msg'] = ('❌ শেয়ার সংযুক্তকরণ ব্যর্থ হয়েছে: শেয়ার  100 এর বেশি হতে পারে না (Share Attachment Failed: No of Shares cannot exceed 100).');
+            }
+            // Handle the case where extraShare exceeds 98
+            if ($currentExtraShare > 98) {
+                $_SESSION['error_msg'] = ('❌ শেয়ার সংযুক্তকরণ ব্যর্থ হয়েছে: অতিরিক্ত শেয়ার ৯৮ এর বেশি হতে পারে না (Share Attachment Failed: Extra Shares cannot exceed 98).');
+            }
+        }
+
+        $stmtUpdate = $pdo->prepare("UPDATE member_share SET no_share = ?, extra_share = ? WHERE member_id = ? AND member_code = ?");
+        $stmtUpdate->execute([$currentNoShare, $currentExtraShare, $member_id, $member_code]);  
+
+        // Handle Share Attachment logic here if needed
+        $_SESSION['success_msg'] = '✅ শেয়ার সংযুক্তকরণ সফল হয়েছে (Share Attachment Successful)';
         header('Location: ../users/project_shares.php');
         exit;
     } 

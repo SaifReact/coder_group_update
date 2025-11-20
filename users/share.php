@@ -54,9 +54,9 @@ include_once __DIR__ . '/../includes/open.php';
                                  <option value="">প্রকল্প নির্বাচন করুন (Select Project)</option>
                                  <?php
                                  // If committee_role is 'Entrepreneur', add CPSSL option
-                                //  if($remainingShare == 0 ){
-                                //     echo '<option value="2">শেয়ার সংযুক্তকরণ (Share Attachment)</option>';
-                                //  }
+                                 if($remainingShare == 0 ){
+                                    echo '<option value="2">শেয়ার সংযুক্তকরণ (Share Attachment)</option>';
+                                 }
                                  if (!empty($committee_role) && isset($committee_role[0]['role']) && $committee_role[0]['role'] === 'Entrepreneur') {
                                      echo '<option value="1">সমিতি শেয়ার (CPSSL)</option>';
                                  }

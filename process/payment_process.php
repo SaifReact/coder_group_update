@@ -149,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     } else if ($payment_method === 'Project Share' && $amount > 0 && $project_id > 1) {
         
-        $sundry_project_share = $total_share_value;
+        $sundry_project_share = $amount;
 
         echo $sundry_project_share;
         echo $project_id;
@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$member_id, $member_code, $payment_method, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
 
         // Update member_share table - SET sundry_project_share to the remaining balance
-        $stmt = $pdo->prepare("UPDATE member_project SET paid_amount = paid_amount + ?, sundry_amount = sundry_amount + ? WHERE member_id = ? AND member_code = ? AND project_id = ?");
+        $stmt = $pdo->prepare("UPDATE member_project SET paid_amount = paid_amount + ?, sundry_amount = sundry_amount - ? WHERE member_id = ? AND member_code = ? AND project_id = ?");
         $stmt->execute([$amount, $sundry_project_share, $member_id, $member_code, $project_id]);
 
         $_SESSION['success_msg'] = '✅ Project Share Fee Payment Successfully..! (সফলভাবে প্রকল্প শেয়ার ফি পেমেন্ট করা হলো..!)';
