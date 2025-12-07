@@ -119,7 +119,7 @@ try {
                 }
 
                 // Insert shares under this samity project
-                if( !$samity_member_project_id && $samity_project_id == 1 ) {
+                if( $samity_project_id == 1 ) {
                     $stmtShare = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at)
                 VALUES (?, ?, ?, ?, ?, NOW())");
 

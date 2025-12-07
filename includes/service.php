@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Ensure the correct path to config.php
 include_once __DIR__ . '/../config/config.php';
 

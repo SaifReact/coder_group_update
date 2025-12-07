@@ -16,8 +16,7 @@ include_once __DIR__ . '/includes/open.php';
 
 <!-- Hero Start -->
 <div class="container-fluid pb-3 hero-header bg-light">
-  <div class="container">
-    <div class="row justify-content-center">
+    <div class="row px-4">
       <div class="col-12">
         <div class="glass-card-header mb-1">
           <h5 class="text-center fw-bold" style="color:#045D5D; letter-spacing:1px; text-shadow:1px 2px 8px #fff8; font-size:1.5rem; font-family:'Poppins',sans-serif;">
@@ -65,7 +64,6 @@ include_once __DIR__ . '/includes/open.php';
 
       </div>
     </div>
-  </div>
 </div>
 <!-- Hero End -->
 <?php include_once __DIR__ . '/includes/end.php'; ?>

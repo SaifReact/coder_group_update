@@ -1,6 +1,6 @@
 <style>
 .executive-section {
-    padding: 60px 0;
+    padding: 15px 0;
 }
 .section-title {
     text-align: center;
@@ -183,7 +183,7 @@ try {
 
    <!-- Entrepreneurs Section Start -->
    <?php if (!empty($entrepreneurs)): ?>
-   <div class="executive-section" style="background: linear-gradient(135deg, #e0e7ef 0%, #f5f7fa 100%);">
+   <div class="executive-section bg-light">
      <div class="container">
        <div class="section-title">
          <div class="subtitle">উদ্যোক্তা ( Entrepreneurs )</div>

@@ -49,7 +49,8 @@ function sms_send($mobile, $message) {
 }
 
 // Fetch all users
-$stmt = $pdo->query("SELECT a.id, a.member_id, a.status, b.member_code, b.name_en, b.name_bn, b.mobile FROM user_login a, members_info b WHERE b.id = a.member_id AND a.role != 'Admin' ORDER BY a.id DESC");
+$stmt = $pdo->query("SELECT a.id, a.member_id, a.status, a.user_name, a.re_password, b.member_code, b.name_en, b.name_bn, b.mobile 
+FROM user_login a, members_info b WHERE b.id = a.member_id AND a.role != 'Admin' ORDER BY a.id DESC");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle status update
@@ -81,20 +82,28 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
     $stmt = $pdo->prepare("UPDATE user_login SET status = ? WHERE id = ?");
     $stmt->execute([$status, $user_id]);
 
+    // Get member mobile number for SMS
+    $stmt = $pdo->prepare("SELECT b.mobile FROM user_login a JOIN members_info b ON a.member_id = b.id WHERE a.id = ?");
+    $stmt->execute([$user_id]);
+    $member_data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $member_mobile = $member_data['mobile'] ?? '';
+
     // Set dynamic success message based on status
     if ($status === 'P') {
-        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও মেম্বারশিপ ফি জমা দেয়ার জন্য আপনাকে প্রক্রিয়াধীন রাখা হইলো!";
+        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও মেম্বারশিপ ফি জমা দেয়ার জন্য আপনাকে প্রক্রিয়াধীন রাখা হইলো!";
     } elseif ($status === 'A') {
-        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও শেয়ার ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
+        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও শেয়ার ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
     } elseif ($status === 'I') {
-        $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় আপনাকে নিষ্ক্রিয় করে রাখা হইলো !";
+        $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় আপনাকে নিষ্ক্রিয় করে রাখা হইলো !";
     } elseif ($status === 'R') {
-        $_SESSION['success_msg'] = "❌ সমিতির নীতিমালা ভঙ্গ করায় আপনার সদস্যপদ বাতিল করা হইলো !";
+        $_SESSION['success_msg'] = "❌ সমিতির নীতিমালা ভঙ্গ করায় আপনার সদস্যপদ বাতিল করা হইলো !";
     }
     
     // SMS Sending Logic
-    if ($users['mobile']) {
-        $sms_response = sms_send($users['mobile'], $_SESSION['success_msg']);
+    if (!empty($member_mobile)) {
+        echo "Preparing to send SMS to " . $member_mobile . " with message: " . $_SESSION['success_msg'];
+        die();
+        $sms_response = sms_send($member_mobile, $_SESSION['success_msg']);
         if ($sms_response === false) {
             $sms_error_msg = '❌ SMS পাঠানো যায়নি।';
         } else {
@@ -117,43 +126,41 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
     header('Location: ' . $_SERVER['REQUEST_URI']);
     exit;
 }
-
-include_once __DIR__ . '/../includes/open.php';
 ?>
 
-
-<!-- Hero Start -->
-<div class="container-fluid pb-5 hero-header bg-light">
-  <div class="row">
-      <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-    <main class="col-12 col-md-9 col-lg-9 px-md-4">
-            <div class="container">
-                <div class="card shadow-lg rounded-3 border-0">
-                    <div class="card-body p-4">
-                      <h3 class="mb-3 text-primary fw-bold">Member Approval <span class="text-secondary">( সদস্য অনুমোদন )</span></h3> 
-                      <hr class="mb-4" />
-                      
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+    <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
+            <div class="card shadow-lg rounded-3 border-0">
+                <div class="card-body p-4">
+                    <h3 class="mb-3 text-primary fw-bold">Member Approval <span class="text-secondary">( সদস্য অনুমোদন )</span></h3> 
+                    <hr class="mb-4" />
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Member ID</th>
-                                        <th>Member Code</th>
-                                        <th>Member Name</th>
-                                        <th>Mobile</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
+                                        <th width="10%">সদস্য নং </th>
+                                        <th width="10%">সদস্য কোড </th>
+                                        <th width="30%">সদস্যের নাম</th>
+                                        <th width="5%">মোবাইল</th>
+                                        <th width="5%">পাসওয়ার্ড </th>
+                                        <th colspan="2" width="40%">অবস্থা</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 <?php foreach ($users as $user): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($user['id']) ?></td>
-                                        <td><?= htmlspecialchars($user['member_code']) ?></td>
-                                        <td><?= htmlspecialchars($user['name_bn']) ?><br/>
+                                        <td width="10%"><?= htmlspecialchars($user['id']) ?></td>
+                                        <td width="10%"><?= htmlspecialchars($user['member_code']) ?></td>
+                                        <td width="30%"><?= htmlspecialchars($user['name_bn']) ?><br/>
                                             <?= htmlspecialchars($user['name_en']) ?></td>
-                                        <td><?= htmlspecialchars($user['mobile']) ?></td>
-                                        <td>
+                                        <td width="5%"><?= htmlspecialchars($user['mobile']) ?></td>
+                                        <td width="5%"><?= htmlspecialchars($user['user_name']) ?><br/>
+                                            <?= htmlspecialchars($user['re_password']) ?></td>
+                                        <td width="35%">
                                             <form method="post" class="d-flex align-items-center">
                                                 <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
                                                 <select name="status" class="form-select form-select-sm me-2">
@@ -166,7 +173,7 @@ include_once __DIR__ . '/../includes/open.php';
                                                 <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
                                             </form>
                                         </td>
-                                        <td>
+                                        <td width="5%">
                                             <button type="button" class="btn btn-info btn-sm view-member-btn" 
                                                 data-user-id="<?= htmlspecialchars($user['id']) ?>" 
                                                 title="View Details">
@@ -181,11 +188,10 @@ include_once __DIR__ . '/../includes/open.php';
                     </div>
                 </div>
                 <!-- View Member Modal and other includes remain unchanged -->
-                <?php include 'view_member.php'; ?>
-            </div>
-        </main>
+            <?php include 'view_member.php'; ?>
+        </div>
+    </main>
   </div>
-  
 </div>
 <!-- Hero End -->
 

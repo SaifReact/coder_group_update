@@ -4,16 +4,18 @@ include_once __DIR__ . '/../config/config.php';
 
 // Fetch counts from members_info table
 $stmt = $pdo->query("SELECT 
-    (SELECT registration_no FROM setup) AS registration,
+    (SELECT registration_no FROM setup LIMIT 1) AS registration,
     '২০২৩' AS establish,
-    (SELECT COUNT(*) 
-     FROM members_info a 
-     JOIN user_login b ON a.id = b.member_id 
-     WHERE b.status = 'A') AS members,
-    (SELECT COALESCE(SUM(a.no_share), 0) 
-     FROM member_share a 
-     JOIN user_login b ON a.member_id = b.member_id 
-     WHERE b.status = 'A') AS shares
+    (
+        SELECT COUNT(*) 
+        FROM members_info a
+        JOIN user_login b ON a.id = b.member_id
+        WHERE b.status IN ('P', 'A')
+    ) AS members,
+    (
+        SELECT COALESCE(SUM(no_share), 0)
+        FROM member_share
+    ) AS shares
 ");
 $counts = $stmt->fetch(PDO::FETCH_ASSOC);
 

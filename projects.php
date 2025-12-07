@@ -80,11 +80,10 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 include_once __DIR__ . '/includes/open.php'; 
 ?>
 
-<div class="container-fluid pb-5 hero-header bg-light">
-    <div class="container">
-        <div class="row justify-content-center">
+<div class="container-fluid pb-3 hero-header bg-light">
+    <div class="row px-4">
             <div class="col-12 col-md-12 col-lg-12 col-xl-12">
-                <div class="glass-card">
+                <div class="glass-card-header mb-1">
                 <h5 class="text-center fw-bold mb-4" style="color:#045D5D; letter-spacing:1px; text-shadow:1px 2px 8px #fff8; font-size:1.5rem; font-family:'Poppins',sans-serif;">সকল প্রকল্প ( All Projects )</h5>
                 <hr />
                 <?php if (count($projects) > 0): ?>
@@ -134,7 +133,6 @@ include_once __DIR__ . '/includes/open.php';
                 </div>
             </div>
         </div>
-    </div>
 </div>
 
 <?php include_once __DIR__ . '/includes/end.php'; ?>

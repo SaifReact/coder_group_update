@@ -35,11 +35,6 @@
 }
 .glass-card-header {
     background: rgba(255,255,255,0.75);
-    border-radius: .5rem;
-    box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
-    backdrop-filter: blur(7px);
-    -webkit-backdrop-filter: blur(7px);
-    border: 1px solid rgba(255,255,255,0.25);
     padding: 15px;
 }
 .form-label {
@@ -130,8 +125,8 @@
 }
 
 .certificate-container-samity {
-    width: 225mm;  /* A4 Landscape width */
-    height: 148mm; /* A4 Landscape half height */
+    width: 275mm;  /* A4 Landscape width */
+    height: 150mm; /* A4 Landscape half height */
     margin: 0 auto;
     position: relative;
     overflow: hidden;
@@ -140,8 +135,8 @@
 }
 
 .certificate-container-project {
-    width: 225mm;  /* A4 Landscape width */
-    height: 165mm; /* A4 Landscape half height */
+    width: 275mm;  /* A4 Landscape width */
+    height: 175mm; /* A4 Landscape half height */
     margin: 0 auto;
     position: relative;
     overflow: hidden;

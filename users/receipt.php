@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
                             THEN a.amount ELSE 0 END) AS net_amount
         FROM member_payments a
         JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
-        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'I'
+        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'A'
         GROUP BY b.no_share, a.trans_no, a.created_at, a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date
         LIMIT 1
     ");
@@ -124,8 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
         $receipt['total_amount_words'] = numberToWords((int)$receipt['total_amount']) . ' Taka Only';
     }
 }
-
-include_once __DIR__ . '/../includes/open.php';
 ?>
 
 <!-- ===== STYLE ===== -->
@@ -144,11 +142,13 @@ include_once __DIR__ . '/../includes/open.php';
 .footer-bg::after { content:''; position:absolute; bottom:0; right:0; width:50px; height:100%; background:var(--bs-corporate-blue); clip-path:polygon(100% 0,100% 100%,0 100%); z-index:11; }
 </style>
 
-<div class="container-fluid pb-5 hero-header bg-light">
-  <div class="row">
-    <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-    <main class="col-12 col-md-9 col-lg-9 px-md-4">
-      <div class="container-fluid">
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+
+   <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
         <div class="card shadow-lg rounded-3 border-0">
           <div class="card-body p-4">
             <h3 class="mb-3 text-primary fw-bold">Payment Receipt <span class="text-secondary">(পেমেন্ট রসিদ)</span></h3>
@@ -156,7 +156,7 @@ include_once __DIR__ . '/../includes/open.php';
 
             <!-- ===== Receipt Form ===== -->
             <form method="post" class="mb-4 row g-3">
-              <div class="col-md-5 mb-3">
+              <div class="col-md-4 mb-3">
                 <label for="payment_type" class="form-label">Payments (পেমেন্ট)</label>
                 <select class="form-select" id="payment_type" name="payment_type" required>
                   <option value="">Select (বাছাই করুন)</option>
@@ -205,7 +205,7 @@ include_once __DIR__ . '/../includes/open.php';
                 </select>
               </div>
 
-              <div class="col-md-3 d-flex align-items-end">
+              <div class="col-md-4">
                 <button type="submit" class="btn btn-primary w-100">Generate Receipt (রসিদ তৈরি করুন)</button>
               </div>
             </form>

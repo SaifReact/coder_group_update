@@ -166,7 +166,7 @@
         // Only allow numbers
         document.getElementById('mobile').value = mobile.replace(/[^0-9]/g, '');
         mobile = document.getElementById('mobile').value;
-        var allowedPrefixes = ['013', '017', '014', '019', '018', '016', '015', '044', '096'];
+        var allowedPrefixes = ['017', '014', '019', '018', '016', '015', '044', '096'];
         var prefix = mobile.substring(0, 3);
         if (mobile.length === 0) {
             errorSpan.textContent = '';

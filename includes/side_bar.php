@@ -4,117 +4,138 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 $role = $_SESSION['role'] ?? '';
 ?>
+<div class="container-fluid pb-3 hero-header bg-light">
+<div class="row" style="padding: 0px 20px 0px 38px">
+<nav class="col-12 col-md-2 col-lg-2 bg-dark shadow-sm">
+    <div class="position-sticky pt-3">
+        <div class="sidebar">
+            <nav class="nav flex-column">
+                <h5 class="mb-3 text-primary fw-bold">Menu <span class="text-secondary">( মেন্যু )</span></h5>
+                <hr class="mb-4" />
+                <?php if ($role === 'Admin'): ?>
+                <a class="nav-link" href="index.php">
+                    <span class="icon"><i class="bi bi-speedometer2"></i></span> 
+                    <span class="description">Dashboard</span>
+                </a>
+                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#approvalMenu" aria-expanded="false" aria-controls="approvalMenu">
+                    <span class="icon"><i class="bi bi-check-circle"></i></span> 
+                    <span class="description"> Approval <i class="bi bi-caret-down-fill"></i></span></a>
+                    <div class="sub-menu collapse" id="approvalMenu">
+                        <a class="nav-link" href="approval.php">
+                            <span class="icon"><i class="bi bi-people"></i></span> 
+                            <span class="description"> Members </span>
+                        </a>
+                        <a class="nav-link" href="payment_approval.php">
+                            <span class="icon"><i class="bi bi-credit-card"></i></span> 
+                            <span class="description"> Payments </span>
+                        </a>
+                    </div>
 
-<nav class="col-12 col-md-2 col-lg-2 bg-light sidebar shadow-sm rounded-3 mb-4 mb-md-0 p-0" style="min-height:500px; font-family: 'Poppins', Arial, sans-serif;">
-    <div class="position-sticky pt-5">
-        <ul class="nav flex-column">
-            <?php if ($role === 'Admin'): ?>
-                <li class="nav-item mb-3">
-                    <a class="nav-link active text-dark fw-bold" href="../admin/index.php" style="font-size: .8rem;">
-                        <i class="fa fa-tachometer-alt me-2 text-primary"></i> Dashboard
+                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#setupMenu" aria-expanded="false" aria-controls="setupMenu">
+                    <span class="icon"><i class="bi bi-gear"></i></span> 
+                    <span class="description"> Setup <i class="bi bi-caret-down-fill"></i></span></a>
+                    <div class="sub-menu collapse" id="setupMenu">
+                    <a class="nav-link" href="company.php">
+                        <span class="icon"><i class="bi bi-building"></i></span> 
+                        <span class="description"> Company </span>
                     </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/setup.php" style="font-size: .8rem;">
-                        <i class="fa fa-cogs me-2 text-secondary"></i> Setup
+                    <a class="nav-link" href="project.php">
+                        <span class="icon"><i class="bi bi-diagram-3"></i></span> 
+                        <span class="description"> Project </span>
                     </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/approval.php" style="font-size: .8rem;">
-                        <i class="fa fa-user-check me-2 text-success"></i> Approval
+                    <a class="nav-link" href="imgdocs.php">
+                        <span class="icon"><i class="bi bi-images"></i></span> 
+                        <span class="description"> Img & Docs </span>
                     </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/payment_approval.php" style="font-size: .8rem;">
-                        <i class="fa fa-credit-card me-2 text-info"></i> Payment
+                    <a class="nav-link" href="service.php">
+                        <span class="icon"><i class="bi bi-tools"></i></span> 
+                        <span class="description"> Services </span>
                     </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/company.php" style="font-size: .8rem;">
-                        <i class="fa fa-building me-2 text-warning"></i> Company
+                    <a class="nav-link" href="committee.php">
+                        <span class="icon"><i class="bi bi-person-badge"></i></span> 
+                        <span class="description"> Committee </span>
                     </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/imgdocs.php" style="font-size: .8rem;">
-                        <i class="fa fa-images me-2 text-danger"></i> Img & Docs
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/service.php" style="font-size: .8rem;">
-                        <i class="fa fa-concierge-bell me-2 text-purple"></i> Service
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/committee.php" style="font-size: .8rem;">
-                        <i class="fa fa-users me-2 text-success"></i> Committee
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="../admin/project.php" style="font-size: .8rem;">
-                        <i class="fa fa-project-diagram me-2 text-info"></i> Project
-                    </a>
-                </li>
-            <?php else: ?>
-                <li class="nav-item mb-3">
-                    <a class="nav-link active text-dark fw-bold" href="index.php" style="font-size: .8rem;">
-                        <i class="fa fa-tachometer-alt me-2 text-primary"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="certificate.php" style="font-size: .8rem;">
-                        <i class="fa fa-certificate me-2 text-success"></i> Certificate
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="documents.php" style="font-size: .8rem;">
-                        <i class="fa fa-file-upload me-2 text-success"></i> Documents
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="project_shares.php" style="font-size: .8rem;">
-                        <i class="fa fa-share-alt me-2 text-info"></i> Add Share
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="payment.php" style="font-size: .8rem;">
-                        <i class="fa fa-money-bill-wave me-2 text-danger"></i> Payment
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="receipt.php" style="font-size: .8rem;">
-                        <i class="fa fa-file-invoice me-2 text-info"></i> Receipt
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="passbook.php" style="font-size: .8rem;">
-                        <i class="fa fa-book me-2 text-info"></i> Passbook
-                    </a>
-                </li>
-                <li class="nav-item mb-3">
-                    <a class="nav-link text-dark fw-bold" href="password.php" style="font-size: .8rem;">
-                        <i class="fa fa-key me-2 text-warning"></i> Password
-                    </a>
-                </li>
+                </div>
 
-            <?php endif; ?>
-        </ul>
-    </div>
+                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#accountsMenu" aria-expanded="false" aria-controls="accountsMenu">
+                    <span class="icon"><i class="bi bi-calculator"></i></span> 
+                    <span class="description"> Accounts <i class="bi bi-caret-down-fill"></i></span></a>
+                    <div class="sub-menu collapse" id="accountsMenu">
+                    <a class="nav-link" href="#">
+                        <span class="icon"><i class="bi bi-book"></i></span> 
+                        <span class="description"> Gl Setup </span>
+                    </a>
+                </div>
+                <?php else: ?>
+                <a class="nav-link"
+                   href="index.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-speedometer2"></i></span> 
+                    <span class="description">Dashboard</span>
+                </a>
+                <a class="nav-link"
+                   href="documents.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-file-earmark-text"></i></span> 
+                    <span class="description">Documents</span>
+                </a>
+                <a class="nav-link"
+                   href="project_shares.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-share"></i></span> 
+                    <span class="description">Add Share</span>
+                </a>
+                <a class="nav-link"
+                   href="payment.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-credit-card"></i></span> 
+                    <span class="description">Payment</span>
+                </a>
+                <a class="nav-link"
+                   href="receipt.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-receipt"></i></span> 
+                    <span class="description">Receipt</span>
+                </a>
+                <a class="nav-link"
+                   href="passbook.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-journal-text"></i></span> 
+                    <span class="description">Passbook</span>
+                </a>
+                <a class="nav-link"
+                   href="certificate.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-award"></i></span> 
+                    <span class="description">Certificate</span>
+                </a>
+                
+                <a class="nav-link"
+                   href="password.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-key"></i></span> 
+                    <span class="description">Password</span>
+                </a>
+                <?php endif; ?>
+            </nav>
+        </div>
 </nav>
 
+
 <style>
-    .nav-link {
-        transition: all 0.3s ease-in-out;
-        border-radius: 5px;
-        padding: 5px 15px;
-    }
-    .nav-link:hover {
-        background-color: #f8f9fa;
-        color: #007bff !important;
-        text-decoration: none;
-    }
-    .nav-link i {
-        font-size: 1rem;
-    }
-    /* Extra Custom Color */
-    .text-purple { color: #6f42c1 !important; }
+.sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+    color: #FFF;
+
+}
+
+.sidebar .description {
+    font-size: 14px;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #b3d109ff;
+}
+
+.sidebar .sub-menu {
+    background-color: #002b64ff;
+    padding-left: 5%;
+}
 </style>
+
+

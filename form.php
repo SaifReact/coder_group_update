@@ -6,11 +6,10 @@
 <?php include_once __DIR__ . '/config/config.php'; ?>
 <?php include_once __DIR__ . '/includes/open.php'; ?>
    <!-- Hero Start -->
-   <div class="container-fluid pb-5 hero-header bg-light">
-     <div class="container">
-       <div class="row justify-content-center">
+   <div class="container-fluid pb-3 hero-header bg-light">
+    <div class="row px-4">
          <div class="col-12 col-md-12 col-lg-12 col-xl-12">
-           <div class="glass-card">
+           <div class="glass-card-header mb-1">
              <h5 class="text-center fw-bold mb-4" style="color:#045D5D; letter-spacing:1px; text-shadow:1px 2px 8px #fff8; font-size:1.5rem; font-family:'Poppins',sans-serif;">সদস্য নিবন্ধন ফর্ম ( Member Registration Form )</h5>
              <hr />
              <div class="mb-4">
@@ -73,7 +72,7 @@
                     <li>কোনো সদস্য সর্বোচ্চ মোট শেয়ারের ১০% এর বেশি শেয়ার ক্রয় করতে পারবেন না, যাতে সমিতির মালিকানা ভারসাম্যপূর্ণ থাকে।</li>
                     <li>সদস্য ভিত্তিক মাসিক জমা: <strong>৳ ২,০০০/-(মাত্র দুই হাজার) টাকা </strong> (চলমান), যা বছরান্তে আলোচনা সাপেক্ষে পরিবর্তন যোগ্য। </li>
                     <li>সদস্যদের মাসিক জমা প্রতি মাসের ৩০ তারিখের মধ্যে জমা দিতে হবে। </li>
-                    <li>মাসিক জমা নির্দিষ্ট সময়ের মধ্যে না দিলে পরবর্তী মাসে মাসিক জমার সাথে <strong>৳ ২০০/= (মাত্র দুইশত) </strong> টাকা জরিমানাসহ জমা দিতে হবে। </li>
+                    <li>মাসিক জমা নির্দিষ্ট সময়ের মধ্যে না দিলে পরবর্তী মাসে মাসিক জমার সাথে <strong>৳ ২০০/- (মাত্র দুইশত) </strong> টাকা জরিমানাসহ জমা দিতে হবে। </li>
                     <li>সদস্যদের অতিরিক্ত সঞ্চয় জমা দেওয়ার সুযোগ থাকবে যা পৃথক হিসাব রেকর্ড করা হবে। </li>
                     <li>শেয়ার হস্তান্তরের ক্ষেত্রে সমিতিকে ২(দুই) মাস আগে অবগতির মাধ্যমে অন্য সদস্যদের হস্তান্তর করা যাবে কিন্তু সমিতিকে মূল শেয়ার এর ৫% স্থানান্তর ফি প্ৰদান করতে হবে।</li>
                     <li>স্থানান্তরের পর নতুন শেয়ারধারী সদস্যের নামে সদস্য ও শেয়ার সার্টিফিকেট ও রেকর্ড সংশোধন করতে হবে।</li>
@@ -230,7 +229,6 @@
                   </div>
                   </div>
                 </div>
-     </div>
    </div>
    
 <?php include_once __DIR__ . '/includes/end.php'; ?>

@@ -48,11 +48,17 @@ function sms_send($mobile, $message) {
 }
 
 // Fetch all payments
-$stmt = $pdo->query("SELECT a.id, a.member_id, a.payment_method, a.bank_pay_date, a.bank_trans_no, a.trans_no, a.amount, a.status, b.member_code, b.name_en, b.name_bn, b.mobile FROM member_payments a, members_info b WHERE b.id = a.member_id ORDER BY a.id DESC");
+$stmt = $pdo->query("select a.id, a.member_id, a.member_code, a.payment_method, a.bank_pay_date, a.bank_trans_no, a.trans_no, 
+a.amount, a.status, c.name_en, c.name_bn, c.mobile, COALESCE(b.id, 0) AS member_project_id from member_payments a, member_project b, 
+members_info c where a.member_id = b.member_id AND a.member_code = b.member_code AND a.project_id = b.project_id AND a.member_id = c.id 
+AND a.member_code = c.member_code ORDER BY a.id DESC");
 $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle status update
-if ($method === 'POST' && isset($_POST['pay_id'], $_POST['status'])) {
+if ($method === 'POST' && isset($_POST['member_id'], $_POST['member_code'], $_POST['pay_id'], $_POST['status'])) {
+    $member_id = (int)$_POST['member_id'];
+    $member_code = $_POST['member_code'];
+    $member_project_id = (int)$_POST['member_project_id'];
     $pay_id = (int)$_POST['pay_id'];
     $status = in_array($_POST['status'], ['A', 'I', 'R']) ? $_POST['status'] : 'I';
 
@@ -69,8 +75,11 @@ if ($method === 'POST' && isset($_POST['pay_id'], $_POST['status'])) {
     }
 
     // Update payment status
-    $stmt = $pdo->prepare("UPDATE member_payments SET status = ? WHERE id = ?");
-    $stmt->execute([$status, $pay_id]);
+    $stmt = $pdo->prepare("UPDATE member_payments SET status = ? WHERE id = ? AND member_id = ? AND member_code = ?");
+    $stmt->execute([$status, $pay_id, $member_id, $member_code]);
+    
+    $stmtProject = $pdo->prepare("UPDATE member_project SET status = ? WHERE id = ? AND member_id = ? AND member_code = ?");
+    $stmtProject->execute([$status, $member_project_id, $member_id, $member_code]);
 
     // Set dynamic success message based on status
     if ($status === 'A') {
@@ -106,20 +115,22 @@ if ($method === 'POST' && isset($_POST['pay_id'], $_POST['status'])) {
     header('Location: ' . $_SERVER['REQUEST_URI']);
     exit;
 }
-include_once __DIR__ . '/../includes/open.php';
 ?>
 
-
-<!-- Hero Start -->
-<div class="container-fluid pb-5 hero-header bg-light">
-  <div class="row">
-      <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-    <main class="col-12 col-md-9 col-lg-9 px-md-4">
-            <div class="container">
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+   <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
                 <div class="card shadow-lg rounded-3 border-0">
                     <div class="card-body p-4">
-                      <h3 class="mb-3 text-primary fw-bold">Payment Approval <span class="text-secondary">( পেমেন্ট অনুমোদন )</span></h3> 
-                      <hr class="mb-4" />
+                        <div class="row">
+                            <div class="col-md-8"><h3 class="mb-3 text-primary fw-bold">Payment Approval <span class="text-secondary">( পেমেন্ট অনুমোদন )</span></h3></div>
+                            <div class="col-md-4 text-end"><a href="../admin/payment.php"><button type="button" class="btn btn-sm btn-success">
+                                Payment ( পেমেন্ট )      </button></a></div>
+                        </div>
+                      <hr class="mb-4" /> 
                       
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped align-middle">
@@ -148,14 +159,16 @@ include_once __DIR__ . '/../includes/open.php';
                                         <td><?= htmlspecialchars($payment['amount']) ?></td>
                                         <td>
                                             <form method="post" class="d-flex flex-column align-items-start gap-2">
+                                                <input type="hidden" name="member_id" value="<?= $payment['member_id'] ?>">
+                                                <input type="hidden" name="member_code" value="<?= $payment['member_code'] ?>">
+                                                <input type="hidden" name="member_project_id" value="<?= $payment['member_project_id'] ?>">
                                                 <input type="hidden" name="pay_id" value="<?= $payment['id'] ?>">
                                                 <select name="status" class="form-select form-select-sm me-2" style="min-width:120px;">
                                                     <option value="A" <?= $payment['status'] === 'A' ? 'selected' : '' ?>>✅ Approved</option>
                                                     <option value="I" <?= $payment['status'] === 'I' ? 'selected' : '' ?>>⏸️ Inactive</option>
                                                     <option value="R" <?= $payment['status'] === 'R' ? 'selected' : '' ?>>❌ Rejected</option>
                                                 </select>
-                                                <br/>
-                                                <button type="submit" class="btn btn-success btn-sm">Update (হালনাগাদ)</button>
+                                                <button type="submit" class="btn btn-success btn-sm mt-2">Update (হালনাগাদ)</button>
                                             </form>
                                         </td>
                                     </tr>

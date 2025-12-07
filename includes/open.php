@@ -6,7 +6,7 @@
 <body>
     <!-- Navbar Start -->
     <div class="container-fluid bg-light sticky-top">
-        <div class="container">
+        <div class="container-fluid">
             <?php include_once __DIR__ .'/menu.php'; ?>
         </div>
     </div>

@@ -81,11 +81,11 @@ $secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
                     $stmt8->execute(['samity_share']);
                     $utils = $stmt8->fetch();
 
-                    $stmt4 = $pdo->prepare("SELECT * FROM member_share WHERE member_id = ?");
+                    $stmt4 = $pdo->prepare("SELECT * FROM member_share WHERE member_id = ? AND samity_share_amt > 0");
                     $stmt4->execute([$member_id]);
                     $result = $stmt4->fetch();
 
-                    $stmt6 = $pdo->prepare("SELECT * FROM member_project WHERE member_id = ?");
+                    $stmt6 = $pdo->prepare("SELECT * FROM member_project WHERE member_id = ? AND status = 'A'");
                     $stmt6->execute([$member_id]);
                     $member_project = $stmt6->fetch();
 
@@ -130,21 +130,19 @@ $secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
                     
                     
                 }
-                include_once __DIR__ . '/../includes/open.php';
 ?>
 
-<!-- Hero Start -->
-<div class="container-fluid pb-5 hero-header bg-light">
-  <div class="row"> 
-    <?php include_once __DIR__ . '/../includes/side_bar.php'; ?> 
-    <main class="col-12 col-md-9 col-lg-9 col-xl-9 px-md-4">
-      <div>
-        <h3 class="mb-3 text-primary fw-bold">Certificate <span class="text-secondary">( সনদপত্র )</span>
-        </h3>
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+
+   <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
+        <div class="card shadow-lg rounded-3 border-0">
+        <div class="card-body p-4">
+        <h3 class="mb-3 text-primary fw-bold">Certificate <span class="text-secondary">( সনদপত্র )</span></h3>
         <hr class="mb-4" />
-        <div class="card mt-4 mb-4">
-          <div class="card-header bg-primary text-white fw-bold">ক্রয়কৃত শেয়ার সমিতি ও প্রকল্প অনুযায়ী সনদপত্র</div>
-          <div class="card-body">
             <div class="table-responsive">
               <table class="table table-bordered align-middle mb-0">
                 <thead>
@@ -157,7 +155,7 @@ $secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
                 <tbody>
                   <tr>
                     <td>সমিতির শেয়ার</td>
-                    <td> <?php echo htmlspecialchars($samity_share ?? 0); ?> </td>
+                    <td> <?= englishToBanglaNumber($samity_share ?? 0); ?> <span style="font-size:1rem">(<?php echo htmlspecialchars($samity_share ?? 0); ?>) টি</span> </td>
                     <td>
                       <?php if ($samity_share > 0): ?>
                       <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#certificateModal">
@@ -169,6 +167,9 @@ $secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="certificateModalLabel">সমিতি শেয়ার সনদপত্র</h5>
+        <div class="col-12 col-md-6 text-end align-self-end">
+            <button type="button" class="btn btn-danger" onclick="downloadPDF('samity')"><i class="fas fa-file-pdf me-2"></i>PDF ডাউনলোড করুন</button>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="certificateModalBody">
@@ -228,14 +229,14 @@ $secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
                     </td>
                   </tr> 
                   <?php
-                        $stmt = $pdo->prepare("SELECT ms.*, mp.*, p.project_name_bn, p.project_name_en FROM member_share ms JOIN member_project mp ON ms.member_id = mp.member_id JOIN project p ON mp.project_id = p.id WHERE mp.member_id = ?");
+                        $stmt = $pdo->prepare("SELECT mp.*, p.project_name_bn, p.project_name_en FROM member_project mp JOIN project p ON mp.project_id = p.id WHERE mp.member_id = ? AND mp.status = 'A'");
                         $stmt->execute([$member_id]);
                         $projects = $stmt->fetchAll();
                         if ($projects):
                           foreach ($projects as $proj): ?> 
                         <tr>
                           <td> <?php echo htmlspecialchars($proj['project_name_bn']); ?> </td>
-                          <td> <?php echo htmlspecialchars($proj['project_share']); ?> </td>
+                          <td> <?= englishToBanglaNumber($proj['project_share'] ?? 0); ?> <span style="font-size:1rem">(<?php echo htmlspecialchars($proj['project_share'] ?? 0); ?>) টি</span> </td>
                           <td>
                             <?php if ($proj['project_share'] > 0): ?>
                             <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#projectCertificateModal<?php echo $proj['project_id']; ?>">
@@ -248,11 +249,13 @@ $secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="projectCertificateModalLabel<?php echo $proj['project_id']; ?>">প্রকল্প শেয়ার সনদপত্র</h5>
+        <div class="col-12 col-md-6 text-end align-self-end">
+            <button type="button" class="btn btn-danger" onclick="downloadPDF('project')"><i class="fas fa-file-pdf me-2"></i>PDF ডাউনলোড করুন</button>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="projectCertificateModalBody<?php echo $proj['project_id']; ?>">
-        <div class="certificate-container-project" id="project-certificate-content-<?php echo $proj
-['project_id']; ?>">
+        <div class="certificate-container-project" id="certificate-content-project">
                   <div class="certificate-border">
                     <!-- Serial Number -->
                     <div class="serial-number"> সিরিয়াল নং:- <?= englishToBanglaNumber($member['id']) ?> </div>
@@ -318,11 +321,67 @@ $secretary_signature = $secretary_sign ? $secretary_sign['banner_image'] : '';
               </table>
             </div>
           </div>
-        </div>
-      </div>
-  </div>
   </main>
 </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+function downloadPDF(type) {
+    let element;
+    let filenamePrefix = "";
+    let memberCode = '<?= htmlspecialchars($member['member_code']) ?>';
+    let year = '<?= $selected_year ?>';
+
+    if (type === "samity") {
+        element = document.getElementById('certificate-content-samity');
+        filenamePrefix = "Samity_Certificate";
+    } else if (type === "project") {
+        element = document.getElementById('certificate-content-project');
+        filenamePrefix = "Project_Certificate";
+    } else {
+        alert("Invalid certificate type!");
+        return;
+    }
+
+    // SCROLL FIX
+    window.scrollTo(0, 0);
+
+    // Create wrapper (fixed)
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'block';
+    wrapper.style.width = '297mm';
+    wrapper.style.minHeight = '210mm';
+    wrapper.style.margin = '0';
+    wrapper.style.padding = '0';
+    wrapper.style.backgroundColor = 'white';
+    wrapper.style.boxSizing = 'border-box';
+
+    // Clone ensures layout preserved
+    wrapper.appendChild(element.cloneNode(true));
+
+    document.body.appendChild(wrapper);
+
+    const opt = {
+        margin: 0,
+        filename: `${filenamePrefix}_${memberCode}_${year}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            scrollY: 0,
+            scrollX: 0
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(wrapper).save().then(() => {
+        document.body.removeChild(wrapper);
+    });
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

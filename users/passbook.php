@@ -43,7 +43,7 @@ $stmt = $pdo->prepare("
                ELSE 0 
            END AS late_fee
     FROM member_payments a
-    WHERE a.member_id = ? AND a.status = 'I' AND a.payment_year = ?
+    WHERE a.member_id = ? AND a.status = 'A' AND a.payment_year = ?
     ORDER BY 
         CASE a.payment_method
             WHEN 'admission' THEN 1
@@ -84,8 +84,6 @@ $stmt = $pdo->prepare("SELECT banner_image FROM banner WHERE banner_name_en = ? 
 $stmt->execute(['cashier']);
 $cashier_sign = $stmt->fetch(PDO::FETCH_ASSOC);
 $cashier_signature = $cashier_sign ? $cashier_sign['banner_image'] : '';
-
-include_once __DIR__ . '/../includes/open.php';
 ?>
 
 <!-- ===== STYLE ===== -->
@@ -98,7 +96,6 @@ include_once __DIR__ . '/../includes/open.php';
 /* Passbook Styles */
 .passbook-page {
     min-height: 600px;
-    border: 2px solid #333;
 }
 .passbook-page table {
     font-size: 0.85rem;
@@ -117,22 +114,20 @@ include_once __DIR__ . '/../includes/open.php';
 }
 </style>
 
-<div class="container-fluid pb-5 hero-header bg-light">
-  <div class="row">
-    <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-    <main class="col-12 col-md-9 col-lg-9">
-      <div class="container">
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+
+   <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
+         <div class="card shadow-lg rounded-3 border-0">
+          <div class="card-body p-4">
             <div class="row">
-              <!-- Passbook Page -->
-              <div class="col-md-12">
-                <div class="card border passbook-page">
-                  <div class="card-body p-3">
-                    <!-- Year Selection and PDF Download -->
-                    <div class="row mb-3">
-                      <div class="col-12 col-md-6">
-                        <form method="POST" class="mb-0">
-                          <label for="payment_year" class="form-label fw-bold">বছর নির্বাচন করুন:</label>
-                          <select name="payment_year" id="payment_year" class="form-select" onchange="this.form.submit()">
+                <div class="col-12 col-md-6">
+                    <form method="POST" class="mb-0">
+                        <label for="payment_year" class="form-label fw-bold">বছর নির্বাচন করুন:</label>
+                        <select name="payment_year" id="payment_year" class="form-select" onchange="this.form.submit()">
                             <?php
                             $current_year = (int)date('Y');
                             for ($i = 0; $i < 2; $i++) {
@@ -334,11 +329,9 @@ include_once __DIR__ . '/../includes/open.php';
                         </div>
                       </div>
                     </div><!-- End passbook-content -->
-                  </div>
                 </div>
-              </div>
             </div>
-      </div>
+        </div>
     </main>
   </div>
 </div>

@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-define('BASE_URL', '/coder_group_update/');
+define('BASE_URL', '/admin/');
 
 $host = 'localhost';
 $db   = 'cpsslcom_samity';

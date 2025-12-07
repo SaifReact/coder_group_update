@@ -46,18 +46,17 @@ foreach ($projectShares as $share) {
     }
     $groupedShares[$projectId]['shares'][] = $share;
 }
-
-include_once __DIR__ . '/../includes/open.php';
 ?>
 
-<!-- Hero Start -->
-<div class="container-fluid pb-5 hero-header bg-light">
-  <div class="row">
-      <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-    <main class="col-12 col-md-9 col-lg-9 px-md-4">
-      <div class="container">
-        <div class="card border-0">
-          <div class="card-body p-4">
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+
+   <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
+      <div class="card shadow-lg rounded-3 border-0">
+                    <div class="card-body p-4">
             <div class="row mb-3">
                       <div class="col-12 col-md-6">
                         <h3 class="mb-3 text-primary fw-bold">Project Shares <span class="text-secondary">(প্রকল্প শেয়ার)</span></h3>
@@ -123,7 +122,6 @@ include_once __DIR__ . '/../includes/open.php';
               <?php endforeach; ?>
             <?php endif; ?>
           </div>
-        </div>
       </div>
     </main>
   </div>

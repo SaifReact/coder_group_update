@@ -29,15 +29,15 @@ $docOptions = [
     '104' => 'কর্মসংস্থান সনদ',
     '105' => 'অস্থায়ী নাগরিক সনদ'
 ];
-
-include_once __DIR__ . '/../includes/open.php';
 ?>
 
-<div class="container-fluid pb-5 hero-header bg-light">
-    <div class="row">
-        <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-        <main class="col-12 col-md-9 col-lg-9 px-md-4">
-            <div class="container">
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+
+   <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
                 <div class="card shadow-lg rounded-3 border-0">
                     <div class="card-body p-4">
                         <h3 class="mb-3 text-primary fw-bold">Documents Upload <span class="text-secondary">(ডকুমেন্টস আপলোড)</span></h3>

@@ -1,14 +1,12 @@
-<?php include_once __DIR__ . '/config/config.php';
-// $stmt = $pdo->query("SELECT id, project_name_bn, project_name_en FROM project ORDER BY id ASC");
-// $projects = $stmt->fetchAll();
+<?php 
+include_once __DIR__ . '/config/config.php';
+include_once __DIR__ . '/includes/open.php'; 
 ?>
-<?php include_once __DIR__ . '/includes/open.php'; ?>
    <!-- Hero Start -->
-   <div class="container-fluid pb-3 hero-header bg-light">
-  <div class="container">
-    <div class="row justify-content-center">
+<div class="container-fluid pb-3 hero-header bg-light">
+    <div class="row px-4">
       <div class="col-12 col-md-12 col-lg-12 col-xl-12">
-        <div class="glass-card-header">
+        <div class="glass-card-header mb-1">
           <h5 class="text-center fw-bold" style="color:#045D5D; letter-spacing:1px; text-shadow:1px 2px 8px #fff8; font-size:1.5rem; font-family:'Poppins',sans-serif;">সদস্য নিবন্ধন ফর্ম ( Member Registration Form )</h5> <?php
             $agreed = isset($_GET['agreed']) ? base64_decode($_GET['agreed']) : '';
             ?>
@@ -234,7 +232,6 @@
       </form>
     </div>
   </div>
-</div>
 </div>
    <!-- Hero End --> 
 

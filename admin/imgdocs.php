@@ -1,19 +1,23 @@
 <?php
 session_start();
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
+    header('Location: ../login.php');
+    exit;
+}
 
 include_once __DIR__ . '/../config/config.php';
 $stmt = $pdo->query("SELECT id, banner_name_bn, banner_name_en, banner_image, banner_category FROM banner ORDER BY id ASC");
 $banners = $stmt->fetchAll();
 
-include_once __DIR__ . '/../includes/open.php';
 ?>
 
-<!-- Hero Start -->
-<div class="container-fluid pb-5 hero-header bg-light">
-  <div class="row">
-      <?php include_once __DIR__ . '/../includes/side_bar.php'; ?>
-    <main class="col-12 col-md-9 col-lg-9 px-md-4">
-            <div class="container">
+<?php 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
+?>
+
+   <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+        <div class="row px-2">
                 <div class="card shadow-lg rounded-3 border-0">
                     <div class="card-body p-4">
                       <h3 class="mb-3 text-primary fw-bold">Banner & Documents <span class="text-secondary">( ব্যানার এবং ডকুমেন্টস )</span></h3> 
