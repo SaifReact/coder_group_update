@@ -39,6 +39,10 @@ $role = $_SESSION['role'] ?? '';
                         <span class="icon"><i class="bi bi-building"></i></span> 
                         <span class="description"> Company </span>
                     </a>
+                    <a class="nav-link" href="meeting.php">
+                        <span class="icon"><i class="bi bi-building"></i></span> 
+                        <span class="description"> Meeting </span>
+                    </a>
                     <a class="nav-link" href="project.php">
                         <span class="icon"><i class="bi bi-diagram-3"></i></span> 
                         <span class="description"> Project </span>
