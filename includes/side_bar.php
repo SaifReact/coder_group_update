@@ -65,7 +65,7 @@ $role = $_SESSION['role'] ?? '';
                     <span class="icon"><i class="bi bi-calculator"></i></span> 
                     <span class="description"> Accounts <i class="bi bi-caret-down-fill"></i></span></a>
                     <div class="sub-menu collapse" id="accountsMenu">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="account/general_ledger.php">
                         <span class="icon"><i class="bi bi-book"></i></span> 
                         <span class="description"> Gl Setup </span>
                     </a>

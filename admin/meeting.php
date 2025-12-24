@@ -1,4 +1,5 @@
 <?php
+// Ensure this file is accessed by an authorized admin user
 session_start();
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
     header('Location: ../login.php');
@@ -9,6 +10,7 @@ include_once __DIR__ . '/../config/config.php';
 ?>
 
 <?php 
+// Assuming these includes handle your HTML <head> and sidebar structure
 include_once __DIR__ . '/../includes/open.php';
 include_once __DIR__ . '/../includes/side_bar.php'; 
 ?>
@@ -51,6 +53,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                         $stmt = $pdo->query("SELECT a.id, a.name_bn FROM members_info a, user_login b Where a.id = b.member_id AND b.status in ('A', 'P') AND b.member_id != 0 ORDER BY id ASC");
                                         $col = 0;
                                         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            // Layout the checkboxes in 3 columns (col-md-4) on medium screens and 2 columns (col-6) on small screens
                                             if ($col % 3 === 0 && $col !== 0) echo '</div><div class="row">';
                                             echo '<div class="col-md-4 col-6">';
                                             echo '<div class="form-check">';
@@ -81,26 +84,27 @@ include_once __DIR__ . '/../includes/side_bar.php';
 <script src="https://cdn.ckeditor.com/ckeditor5/41.2.0/classic/ckeditor.js"></script>
 
 <script>
-const editors = {}; // store editors globally
-['#meeting_agenda', '#meeting_decision'].forEach(selector => {
-    const el = document.querySelector(selector);
-    if (el) {
-        ClassicEditor.create(el, {
-            toolbar: [
-                'bold', 'italic', 'underline', 'link',
-                'bulletedList', 'numberedList',
-                '|', 'fontSize', 'undo', 'redo'
-            ],
-            fontSize: {
-                options: [9, 11, 13, 'default', 17, 19, 21]
-            }
-        }).then(editor => {
-            editors[selector] = editor; // save reference
-        }).catch(error => {
-            console.error(error);
-        });
-    }
-});
+// === FIX: Add event listener to manually copy CKEditor content back to the form ===
+const form = document.querySelector('form'); 
+
+if (form) {
+    form.addEventListener('submit', function (event) {
+        
+        // Ensure agenda content is copied before submission
+        if (editors['#meeting_agenda']) {
+            const agendaData = editors['#meeting_agenda'].getData();
+            document.getElementById('meeting_agenda').value = agendaData;
+        }
+
+        // Ensure decision content is copied before submission
+        if (editors['#meeting_decision']) {
+            const decisionData = editors['#meeting_decision'].getData();
+            document.getElementById('meeting_decision').value = decisionData;
+        }
+    });
+}
+// =================================================================================
+
 </script>
 
 <?php include_once __DIR__ . '/../includes/toast.php'; ?>
