@@ -57,8 +57,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                             if ($col % 3 === 0 && $col !== 0) echo '</div><div class="row">';
                                             echo '<div class="col-md-4 col-6">';
                                             echo '<div class="form-check">';
-                                            echo '<input class="form-check-input" type="checkbox" name="meeting_members[]" value="' . $row['id'] . '" id="member_' . $row['id'] . '">';
-                                            echo '<label class="form-check-label ms-1" for="member_' . $row['id'] . '">' . htmlspecialchars($row['name_bn']) . '</label>';
+                                            echo '<input class="form-check-input" type="checkbox" name="meeting_members[]" value="' . $row['id'] . ') ' . $row['name_bn'] . '" id="member_' . $row['name_bn'] . '">';
+                                            echo '<label class="form-check-label ms-1" for="member_' . $row['name_bn'] . '">' . htmlspecialchars($row['name_bn']) . '</label>';
                                             echo '</div>';
                                             echo '</div>';
                                             $col++;
@@ -80,32 +80,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
         </main>
   </div>
 </div>
-
-<script src="https://cdn.ckeditor.com/ckeditor5/41.2.0/classic/ckeditor.js"></script>
-
-<script>
-// === FIX: Add event listener to manually copy CKEditor content back to the form ===
-const form = document.querySelector('form'); 
-
-if (form) {
-    form.addEventListener('submit', function (event) {
-        
-        // Ensure agenda content is copied before submission
-        if (editors['#meeting_agenda']) {
-            const agendaData = editors['#meeting_agenda'].getData();
-            document.getElementById('meeting_agenda').value = agendaData;
-        }
-
-        // Ensure decision content is copied before submission
-        if (editors['#meeting_decision']) {
-            const decisionData = editors['#meeting_decision'].getData();
-            document.getElementById('meeting_decision').value = decisionData;
-        }
-    });
-}
-// =================================================================================
-
-</script>
 
 <?php include_once __DIR__ . '/../includes/toast.php'; ?>
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

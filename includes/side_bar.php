@@ -22,11 +22,11 @@ $role = $_SESSION['role'] ?? '';
                     <span class="description"> Approval <i class="bi bi-caret-down-fill"></i></span></a>
                     <div class="sub-menu collapse" id="approvalMenu">
                         <a class="nav-link" href="approval.php">
-                            <span class="icon"><i class="bi bi-people"></i></span> 
+                            <span class="icon"><i class="bi bi-person-lines-fill"></i></span> 
                             <span class="description"> Members </span>
                         </a>
                         <a class="nav-link" href="payment_approval.php">
-                            <span class="icon"><i class="bi bi-credit-card"></i></span> 
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
                             <span class="description"> Payments </span>
                         </a>
                     </div>
@@ -40,33 +40,33 @@ $role = $_SESSION['role'] ?? '';
                         <span class="description"> Company </span>
                     </a>
                     <a class="nav-link" href="meeting.php">
-                        <span class="icon"><i class="bi bi-building"></i></span> 
+                        <span class="icon"><i class="bi bi-calendar-event"></i></span> 
                         <span class="description"> Meeting </span>
                     </a>
                     <a class="nav-link" href="project.php">
-                        <span class="icon"><i class="bi bi-diagram-3"></i></span> 
+                        <span class="icon"><i class="bi bi-kanban"></i></span> 
                         <span class="description"> Project </span>
                     </a>
                     <a class="nav-link" href="imgdocs.php">
-                        <span class="icon"><i class="bi bi-images"></i></span> 
+                        <span class="icon"><i class="bi bi-file-earmark-image"></i></span> 
                         <span class="description"> Img & Docs </span>
                     </a>
                     <a class="nav-link" href="service.php">
-                        <span class="icon"><i class="bi bi-tools"></i></span> 
+                        <span class="icon"><i class="bi bi-wrench"></i></span> 
                         <span class="description"> Services </span>
                     </a>
                     <a class="nav-link" href="committee.php">
-                        <span class="icon"><i class="bi bi-person-badge"></i></span> 
+                        <span class="icon"><i class="bi bi-people-fill"></i></span> 
                         <span class="description"> Committee </span>
                     </a>
                 </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#accountsMenu" aria-expanded="false" aria-controls="accountsMenu">
-                    <span class="icon"><i class="bi bi-calculator"></i></span> 
+                    <span class="icon"><i class="bi bi-currency-dollar"></i></span> 
                     <span class="description"> Accounts <i class="bi bi-caret-down-fill"></i></span></a>
                     <div class="sub-menu collapse" id="accountsMenu">
-                    <a class="nav-link" href="account/general_ledger.php">
-                        <span class="icon"><i class="bi bi-book"></i></span> 
+                    <a class="nav-link" href="general_ledger.php">
+                        <span class="icon"><i class="bi bi-journal-bookmark"></i></span> 
                         <span class="description"> Gl Setup </span>
                     </a>
                 </div>
@@ -75,6 +75,11 @@ $role = $_SESSION['role'] ?? '';
                    href="index.php" style="font-size:.8rem;">
                     <span class="icon"><i class="bi bi-speedometer2"></i></span> 
                     <span class="description">Dashboard</span>
+                </a>
+                <a class="nav-link" 
+                   href="meeting.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-calendar-event"></i></span> 
+                    <span class="description"> Meeting </span>
                 </a>
                 <a class="nav-link"
                    href="documents.php" style="font-size:.8rem;">

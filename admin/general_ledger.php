@@ -1,12 +1,11 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
-    header('Location: ../../login.php');
+    header('Location: ../login.php');
     exit;
 }
 
-include_once __DIR__ . '/../../config/config.php';
-
+include_once __DIR__ . '/../config/config.php';
 $allAccountType = [
     ['name' => 'সম্পদ (Asset)', 'id' => '1', 'label' => 'A'],
     ['name' => 'দায় (Liability)', 'id' => '2', 'label' => 'L'],
@@ -143,8 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 ?>
 
 <?php 
-include_once __DIR__ . '/../../includes/open.php';
-include_once __DIR__ . '/../../includes/side_bar.php'; 
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php'; 
 ?>
 
 <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
@@ -470,4 +469,4 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
 </div>
 </div>
 
-<?php include_once __DIR__ . '/../../includes/end.php'; ?>
+<?php include_once __DIR__ . '/../includes/end.php'; ?>
