@@ -82,28 +82,20 @@ if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
     $stmt = $pdo->prepare("UPDATE user_login SET status = ? WHERE id = ?");
     $stmt->execute([$status, $user_id]);
 
-    // Get member mobile number for SMS
-    $stmt = $pdo->prepare("SELECT b.mobile FROM user_login a JOIN members_info b ON a.member_id = b.id WHERE a.id = ?");
-    $stmt->execute([$user_id]);
-    $member_data = $stmt->fetch(PDO::FETCH_ASSOC);
-    $member_mobile = $member_data['mobile'] ?? '';
-
     // Set dynamic success message based on status
     if ($status === 'P') {
-        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও মেম্বারশিপ ফি জমা দেয়ার জন্য আপনাকে প্রক্রিয়াধীন রাখা হইলো!";
+        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও মেম্বারশিপ ফি জমা দেয়ার জন্য আপনাকে প্রক্রিয়াধীন রাখা হইলো!";
     } elseif ($status === 'A') {
-        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও শেয়ার ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
+        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও শেয়ার ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
     } elseif ($status === 'I') {
-        $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় আপনাকে নিষ্ক্রিয় করে রাখা হইলো !";
+        $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় আপনাকে নিষ্ক্রিয় করে রাখা হইলো !";
     } elseif ($status === 'R') {
-        $_SESSION['success_msg'] = "❌ সমিতির নীতিমালা ভঙ্গ করায় আপনার সদস্যপদ বাতিল করা হইলো !";
+        $_SESSION['success_msg'] = "❌ সমিতির নীতিমালা ভঙ্গ করায় আপনার সদস্যপদ বাতিল করা হইলো !";
     }
     
     // SMS Sending Logic
-    if (!empty($member_mobile)) {
-        echo "Preparing to send SMS to " . $member_mobile . " with message: " . $_SESSION['success_msg'];
-        die();
-        $sms_response = sms_send($member_mobile, $_SESSION['success_msg']);
+    if ($users['mobile']) {
+        $sms_response = sms_send($users['mobile'], $_SESSION['success_msg']);
         if ($sms_response === false) {
             $sms_error_msg = '❌ SMS পাঠানো যায়নি।';
         } else {

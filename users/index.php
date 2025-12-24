@@ -134,7 +134,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 <hr class="mb-4" />
         <div class="row g-4 mb-4">
           <div class="col-md-12 text-center"> <?php if ($status === 'P'): ?> <div class="alert alert-danger mt-2" style="font-size:1rem;">
-              <b>সদস্যপদ অনুমোদনের জন্য ডকুমেন্টস ও ভর্তি ফি প্রদান করুন।</b>
+              <b>সদস্যপদ অনুমোদনের জন্য ডকুমেন্টস প্রদান করুন।</b>
               <br /> হিসাবের তথ্য ( Account information): <br /> <?= htmlspecialchars($ac_title); ?> <br /> ইসলামিক হিসাব নং- <?= htmlspecialchars($ac_no); ?> <br /> <?= htmlspecialchars($bank_name); ?>, <?= htmlspecialchars($bank_address); ?>
             </div> <?php endif; ?> </div>
         </div>
