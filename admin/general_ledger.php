@@ -20,77 +20,213 @@ $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     try {
-        $pdo->beginTransaction();
+        // $pdo->beginTransaction();
         
-        if ($_POST['action'] === 'add') {
-            $glac_name = $_POST['glac_name'] ?? '';
-            $glac_type = $_POST['glac_type'] ?? '';
-            $parent_id = intval($_POST['parent_id'] ?? 0);
-            $gl_nature = $_POST['gl_nature'] ?? 'D';
-            $allow_manual_dr = $_POST['allow_manual_dr'] ?? 'Y';
-            $allow_manual_cr = $_POST['allow_manual_cr'] ?? 'Y';
-            $parent_child = $_POST['parent_child'] ?? 'P'; // Get from radio button
-            $created_by = $_SESSION['user_id'];
+        // if ($_POST['action'] === 'add') {
+        //     $glac_name = $_POST['glac_name'] ?? '';
+        //     $glac_type = $_POST['glac_type'] ?? '';
+        //     $parent_id = intval($_POST['parent_id'] ?? 0);
+        //     $gl_nature = $_POST['gl_nature'] ?? 'D';
+        //     $allow_manual_dr = $_POST['allow_manual_dr'] ?? 'Y';
+        //     $allow_manual_cr = $_POST['allow_manual_cr'] ?? 'Y';
+        //     $parent_child = $_POST['parent_child'] ?? 'P'; // Get from radio button
+        //     $created_by = $_SESSION['user_id'];
             
-            // Determine level_code
-            $level_code = 1;
-            $glac_code = '';
+        //     // Determine level_code
+        //     $level_code = 1;
+        //     $glac_code = '';
             
-            if ($parent_id == 0) {
-                // Root level (Level 1)
-                $level_code = 1;
+        //     if ($parent_id == 0) {
+        //         // Root level (Level 1)
+        //         $level_code = 1;
                 
-                // Generate glac_code for Level 1: 10000000, 20000000, 30000000, 40000000 etc.
-                $type_code_map = ['A' => 1, 'L' => 2, 'I' => 3, 'E' => 4];
-                $base_code = $type_code_map[$glac_type] ?? 1;
+        //         // Generate glac_code for Level 1: 10000000, 20000000, 30000000, 40000000 etc.
+        //         $type_code_map = ['A' => 1, 'L' => 2, 'I' => 3, 'E' => 4];
+        //         $base_code = $type_code_map[$glac_type] ?? 1;
                 
-                $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_code FROM glac_mst WHERE glac_type = ? AND level_code = 1");
-                $stmt->execute([$glac_type]);
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        //         $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_code FROM glac_mst WHERE glac_type = ? AND level_code = 1");
+        //         $stmt->execute([$glac_type]);
+        //         $result = $stmt->fetch(PDO::FETCH_ASSOC);
                 
-                if ($result['max_code']) {
-                    // Increment by 1
-                    $glac_code = $result['max_code'] + 1;
+        //         if ($result['max_code']) {
+        //             // Increment by 1
+        //             $glac_code = $result['max_code'] + 1;
+        //         } else {
+        //             // First entry: 10000000, 20000000, 30000000, 40000000
+        //             $glac_code = $base_code . '0000000';
+        //         }
+        //     } else {
+        //         // parent_id == 2 then glac_code = 10100000
+        //         // parent_id == 3 then glac_code = 10101000
+        //         // parent_id == 4 then glac_code = 10101001
+
+        //         // Child level
+        //         // Get parent information
+        //         $stmt = $pdo->prepare("SELECT glac_code, level_code, glac_type FROM glac_mst WHERE id = ?");
+        //         $stmt->execute([$parent_id]);
+        //         $parent = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+        //         if ($parent) {
+        //             $level_code = $parent['level_code'] + 1;
+        //             $parent_glac_code = $parent['glac_code'];
+        //             $glac_type = $parent['glac_type']; // Inherit parent's type
+                    
+        //             // Get next child number
+        //             $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_child FROM glac_mst WHERE parent_id = ?");
+        //             $stmt->execute([$parent_id]);
+        //             $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+        //             if ($result['max_child']) {
+        //                 // Increment by 1
+        //                 $glac_code = $result['max_child'] + 1;
+        //             } else {
+        //                 // First child: parent_code + 1
+        //                 $glac_code = intval($parent_glac_code) + 1;
+        //             }
+        //         }
+        //     }
+            
+        //     $stmt = $pdo->prepare("INSERT INTO glac_mst (glac_code, glac_name, parent_child, parent_id, glac_type, level_code, gl_nature, allow_manual_dr, allow_manual_cr, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'A', ?)");
+        //     $stmt->execute([$glac_code, $glac_name, $parent_child, $parent_id, $glac_type, $level_code, $gl_nature, $allow_manual_dr, $allow_manual_cr, $created_by]);
+            
+        //     $pdo->commit();
+            
+        //     $_SESSION['success_msg'] = '✅ সফলভাবে জেনারেল লেজার এন্ট্রি যোগ করা হয়েছে! Code: ' . $glac_code . ', Level: ' . $level_code;
+        //     header('Location: ' . $_SERVER['PHP_SELF']);
+        //     exit;
+        // }
+
+        // ট্রানজাকশন শুরু করা (যদি আগে না করা থাকে)
+if ($pdo->inTransaction() === false) {
+    $pdo->beginTransaction();
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'add') {
+    // 1. ইনপুট ডেটা সংগ্রহ করা
+    $glac_name       = $_POST['glac_name'] ?? '';
+    $glac_type       = $_POST['glac_type'] ?? ''; 
+    $parent_id       = intval($_POST['parent_id'] ?? 0); 
+    $gl_nature       = $_POST['gl_nature'] ?? 'D';
+    $allow_manual_dr = $_POST['allow_manual_dr'] ?? 'Y';
+    $allow_manual_cr = $_POST['allow_manual_cr'] ?? 'Y';
+    $parent_child    = $_POST['parent_child'] ?? 'P'; 
+    $created_by      = $_SESSION['user_id'] ?? 0;
+
+    $level_code = 1;
+    $glac_code  = '';
+
+    if ($parent_id == 0) {
+        // --- রুট লেভেল (Level 1) অ্যাকাউন্টের জন্য কোড তৈরি করা ---
+        // লজিক: 10000000, 20000000 ইত্যাদি।
+        
+        $level_code = 1;
+        $type_code_map = ['A' => 1, 'L' => 2, 'I' => 3, 'E' => 4]; 
+        $base_code     = $type_code_map[$glac_type] ?? 1;
+
+        $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_code FROM glac_mst WHERE glac_type = ? AND level_code = 1");
+        $stmt->execute([$glac_type]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result['max_code']) {
+            // Only increment the first digit for Level 1: 10000000, 20000000, etc.
+            $glac_code = (string) ($result['max_code'] + 10000000);
+        } else {
+            // First entry: 10000000, 20000000, etc.
+            $glac_code = $base_code . '0000000';
+        }
+        
+    } else {
+        // --- চাইল্ড লেভেল (Level > 1) অ্যাকাউন্টের জন্য কোড তৈরি করা ---
+        
+        // 2.1. পিতামাতার তথ্য সংগ্রহ করা
+        $stmt = $pdo->prepare("SELECT glac_code, level_code, glac_type FROM glac_mst WHERE id = ?");
+        $stmt->execute([$parent_id]);
+        $parent = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($parent) {
+            $level_code       = $parent['level_code'] + 1;
+            $parent_glac_code = $parent['glac_code'];
+            $glac_type        = $parent['glac_type']; 
+
+            // Find max glac_code under this parent
+            $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_child FROM glac_mst WHERE parent_id = ?");
+            $stmt->execute([$parent_id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($level_code == 2) {
+                // Level-2: glac_code = parent_glac_code + (N * 100000)
+                $parent_prefix = substr($parent_glac_code, 0, 1); // e.g. '1' from '10000000'
+                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,2,2) AS UNSIGNED)) as max_l2 FROM glac_mst WHERE parent_id = ?");
+                $stmt2->execute([$parent_id]);
+                $max_l2 = $stmt2->fetch(PDO::FETCH_ASSOC)['max_l2'];
+                if ($max_l2) {
+                    $next_l2 = str_pad($max_l2 + 1, 2, '0', STR_PAD_LEFT);
                 } else {
-                    // First entry: 10000000, 20000000, 30000000, 40000000
-                    $glac_code = $base_code . '0000000';
+                    $next_l2 = '01';
                 }
+                $glac_code = $parent_prefix . $next_l2 . '00000';
+            } else if ($level_code == 3) {
+                // Level-3: glac_code = parent_glac_code + (N * 1000)
+                $parent_prefix = substr($parent_glac_code, 0, 3); // e.g. '101' from '10100000'
+                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,4,2) AS UNSIGNED)) as max_l3 FROM glac_mst WHERE parent_id = ?");
+                $stmt2->execute([$parent_id]);
+                $max_l3 = $stmt2->fetch(PDO::FETCH_ASSOC)['max_l3'];
+                if ($max_l3) {
+                    $next_l3 = str_pad($max_l3 + 1, 2, '0', STR_PAD_LEFT);
+                } else {
+                    $next_l3 = '01';
+                }
+                $glac_code = $parent_prefix . $next_l3 . '000';
+            } else if ($level_code == 4) {
+                // Level-4: glac_code = parent_glac_code + (N)
+                $parent_prefix = substr($parent_glac_code, 0, 5); // e.g. '10101' from '10101000'
+                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,6,2) AS UNSIGNED)) as max_l4 FROM glac_mst WHERE parent_id = ?");
+                $stmt2->execute([$parent_id]);
+                $max_l4 = $stmt2->fetch(PDO::FETCH_ASSOC)['max_l4'];
+                if ($max_l4) {
+                    $next_l4 = str_pad($max_l4 + 1, 2, '0', STR_PAD_LEFT);
+                } else {
+                    $next_l4 = '01';
+                }
+                $glac_code = $parent_prefix . $next_l4;
             } else {
-                // Child level
-                // Get parent information
-                $stmt = $pdo->prepare("SELECT glac_code, level_code, glac_type FROM glac_mst WHERE id = ?");
-                $stmt->execute([$parent_id]);
-                $parent = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                if ($parent) {
-                    $level_code = $parent['level_code'] + 1;
-                    $parent_glac_code = $parent['glac_code'];
-                    $glac_type = $parent['glac_type']; // Inherit parent's type
-                    
-                    // Get next child number
-                    $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_child FROM glac_mst WHERE parent_id = ?");
-                    $stmt->execute([$parent_id]);
-                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                    
-                    if ($result['max_child']) {
-                        // Increment by 1
-                        $glac_code = $result['max_child'] + 1;
-                    } else {
-                        // First child: parent_code + 1
-                        $glac_code = intval($parent_glac_code) + 1;
-                    }
+                // Level 5+ fallback: just increment last code
+                if ($result['max_child']) {
+                    $glac_code = strval($result['max_child'] + 1);
+                } else {
+                    $glac_code = strval(intval($parent_glac_code) + 1);
                 }
             }
-            
-            $stmt = $pdo->prepare("INSERT INTO glac_mst (glac_code, glac_name, parent_child, parent_id, glac_type, level_code, gl_nature, allow_manual_dr, allow_manual_cr, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'A', ?)");
-            $stmt->execute([$glac_code, $glac_name, $parent_child, $parent_id, $glac_type, $level_code, $gl_nature, $allow_manual_dr, $allow_manual_cr, $created_by]);
-            
-            $pdo->commit();
-            
-            $_SESSION['success_msg'] = '✅ সফলভাবে জেনারেল লেজার এন্ট্রি যোগ করা হয়েছে! Code: ' . $glac_code . ', Level: ' . $level_code;
+        } else {
+            // পিতামাতা খুঁজে পাওয়া যায়নি, ত্রুটি
+            $pdo->rollBack();
+            $_SESSION['error_msg'] = '❌ পিতামাতা অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।';
             header('Location: ' . $_SERVER['PHP_SELF']);
             exit;
         }
+    }
+
+    // 3. ডাটাবেসে নতুন অ্যাকাউন্ট প্রবেশ করানো
+    if (!empty($glac_code)) {
+        $stmt = $pdo->prepare("INSERT INTO glac_mst (glac_code, glac_name, parent_child, parent_id, glac_type, level_code, gl_nature, allow_manual_dr, allow_manual_cr, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'A', ?)");
+        $stmt->execute([$glac_code, $glac_name, $parent_child, $parent_id, $glac_type, $level_code, $gl_nature, $allow_manual_dr, $allow_manual_cr, $created_by]);
+
+        // 4. ট্রানজাকশন সম্পন্ন করা
+        $pdo->commit();
+
+        // 5. সফলতার বার্তা প্রদর্শন
+        $_SESSION['success_msg'] = '✅ সফলভাবে জেনারেল লেজার এন্ট্রি যোগ করা হয়েছে! Code: ' . $glac_code . ', Level: ' . $level_code;
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+        
+    } else {
+        // কোনো কারণে glac_code তৈরি না হলে ট্রানজাকশন বাতিল করা
+        $pdo->rollBack();
+        $_SESSION['error_msg'] = '❌ জেনারেল লেজার কোড তৈরি করা যায়নি।';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }
+}
         
         if ($_POST['action'] === 'update') {
             $id = intval($_POST['id'] ?? 0);
@@ -335,9 +471,9 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <strong>📝 নোট:</strong>
                         <ul class="mb-0">
                             <li>Level 1: parent_id = 0, level_code = 1 (10000000, 20000000, 30000000, 40000000)</li>
-                            <li>Level 2: parent_id = Level 1 ID, level_code = 2 (10000001, 10000002...)</li>
-                            <li>Level 3: parent_id = Level 2 ID, level_code = 3 (10000003, 10000004...)</li>
-                            <li>Level 4: parent_id = Level 3 ID, level_code = 4 (10000005, 10000006...)</li>
+                            <li>Level 2: parent_id = Level 1 ID, level_code = 2 (10100000, 10200000...)</li>
+                            <li>Level 3: parent_id = Level 2 ID, level_code = 3 (10101000, 10201000...)</li>
+                            <li>Level 4: parent_id = Level 3 ID, level_code = 4 (10101001, 10201002...)</li>
                         </ul>
                     </div>
 

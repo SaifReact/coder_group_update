@@ -3,12 +3,12 @@
 include_once __DIR__ . '/config/config.php';
 
 // Get members
-$stmt = $pdo->prepare("SELECT * FROM members_info a, member_share b, user_login c WHERE a.id = b.member_id AND a.id = c.member_id AND c.status != 'R' ORDER BY a.id ASC;");
+$stmt = $pdo->prepare("SELECT * FROM members_info a, member_share b, user_login c WHERE a.id = b.member_id AND a.id = c.member_id AND c.status NOT IN  ('I','R') ORDER BY a.id ASC;");
 $stmt->execute();
 $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get total shares
-$stmtTotal = $pdo->prepare("SELECT SUM(no_share) AS total_share FROM member_share a, user_login b where a.member_id = b.member_id AND b.status != 'R'");
+$stmtTotal = $pdo->prepare("SELECT SUM(no_share) AS total_share FROM member_share a, user_login b where a.member_id = b.member_id AND b.status NOT IN  ('I','R')");
 $stmtTotal->execute();
 $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
 

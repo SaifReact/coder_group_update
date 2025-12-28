@@ -14,7 +14,10 @@ $stmt = $pdo->query("SELECT
     ) AS members,
     (
         SELECT COALESCE(SUM(no_share), 0)
-        FROM member_share
+        FROM member_share a,
+             user_login b
+        WHERE a.member_id = b.member_id
+          AND b.status IN ('P', 'A')
     ) AS shares
 ");
 $counts = $stmt->fetch(PDO::FETCH_ASSOC);
