@@ -20,82 +20,6 @@ $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     try {
-        // $pdo->beginTransaction();
-        
-        // if ($_POST['action'] === 'add') {
-        //     $glac_name = $_POST['glac_name'] ?? '';
-        //     $glac_type = $_POST['glac_type'] ?? '';
-        //     $parent_id = intval($_POST['parent_id'] ?? 0);
-        //     $gl_nature = $_POST['gl_nature'] ?? 'D';
-        //     $allow_manual_dr = $_POST['allow_manual_dr'] ?? 'Y';
-        //     $allow_manual_cr = $_POST['allow_manual_cr'] ?? 'Y';
-        //     $parent_child = $_POST['parent_child'] ?? 'P'; // Get from radio button
-        //     $created_by = $_SESSION['user_id'];
-            
-        //     // Determine level_code
-        //     $level_code = 1;
-        //     $glac_code = '';
-            
-        //     if ($parent_id == 0) {
-        //         // Root level (Level 1)
-        //         $level_code = 1;
-                
-        //         // Generate glac_code for Level 1: 10000000, 20000000, 30000000, 40000000 etc.
-        //         $type_code_map = ['A' => 1, 'L' => 2, 'I' => 3, 'E' => 4];
-        //         $base_code = $type_code_map[$glac_type] ?? 1;
-                
-        //         $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_code FROM glac_mst WHERE glac_type = ? AND level_code = 1");
-        //         $stmt->execute([$glac_type]);
-        //         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-        //         if ($result['max_code']) {
-        //             // Increment by 1
-        //             $glac_code = $result['max_code'] + 1;
-        //         } else {
-        //             // First entry: 10000000, 20000000, 30000000, 40000000
-        //             $glac_code = $base_code . '0000000';
-        //         }
-        //     } else {
-        //         // parent_id == 2 then glac_code = 10100000
-        //         // parent_id == 3 then glac_code = 10101000
-        //         // parent_id == 4 then glac_code = 10101001
-
-        //         // Child level
-        //         // Get parent information
-        //         $stmt = $pdo->prepare("SELECT glac_code, level_code, glac_type FROM glac_mst WHERE id = ?");
-        //         $stmt->execute([$parent_id]);
-        //         $parent = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-        //         if ($parent) {
-        //             $level_code = $parent['level_code'] + 1;
-        //             $parent_glac_code = $parent['glac_code'];
-        //             $glac_type = $parent['glac_type']; // Inherit parent's type
-                    
-        //             // Get next child number
-        //             $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_child FROM glac_mst WHERE parent_id = ?");
-        //             $stmt->execute([$parent_id]);
-        //             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                    
-        //             if ($result['max_child']) {
-        //                 // Increment by 1
-        //                 $glac_code = $result['max_child'] + 1;
-        //             } else {
-        //                 // First child: parent_code + 1
-        //                 $glac_code = intval($parent_glac_code) + 1;
-        //             }
-        //         }
-        //     }
-            
-        //     $stmt = $pdo->prepare("INSERT INTO glac_mst (glac_code, glac_name, parent_child, parent_id, glac_type, level_code, gl_nature, allow_manual_dr, allow_manual_cr, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'A', ?)");
-        //     $stmt->execute([$glac_code, $glac_name, $parent_child, $parent_id, $glac_type, $level_code, $gl_nature, $allow_manual_dr, $allow_manual_cr, $created_by]);
-            
-        //     $pdo->commit();
-            
-        //     $_SESSION['success_msg'] = '✅ সফলভাবে জেনারেল লেজার এন্ট্রি যোগ করা হয়েছে! Code: ' . $glac_code . ', Level: ' . $level_code;
-        //     header('Location: ' . $_SERVER['PHP_SELF']);
-        //     exit;
-        // }
-
         // ট্রানজাকশন শুরু করা (যদি আগে না করা থাকে)
 if ($pdo->inTransaction() === false) {
     $pdo->beginTransaction();
@@ -120,7 +44,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'add') {
         // লজিক: 10000000, 20000000 ইত্যাদি।
         
         $level_code = 1;
-        $type_code_map = ['A' => 1, 'L' => 2, 'I' => 3, 'E' => 4]; 
+        // Map glac_type id (1,2,3,4) directly to base code
+        $type_code_map = ['1' => 1, '2' => 2, '3' => 3, '4' => 4];
         $base_code     = $type_code_map[$glac_type] ?? 1;
 
         $stmt = $pdo->prepare("SELECT MAX(CAST(glac_code AS UNSIGNED)) as max_code FROM glac_mst WHERE glac_type = ? AND level_code = 1");
@@ -155,36 +80,36 @@ if (isset($_POST['action']) && $_POST['action'] === 'add') {
 
             if ($level_code == 2) {
                 // Level-2: glac_code = parent_glac_code + (N * 100000)
-                $parent_prefix = substr($parent_glac_code, 0, 1); // e.g. '1' from '10000000'
-                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,2,2) AS UNSIGNED)) as max_l2 FROM glac_mst WHERE parent_id = ?");
+                $parent_prefix = substr($parent_glac_code, 0, 2); // e.g. '1' from '10000000'
+                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,3,2) AS UNSIGNED)) as max_l2 FROM glac_mst WHERE parent_id = ?");
                 $stmt2->execute([$parent_id]);
                 $max_l2 = $stmt2->fetch(PDO::FETCH_ASSOC)['max_l2'];
                 if ($max_l2) {
                     $next_l2 = str_pad($max_l2 + 1, 2, '0', STR_PAD_LEFT);
                 } else {
-                    $next_l2 = '01';
+                    $next_l2 = '10';
                 }
-                $glac_code = $parent_prefix . $next_l2 . '00000';
+                $glac_code = $parent_prefix . $next_l2 . '0000';
             } else if ($level_code == 3) {
                 // Level-3: glac_code = parent_glac_code + (N * 1000)
-                $parent_prefix = substr($parent_glac_code, 0, 3); // e.g. '101' from '10100000'
-                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,4,2) AS UNSIGNED)) as max_l3 FROM glac_mst WHERE parent_id = ?");
+                $parent_prefix = substr($parent_glac_code, 0, 4); // e.g. '101' from '10100000'
+                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,5,2) AS UNSIGNED)) as max_l3 FROM glac_mst WHERE parent_id = ?");
                 $stmt2->execute([$parent_id]);
                 $max_l3 = $stmt2->fetch(PDO::FETCH_ASSOC)['max_l3'];
                 if ($max_l3) {
                     $next_l3 = str_pad($max_l3 + 1, 2, '0', STR_PAD_LEFT);
                 } else {
-                    $next_l3 = '01';
+                    $next_l3 = '10';
                 }
-                $glac_code = $parent_prefix . $next_l3 . '000';
+                $glac_code = $parent_prefix . $next_l3 . '00';
             } else if ($level_code == 4) {
-                // Level-4: glac_code = parent_glac_code + (N)
-                $parent_prefix = substr($parent_glac_code, 0, 5); // e.g. '10101' from '10101000'
-                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,6,2) AS UNSIGNED)) as max_l4 FROM glac_mst WHERE parent_id = ?");
+                // Level-4: glac_code = parent_glac_code + (N), N should be two digits (01-99)
+                $parent_prefix = substr($parent_glac_code, 0, 6); // e.g. '10101' from '10101000'
+                $stmt2 = $pdo->prepare("SELECT MAX(CAST(SUBSTRING(glac_code,7,2) AS UNSIGNED)) as max_l4 FROM glac_mst WHERE parent_id = ?");
                 $stmt2->execute([$parent_id]);
                 $max_l4 = $stmt2->fetch(PDO::FETCH_ASSOC)['max_l4'];
                 if ($max_l4) {
-                    $next_l4 = str_pad($max_l4 + 1, 2, '0', STR_PAD_LEFT);
+                    $next_l4 = str_pad(intval($max_l4) + 1, 2, '0', STR_PAD_LEFT);
                 } else {
                     $next_l4 = '01';
                 }
@@ -348,10 +273,10 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                             <?php
                                             $type_label = '';
                                             switch($ledger['glac_type']) {
-                                                case 'A': $type_label = 'Asset'; break;
-                                                case 'L': $type_label = 'Liability'; break;
-                                                case 'I': $type_label = 'Income'; break;
-                                                case 'E': $type_label = 'Expense'; break;
+                                                case '1': $type_label = 'Asset'; break;
+                                                case '2': $type_label = 'Liability'; break;
+                                                case '3': $type_label = 'Income'; break;
+                                                case '4': $type_label = 'Expense'; break;
                                             }
                                             echo htmlspecialchars($type_label);
                                             ?>
