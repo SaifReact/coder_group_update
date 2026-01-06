@@ -79,6 +79,10 @@ $role = $_SESSION['role'] ?? '';
                         <span class="icon"><i class="bi bi-tags"></i></span> 
                         <span class="description"> Expense Category </span>
                     </a>
+                    <a class="nav-link" href="expenses.php">
+                        <span class="icon"><i class="bi bi-file-earmark-minus"></i></span> 
+                        <span class="description"> Expenses </span>
+                    </a>
                     </div>
                 <?php else: ?>
                 <a class="nav-link"

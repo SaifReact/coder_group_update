@@ -18,7 +18,7 @@ try {
         $status = $_POST['status'] ?? 'A';
         $exp_slip = '';
         if (!empty($_FILES['exp_slip']['name'])) {
-            $targetDir = '../uploads/';
+            $targetDir = '../expenses/';
             if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
             $fileName = time() . '_' . basename($_FILES['exp_slip']['name']);
             $targetFile = $targetDir . $fileName;
@@ -47,7 +47,7 @@ try {
         $status = $_POST['edit_status'] ?? 'A';
         $exp_slip = '';
         if (!empty($_FILES['edit_exp_slip']['name'])) {
-            $targetDir = '../uploads/';
+            $targetDir = '../expenses/';
             if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
             $fileName = time() . '_' . basename($_FILES['edit_exp_slip']['name']);
             $targetFile = $targetDir . $fileName;

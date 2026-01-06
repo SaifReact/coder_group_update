@@ -27,12 +27,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 <form method="post" enctype="multipart/form-data" action="../process/expenses_process.php" class="mb-4">
                     <input type="hidden" name="action" value="insert">
                     <div class="row">
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="exp_date" class="form-label">Date</label>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="exp_date" class="form-label">Exp Date</label>
                             <input type="date" class="form-control" id="exp_date" name="exp_date" required>
                         </div>
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="exp_cat" class="form-label">Category</label>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="exp_cat" class="form-label">Expense Category</label>
                             <select class="form-control" id="exp_cat" name="exp_cat" required>
                                 <option value="">Select Category</option>
                                 <?php foreach ($categories as $cat): ?>
@@ -40,7 +40,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-12 col-md-4 mb-3">
+                        <div class="col-12 col-md-6 mb-3">
                             <label for="amount" class="form-label">Amount</label>
                             <input type="number" class="form-control" id="amount" name="amount" required>
                         </div>
@@ -53,15 +53,9 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <textarea class="form-control" id="note" name="note" rows="2"></textarea>
                         </div>
                         <div class="col-12 col-md-6 mb-3">
-                            <label for="exp_slip" class="form-label">Expense Slip</label>
-                            <input type="file" class="form-control" id="exp_slip" name="exp_slip">
-                        </div>
-                        <div class="col-12 col-md-6 mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-control" id="status" name="status">
-                                <option value="A">Active</option>
-                                <option value="I">Inactive</option>
-                            </select>
+                          <label for="exp_slip" class="form-label">Expense Slip</label>
+                          <input type="file" class="form-control" id="exp_slip" name="exp_slip" accept="image/*,application/pdf" onchange="previewExpSlip(event)">
+                          <div id="exp_slip_preview" class="mt-2"></div>
                         </div>
                         <div class="col-12 mt-4 text-end">
                             <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">Save Expense (ব্যয় সংরক্ষণ করুন)</button>
@@ -96,8 +90,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                     <td><?= $exp['amount']; ?></td>
                                     <td><?= htmlspecialchars($exp['reference']); ?></td>
                                     <td><?= htmlspecialchars($exp['note']); ?></td>
-                                    <td><?php if ($exp['exp_slip']): ?><a href="../uploads/<?= htmlspecialchars($exp['exp_slip']); ?>" target="_blank">View</a><?php endif; ?></td>
-                                    <td><?= $exp['status']; ?></td>
+                                    <td><?php if ($exp['exp_slip']): ?><a href="../expenses/<?= htmlspecialchars($exp['exp_slip']); ?>" target="_blank">View</a><?php endif; ?></td>
+                                    <td><?= ($exp['status'] === 'A') ? 'Active' : 'Inactive'; ?></td>
                                     <td>
                                         <form action="../process/expenses_process.php" method="post" style="display:inline-block;">
                                             <input type="hidden" name="id" value="<?= $exp['id']; ?>">
@@ -138,12 +132,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
             <div class="modal-body">
               <input type="hidden" name="id" id="edit_id">
               <div class="row">
-                <div class="col-12 col-md-4 mb-3">
-                  <label for="edit_exp_date" class="form-label">Date</label>
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="edit_exp_date" class="form-label">Exp Date</label>
                   <input type="date" class="form-control" id="edit_exp_date" name="edit_exp_date" required>
                 </div>
-                <div class="col-12 col-md-4 mb-3">
-                  <label for="edit_exp_cat" class="form-label">Category</label>
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="edit_exp_cat" class="form-label">Expense Category</label>
                   <select class="form-control" id="edit_exp_cat" name="edit_exp_cat" required>
                     <option value="">Select Category</option>
                     <?php foreach ($categories as $cat): ?>
@@ -151,7 +145,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <?php endforeach; ?>
                   </select>
                 </div>
-                <div class="col-12 col-md-4 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                   <label for="edit_amount" class="form-label">Amount</label>
                   <input type="number" class="form-control" id="edit_amount" name="edit_amount" required>
                 </div>
@@ -165,7 +159,9 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 </div>
                 <div class="col-12 col-md-6 mb-3">
                   <label for="edit_exp_slip" class="form-label">Expense Slip (Upload to replace)</label>
-                  <input type="file" class="form-control" id="edit_exp_slip" name="edit_exp_slip">
+                  <input type="file" class="form-control" id="edit_exp_slip" name="edit_exp_slip" accept="image/*,application/pdf" onchange="previewEditExpSlip(event)">
+                  <div id="edit_exp_slip_preview" class="mt-2"></div>
+                  <div id="edit_exp_slip_existing" class="mt-2"></div>
                 </div>
                 <div class="col-12 col-md-6 mb-3">
                   <label for="edit_status" class="form-label">Status</label>
@@ -186,17 +182,85 @@ include_once __DIR__ . '/../includes/side_bar.php';
 </main>
 </div>  
 </div>
+
 <script>
+function previewExpSlip(event) {
+  const file = event.target.files[0];
+  const previewDiv = document.getElementById('exp_slip_preview');
+  previewDiv.innerHTML = '';
+  if (!file) return;
+  if (file.type.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.style.maxWidth = '120px';
+    img.style.maxHeight = '120px';
+    img.onload = function() { URL.revokeObjectURL(img.src); };
+    previewDiv.appendChild(img);
+  } else if (file.type === 'application/pdf') {
+    const pdf = document.createElement('embed');
+    pdf.src = URL.createObjectURL(file);
+    pdf.type = 'application/pdf';
+    pdf.width = '120px';
+    pdf.height = '120px';
+    previewDiv.appendChild(pdf);
+  } else {
+    previewDiv.textContent = 'Preview not available';
+  }
+}
+
+function previewEditExpSlip(event) {
+  const file = event.target.files[0];
+  const previewDiv = document.getElementById('edit_exp_slip_preview');
+  previewDiv.innerHTML = '';
+  if (!file) return;
+  if (file.type.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.style.maxWidth = '120px';
+    img.style.maxHeight = '120px';
+    img.onload = function() { URL.revokeObjectURL(img.src); };
+    previewDiv.appendChild(img);
+  } else if (file.type === 'application/pdf') {
+    const pdf = document.createElement('embed');
+    pdf.src = URL.createObjectURL(file);
+    pdf.type = 'application/pdf';
+    pdf.width = '120px';
+    pdf.height = '120px';
+    previewDiv.appendChild(pdf);
+  } else {
+    previewDiv.textContent = 'Preview not available';
+  }
+}
+
+// Show existing slip in edit modal
 function editExpense(id, exp_date, exp_cat, amount, reference, note, status) {
-    document.getElementById('edit_id').value = id;
-    document.getElementById('edit_exp_date').value = exp_date;
-    document.getElementById('edit_exp_cat').value = exp_cat;
-    document.getElementById('edit_amount').value = amount;
-    document.getElementById('edit_reference').value = reference;
-    document.getElementById('edit_note').value = note;
-    document.getElementById('edit_status').value = status;
-    var modal = new bootstrap.Modal(document.getElementById('editExpenseModal'));
-    modal.show();
+  document.getElementById('edit_id').value = id;
+  document.getElementById('edit_exp_date').value = exp_date;
+  document.getElementById('edit_exp_cat').value = exp_cat;
+  document.getElementById('edit_amount').value = amount;
+  document.getElementById('edit_reference').value = reference;
+  document.getElementById('edit_note').value = note;
+  document.getElementById('edit_status').value = status;
+  document.getElementById('edit_exp_slip').value = '';
+  document.getElementById('edit_exp_slip_preview').innerHTML = '';
+  // Find the expense in JS from PHP array
+  var expenses = <?php echo json_encode($expenses); ?>;
+  var found = expenses.find(function(e) { return e.id == id; });
+  var existingDiv = document.getElementById('edit_exp_slip_existing');
+  existingDiv.innerHTML = '';
+  if (found && found.exp_slip) {
+    var ext = found.exp_slip.split('.').pop().toLowerCase();
+    var url = '../expenses/' + found.exp_slip;
+    if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
+      existingDiv.innerHTML = '<div>Current: <br><img src="'+url+'" style="max-width:120px;max-height:120px;" /></div>';
+    } else if (ext === 'pdf') {
+      existingDiv.innerHTML = '<div>Current: <br><embed src="'+url+'" type="application/pdf" width="120px" height="120px" /></div>';
+    } else {
+      existingDiv.innerHTML = '<div>Current: <a href="'+url+'" target="_blank">View</a></div>';
+    }
+  }
+  var modal = new bootstrap.Modal(document.getElementById('editExpenseModal'));
+  modal.show();
 }
 </script>
 
