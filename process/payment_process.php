@@ -86,74 +86,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Generate trans_no as payment_method-payment_year-serial_no
     $trans_no = 'TR' . strtoupper($payment_method) . $payment_year . $serial_no;
 
-    $pay_slip = uploadPaymentSlip($_FILES['payment_slip']);
+    $pay_slip = null;
+    if (isset($_FILES['payment_slip']) && isset($_FILES['payment_slip']['tmp_name']) && $_FILES['payment_slip']['tmp_name'] != '') {
+        $pay_slip = uploadPaymentSlip($_FILES['payment_slip']);
+    }
 
     $months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
     if ($payment_method == 'advance') {
-        // Advance payment logic
-        $start_month_index = isset($_POST['start_month']) ? array_search($_POST['start_month'], $months) : 0;
+        // Get all paid months for this user
+        $paid_months = [];
+        $stmt = $pdo->prepare("SELECT payment_method, payment_year FROM member_payments WHERE member_id = ?");
+        $stmt->execute([$member_id]);
+        while($row = $stmt->fetch()) {
+            $paid_months[$row['payment_year'] . '-' . $row['payment_method']] = true;
+        }
         $months_advance = max(1, floor($amount / $monthly_fee));
-        $remaining = $amount;
         $success_count = 0;
-        for ($i = 0; $i < $months_advance; $i++) {
-            $cur_month_index = $start_month_index + $i;
-            $cur_year = $payment_year;
-            if ($cur_month_index > 11) {
-                $cur_month_index = $cur_month_index % 12;
-                $cur_year = $payment_year + 1;
+        $remaining = $amount;
+        $cur_year = $payment_year;
+        $cur_month_index = 0;
+        // Find the first unpaid month from current year
+        $found = false;
+        for ($y = $payment_year; $y <= $payment_year + 1; $y++) {
+            for ($m = 0; $m < 12; $m++) {
+                if (empty($paid_months[$y . '-' . $months[$m]])) {
+                    $cur_year = $y;
+                    $cur_month_index = $m;
+                    $found = true;
+                    break 2;
+                }
             }
-            $cur_month = $months[$cur_month_index];
-            // Check if already paid
-            $stmt = $pdo->prepare("SELECT id FROM member_payments WHERE member_id = ? AND payment_method = ? AND payment_year = ? LIMIT 1");
-            $stmt->execute([$member_id, $cur_month, $cur_year]);
-            if ($stmt->fetch()) {
-                continue; // skip already paid
-            }
-            // Serial no for this month
-            $serial_no = 1;
-            $stmt = $pdo->prepare("SELECT MAX(serial_no) as max_serial FROM member_payments WHERE payment_method = ? AND payment_year = ?");
-            $stmt->execute([$cur_month, $cur_year]);
-            if ($row = $stmt->fetch()) {
-                $serial_no = intval($row['max_serial']) + 1;
-            }
-            $trans_no = 'TR' . strtoupper($cur_month) . $cur_year . $serial_no;
-            $cur_amount = ($remaining >= $monthly_fee) ? $monthly_fee : $remaining;
-            $late_fee = 0;
-            // Late fee logic: if payment date is not within 1-30 of the month
-            if ($bank_pay_date) {
-                $payDate = strtotime($bank_pay_date);
-                $payMonth = (int)date('n', $payDate) - 1;
-                $payYear = (int)date('Y', $payDate);
-                $payDay = (int)date('j', $payDate);
-                if ($payYear == $cur_year && $payMonth == $cur_month_index) {
-                    if ($payDay < 1 || $payDay > 30) {
+        }
+        if (!$found) {
+            $_SESSION['error_msg'] = 'No unpaid month found for advance payment.';
+            header('Location: ../users/payment.php');
+            exit;
+        }
+        // Insert for next unpaid months only
+        $i = 0;
+        $inserted = 0;
+        while ($inserted < $months_advance && $i < 24) { // max 2 years lookahead
+            $y = $cur_year + intdiv($cur_month_index, 12);
+            $m = $cur_month_index % 12;
+            $cur_month = $months[$m];
+            if (empty($paid_months[$y . '-' . $cur_month])) {
+                // Serial no for this month
+                $serial_no = 1;
+                $stmt = $pdo->prepare("SELECT MAX(serial_no) as max_serial FROM member_payments WHERE payment_method = ? AND payment_year = ?");
+                $stmt->execute([$cur_month, $y]);
+                if ($row = $stmt->fetch()) {
+                    $serial_no = intval($row['max_serial']) + 1;
+                }
+                $trans_no = 'TR' . strtoupper($cur_month) . $y . $serial_no;
+                $cur_amount = ($remaining >= $monthly_fee) ? $monthly_fee : $remaining;
+                $late_fee = 0;
+                // Late fee logic: if payment date is not within 1-30 of the month
+                if ($bank_pay_date) {
+                    $payDate = strtotime($bank_pay_date);
+                    $payMonth = (int)date('n', $payDate) - 1;
+                    $payYear = (int)date('Y', $payDate);
+                    $payDay = (int)date('j', $payDate);
+                    if ($payYear == $y && $payMonth == $m) {
+                        if ($payDay < 1 || $payDay > 30) {
+                            $late_fee = $late;
+                            $cur_amount += $late_fee;
+                        }
+                    } else {
                         $late_fee = $late;
                         $cur_amount += $late_fee;
                     }
-                } else {
-                    $late_fee = $late;
-                    $cur_amount += $late_fee;
                 }
+                $for_install = round($cur_amount * 0.95, 2);
+                $other_fee = round($cur_amount * 0.05, 2);
+                $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$member_id, $member_code, $cur_month, $project_id, $y, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $cur_amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+                // Update member_share table
+                $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
+                $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
+                $remaining -= $cur_amount;
+                $inserted++;
             }
-            $for_install = round($cur_amount * 0.95, 2);
-            $other_fee = round($cur_amount * 0.05, 2);
-            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$member_id, $member_code, $cur_month, $project_id, $cur_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $cur_amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
-            // Update member_share table
-            $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
-            $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
-            $remaining -= $cur_amount;
-            $success_count++;
-            if ($remaining < $monthly_fee) break;
+            $cur_month_index++;
+            $i++;
         }
-        if ($success_count > 0) {
-            $_SESSION['success_msg'] = '✅ সফলভাবে ' . $success_count . ' মাসের পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful for ' . $success_count . ' months, please wait for approval)';
+        if ($inserted > 0) {
+            $_SESSION['success_msg'] = '✅ সফলভাবে ' . $inserted . ' মাসের পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful for ' . $inserted . ' months, please wait for approval)';
         } else {
             $_SESSION['error_msg'] = 'Already paid for selected months or invalid amount.';
         }
         header('Location: ../users/payment.php');
         exit;
-    } elseif ($amount > 0) {
+    } elseif ($amount > 0 && $payment_method !== 'advance') {
         $late_fee = 0;
         if ($amount > $monthly_fee) {
             $late_fee = round($amount - $monthly_fee, 2);

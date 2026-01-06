@@ -8,20 +8,9 @@ include_once __DIR__ . '/../config/config.php';
 
 $member_id = $_SESSION['member_id'];
 $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
-$no_share = 1;
 $admission_paid = false;
 $current_year = (int)date('Y');
 
-// Fetch project data (per_share_value)
-$per_share_value = 0; // Default value
-$stmt = $pdo->prepare("SELECT * FROM project LIMIT 1");
-$stmt->execute();
-if ($row = $stmt->fetch()) {
-    $per_share_value = isset($row['per_share_value']) ? (float)$row['per_share_value'] : 5000;
-}
-
-// Fetch all data from utils table and extract fee types
-$admissionfee = 0; // Default value
 $monthly = 0; // Default value
 $late = 0; // Default value
 $samityShare = 0;
@@ -30,34 +19,20 @@ $stmt_utils = $pdo->prepare("SELECT * FROM utils where status = 'A'");
 $stmt_utils->execute();
 while ($row_utils = $stmt_utils->fetch()) {
     if (isset($row_utils['fee_type'])) {
-        if ($row_utils['fee_type'] === 'admission') {
-            $admissionfee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 1500;
-        } elseif ($row_utils['fee_type'] === 'monthly') {
+        if ($row_utils['fee_type'] === 'monthly') {
             $monthly = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
         } elseif ($row_utils['fee_type'] === 'late') {
             $late = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 200;
-        } elseif ($row_utils['fee_type'] === 'samity_share') {
-            $samityShare = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 5000;
-    }
+        } 
   }
 }
 
 $stmt1 = $pdo->prepare("SELECT * FROM member_share a JOIN member_project b ON a.member_id = b.member_id WHERE a.member_id = ? AND a.member_code = ? LIMIT 1");
 $stmt1->execute([$member_id, $_SESSION['member_code']]);
 if ($row1 = $stmt1->fetch()) {
-    $no_share = (float)$row1['no_share'];
-    $samity_share = (float)$row1['samity_share'];
-    $samity_share_amt = (float)$row1['samity_share_amt'];
-    $extra_share = isset($row1['extra_share']) ? (float)$row1['extra_share'] : 0;
-    $admission_paid = isset($row1['admission_fee']) && (float)$row1['admission_fee'] > 0;
     $late_assign = isset($row1['late_assign']) ? $row1['late_assign'] : '';
     $late_fee = isset($row1['late_fee']) ? (float)$row1['late_fee'] : 0;
-    $sundry_samity_share = isset($row1['sundry_samity_share']) ? (float)$row1['sundry_samity_share'] : 0;
     $install_advance = isset($row1['install_advance']) ? (float)$row1['install_advance'] : 0;
-    $project_share = isset($row1['project_share']) ? (float)$row1['project_share'] : 0;
-    $project_share_amount = isset($row1['share_amount']) ? (float)$row1['share_amount'] : 0;
-    $paid_amount = isset($row1['paid_amount']) ? (float)$row1['paid_amount'] : 0;
-    $sundry_amount = isset($row1['sundry_amount']) ? (float)$row1['sundry_amount'] : 0;
 }
 
 // Fetch already paid monthly payments
@@ -141,6 +116,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
     <div class="col-md-6 mb-3">
       <label for="amount" class="form-label">টাকার পরিমাণ (Amount)</label>
       <input type="number" step="0.01" class="form-control" id="amount" name="amount" required oninput="handleAmountInput()">
+      <div id="advanceMsg" class="form-text text-info" style="display:none;"></div>
     </div>
 
     <!-- Total Share Value removed -->
@@ -158,7 +134,21 @@ include_once __DIR__ . '/../includes/side_bar.php';
           <label class="form-check-label" for="BP">Bank Pay</label>
         </div>
       </div>
+    </div>
+
+    <div class="col-md-6 mb-3" id="bankTransDiv" style="display:none;">
+      <label for="bank_trans" class="form-label">ব্যাংক লেনদেন নং (Bank Transaction)</label>
+      <input type="text" class="form-control" id="bank_trans" name="bank_trans">
+    </div>
+
+    <div class="col-md-6 mb-3" id="paymentDateDiv" style="display:none;">
+      <label for="payment_date" class="form-label">ব্যাংকে জমার তারিখ (Bank Deposit Date)</label>
       <input type="date" class="form-control" id="payment_date" name="payment_date">
+    </div>
+
+    <div class="col-md-6 mb-3" id="paymentSlipDiv" style="display:none;">
+      <label for="payment_slip" class="form-label">পেমেন্ট স্লিপ (Payment Slip)</label>
+      <input type="file" class="form-control" id="payment_slip" name="payment_slip" accept="image/*" onchange="previewPaymentSlip(event)">
     </div>
 
     <!-- Payment Slip -->
@@ -272,8 +262,16 @@ include_once __DIR__ . '/../includes/side_bar.php';
     var amountInput = document.getElementById('amount');
     var depositAmountInput = document.getElementById('deposit_amount');
     var admissionPaidMsg = document.getElementById('admissionPaidMsg');
+    var advanceMsg = document.getElementById('advanceMsg');
     var monthlyFee = <?php echo json_encode($monthly); ?>;
     var val = parseFloat(amountInput.value) || 0;
+    var paymentType = document.getElementById('payment_type').value;
+    if (paymentType === 'advance') {
+      if (val > 0) {
+        advanceMsg.style.display = '';
+        advanceMsg.innerText = 'মাসিক পেমেন্ট এর সমান অথবা দ্বিগুন টাকা হবে। (Amount should be equal to or multiple of monthly fee)';
+      } 
+    } 
     if (val >= monthlyFee) {
       var monthsAdvance = Math.floor(val / monthlyFee);
       if (monthsAdvance > 1) {
@@ -293,12 +291,15 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
   // Project change removed
 
-              function handlePayModeChange() {
-                var bp = document.getElementById('BP').checked;
-                document.getElementById('bankTransDiv').style.display = bp ? '' : 'none';
-                document.getElementById('paymentDateDiv').style.display = bp ? '' : 'none';
-                document.getElementById('paymentSlipDiv').style.display = bp ? '' : 'none';
-              }
+  function handlePayModeChange() {
+    var bp = document.getElementById('BP').checked;
+    var bankTransDiv = document.getElementById('bankTransDiv');
+    var paymentDateDiv = document.getElementById('paymentDateDiv');
+    var paymentSlipDiv = document.getElementById('paymentSlipDiv');
+    if (bankTransDiv) bankTransDiv.style.display = bp ? '' : 'none';
+    if (paymentDateDiv) paymentDateDiv.style.display = bp ? '' : 'none';
+    if (paymentSlipDiv) paymentSlipDiv.style.display = bp ? '' : 'none';
+  }
 
               function previewPaymentSlip(event) {
                 var img = document.getElementById('paymentSlipPreview');
