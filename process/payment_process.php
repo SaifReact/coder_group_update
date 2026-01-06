@@ -65,15 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $no_share = $share_data ? (float)$share_data['no_share'] : 1;
     $extra_share = $share_data ? (float)$share_data['extra_share'] : 0;
 
-    // Check if admission_fee already paid for this user
-    if ($payment_method === 'admission') {
-        if ($share_data && isset($share_data['admission_fee']) && (float)$share_data['admission_fee'] > 0) {
-            $_SESSION['error_msg'] = 'Admission fee already paid for this user.';
-            header('Location: ../users/payment.php');
-            exit;
-        }
-    }
-
     // Check if payment already exists for this month and year
     if ($payment_method !== 'admission' && $payment_method !== 'Samity Share' && $payment_method !== 'Project Share') {
         $stmt = $pdo->prepare("SELECT id FROM member_payments WHERE member_id = ? AND payment_method = ? AND payment_year = ? LIMIT 1");
@@ -97,88 +88,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $pay_slip = uploadPaymentSlip($_FILES['payment_slip']);
 
-    if ($payment_method === 'admission' && $amount > 0) {
-        // Fixed admission fees
-        $admission_fee = $amount;
-        $idcard_fee = 150;
-        $passbook_fee = 200;
-        $softuses_fee = 400;
-        $sms_fee = 100;
-        $office_rent = 300;
-        $office_staff = 200;
-        $other_fee = 150;
-
-        // Insert into member_payments table
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'admission', $created_by, $pay_slip, 'A', $pay_mode, $remarks]);
-
-        // Update member_share table
-        $stmt = $pdo->prepare("UPDATE member_share SET admission_fee = ?, idcard_fee = ?, passbook_fee = ?, softuses_fee = ?, sms_fee = ?, office_rent = ?, office_staff = ?, other_fee = ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$admission_fee, $idcard_fee, $passbook_fee, $softuses_fee, $sms_fee, $office_rent, $office_staff, $other_fee, $member_id, $member_code]);
-
-        $_SESSION['success_msg'] = '✅ Admission Fee Payment Successfully..! (সফলভাবে ভর্তি ফি পেমেন্ট করা হলো..!)';
-        header('Location: ../users/payment.php');
-        exit;
-    } else if ($payment_method === 'Samity Share' && $amount > 0) {
-        
-        $sundry_samity_share = $total_share_value;
-
-        // Insert into member_payments table
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, 1, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Samity Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
-
-        // Update member_share table - SET sundry_share to the remaining balance
-        $stmt = $pdo->prepare("UPDATE member_share SET samity_share_amt = samity_share_amt + ?, sundry_samity_share = ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$amount, $sundry_samity_share, $member_id, $member_code]);
-
-        // Update project_share table
-
-        // Update payment_status = 'Y' for 2 project_share rows for this member
-        $stmt_ps = $pdo->prepare("SELECT id FROM project_share WHERE member_id = ? AND member_code = ? AND project_id = 0 LIMIT 2");
-        $stmt_ps->execute([$member_id, $member_code]);
-        $ids = $stmt_ps->fetchAll(PDO::FETCH_COLUMN);
-        if ($ids) {
-            foreach ($ids as $id) {
-                $stmt_upd = $pdo->prepare("UPDATE project_share SET payment_status = 'Y' WHERE id = ?");
-                $stmt_upd->execute([$id]);
+    $months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+    if ($payment_method == 'advance') {
+        // Advance payment logic
+        $start_month_index = isset($_POST['start_month']) ? array_search($_POST['start_month'], $months) : 0;
+        $months_advance = max(1, floor($amount / $monthly_fee));
+        $remaining = $amount;
+        $success_count = 0;
+        for ($i = 0; $i < $months_advance; $i++) {
+            $cur_month_index = $start_month_index + $i;
+            $cur_year = $payment_year;
+            if ($cur_month_index > 11) {
+                $cur_month_index = $cur_month_index % 12;
+                $cur_year = $payment_year + 1;
             }
+            $cur_month = $months[$cur_month_index];
+            // Check if already paid
+            $stmt = $pdo->prepare("SELECT id FROM member_payments WHERE member_id = ? AND payment_method = ? AND payment_year = ? LIMIT 1");
+            $stmt->execute([$member_id, $cur_month, $cur_year]);
+            if ($stmt->fetch()) {
+                continue; // skip already paid
+            }
+            // Serial no for this month
+            $serial_no = 1;
+            $stmt = $pdo->prepare("SELECT MAX(serial_no) as max_serial FROM member_payments WHERE payment_method = ? AND payment_year = ?");
+            $stmt->execute([$cur_month, $cur_year]);
+            if ($row = $stmt->fetch()) {
+                $serial_no = intval($row['max_serial']) + 1;
+            }
+            $trans_no = 'TR' . strtoupper($cur_month) . $cur_year . $serial_no;
+            $cur_amount = ($remaining >= $monthly_fee) ? $monthly_fee : $remaining;
+            $late_fee = 0;
+            // Late fee logic: if payment date is not within 1-30 of the month
+            if ($bank_pay_date) {
+                $payDate = strtotime($bank_pay_date);
+                $payMonth = (int)date('n', $payDate) - 1;
+                $payYear = (int)date('Y', $payDate);
+                $payDay = (int)date('j', $payDate);
+                if ($payYear == $cur_year && $payMonth == $cur_month_index) {
+                    if ($payDay < 1 || $payDay > 30) {
+                        $late_fee = $late;
+                        $cur_amount += $late_fee;
+                    }
+                } else {
+                    $late_fee = $late;
+                    $cur_amount += $late_fee;
+                }
+            }
+            $for_install = round($cur_amount * 0.95, 2);
+            $other_fee = round($cur_amount * 0.05, 2);
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, $cur_month, $project_id, $cur_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $cur_amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+            // Update member_share table
+            $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
+            $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
+            $remaining -= $cur_amount;
+            $success_count++;
+            if ($remaining < $monthly_fee) break;
         }
-
-        $_SESSION['success_msg'] = '✅ Samity Share Fee Payment Successfully..! (সফলভাবে সমিতি শেয়ার ফি পেমেন্ট করা হলো..!)';
+        if ($success_count > 0) {
+            $_SESSION['success_msg'] = '✅ সফলভাবে ' . $success_count . ' মাসের পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful for ' . $success_count . ' months, please wait for approval)';
+        } else {
+            $_SESSION['error_msg'] = 'Already paid for selected months or invalid amount.';
+        }
         header('Location: ../users/payment.php');
         exit;
-    } else if ($payment_method === 'Project Share' && $amount > 0 && $project_id > 1) {
-        
-        $sundry_project_share = $amount;
-
-        // Insert into member_payments table
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
-
-        // Update member_share table - SET sundry_project_share to the remaining balance
-        $stmt = $pdo->prepare("UPDATE member_project SET paid_amount = paid_amount + ?, sundry_amount = sundry_amount - ? WHERE member_id = ? AND member_code = ? AND project_id = ?");
-        $stmt->execute([$amount, $sundry_project_share, $member_id, $member_code, $project_id]);
-
-        $_SESSION['success_msg'] = '✅ Project Share Fee Payment Successfully..! (সফলভাবে প্রকল্প শেয়ার ফি পেমেন্ট করা হলো..!)';
-        header('Location: ../users/payment.php');
-        exit;
-    } else if ($payment_method != 'admission' && $payment_method != 'Samity Share' && $payment_method != 'Project Share' && $amount > 0) {
-        // Calculate fees for monthly payments
-        // Late fee is the difference between amount and monthly fee
+    } elseif ($amount > 0) {
         $late_fee = 0;
         if ($amount > $monthly_fee) {
             $late_fee = round($amount - $monthly_fee, 2);
         }
-        
-        $for_install = round($amount * 0.98, 2);
-        $other_fee = round($amount * 0.02, 2);
-
-
-
+        $for_install = round($amount * 0.95, 2);
+        $other_fee = round($amount * 0.05, 2);
         // Fees to insert
         $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$member_id, $member_code, $payment_method, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
-
         // Update member_share table and add previous_amount + late_fee
         $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
         $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);

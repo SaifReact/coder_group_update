@@ -50,7 +50,7 @@ function sms_send($mobile, $message) {
 // Fetch all payments
 $stmt = $pdo->query("select a.id, a.member_id, a.member_code, a.payment_method, a.bank_pay_date, a.bank_trans_no, a.trans_no, 
 a.amount, a.status, c.name_en, c.name_bn, c.mobile, COALESCE(b.id, 0) AS member_project_id from member_payments a, member_project b, 
-members_info c where a.member_id = b.member_id AND a.member_code = b.member_code AND a.project_id = b.project_id AND a.member_id = c.id 
+members_info c where a.member_id = b.member_id AND a.member_code = b.member_code AND a.member_id = c.id 
 AND a.member_code = c.member_code ORDER BY a.id DESC");
 $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
