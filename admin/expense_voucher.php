@@ -273,5 +273,4 @@ function downloadPDF() {
 }
 </script>
 
-<?php include_once __DIR__ . '/../includes/toast.php'; ?>
 <?php include_once __DIR__ . '/../includes/end.php'; ?>
