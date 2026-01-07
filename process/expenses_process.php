@@ -16,6 +16,7 @@ try {
         $reference = $_POST['reference'] ?? '';
         $note = $_POST['note'] ?? '';
         $status = $_POST['status'] ?? 'A';
+        $glacc = $_POST['gl_acc'] ?? 0;
         $exp_slip = '';
         if (!empty($_FILES['exp_slip']['name'])) {
             $targetDir = '../expenses/';
@@ -27,8 +28,8 @@ try {
             }
         }
         if (!empty($exp_date) && $exp_cat && $amount) {
-            $stmt = $pdo->prepare("INSERT INTO expenses (exp_date, exp_cat, amount, reference, note, exp_slip, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$exp_date, $exp_cat, $amount, $reference, $note, $exp_slip, $status]);
+            $stmt = $pdo->prepare("INSERT INTO expenses (exp_date, exp_cat, amount, reference, note, exp_slip, status, glac_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$exp_date, $exp_cat, $amount, $reference, $note, $exp_slip, $status, $glacc]);
             $_SESSION['success_msg'] = "✅ Expense Added Successfully..! (সফলভাবে যোগ করা হয়েছে..!)";
         } else {
             $_SESSION['error_msg'] = 'Date, Category, and Amount are required!';
@@ -45,6 +46,7 @@ try {
         $reference = $_POST['edit_reference'] ?? '';
         $note = $_POST['edit_note'] ?? '';
         $status = $_POST['edit_status'] ?? 'A';
+        $glacc = $_POST['edit_gl_acc'] ?? 0;
         $exp_slip = '';
         if (!empty($_FILES['edit_exp_slip']['name'])) {
             $targetDir = '../expenses/';
@@ -57,11 +59,11 @@ try {
         }
         if ($id && !empty($exp_date) && $exp_cat && $amount) {
             if ($exp_slip) {
-                $stmt = $pdo->prepare("UPDATE expenses SET exp_date=?, exp_cat=?, amount=?, reference=?, note=?, exp_slip=?, status=? WHERE id=?");
-                $stmt->execute([$exp_date, $exp_cat, $amount, $reference, $note, $exp_slip, $status, $id]);
+                $stmt = $pdo->prepare("UPDATE expenses SET exp_date=?, exp_cat=?, amount=?, reference=?, note=?, exp_slip=?, status=?, glac_id=? WHERE id=?");
+                $stmt->execute([$exp_date, $exp_cat, $amount, $reference, $note, $exp_slip, $status, $glacc, $id]);
             } else {
-                $stmt = $pdo->prepare("UPDATE expenses SET exp_date=?, exp_cat=?, amount=?, reference=?, note=?, status=? WHERE id=?");
-                $stmt->execute([$exp_date, $exp_cat, $amount, $reference, $note, $status, $id]);
+                $stmt = $pdo->prepare("UPDATE expenses SET exp_date=?, exp_cat=?, amount=?, reference=?, note=?, status=?, glac_id=? WHERE id=?");
+                $stmt->execute([$exp_date, $exp_cat, $amount, $reference, $note, $status, $glacc, $id]);
             }
             $_SESSION['success_msg'] = "✅ Expense Updated Successfully..! (সফলভাবে হালনাগাদ করা হলো..!)";
         } else {

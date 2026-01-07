@@ -13,6 +13,10 @@ $expenses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $stmtCat = $pdo->prepare("SELECT id, name FROM expense_category WHERE status = 'A' ORDER BY name ASC");
 $stmtCat->execute();
 $categories = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
+
+$stmtGlac = $pdo->prepare("SELECT id, glac_name FROM glac_mst WHERE status = 'A' AND LEVEL_CODE = 4 AND glac_type = 4 ORDER BY id ASC");
+$stmtGlac->execute();
+$glacs = $stmtGlac->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <?php 
 include_once __DIR__ . '/../includes/open.php';
@@ -37,6 +41,15 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <option value="">Select Category</option>
                                 <?php foreach ($categories as $cat): ?>
                                     <option value="<?= $cat['id']; ?>"><?= htmlspecialchars($cat['name']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="gl_acc" class="form-label">Gl Account</label>
+                            <select class="form-control" id="gl_acc" name="gl_acc" required>
+                                <option value="">Select Account</option>
+                                <?php foreach ($glacs as $glac): ?>
+                                    <option value="<?= $glac['id']; ?>"><?= htmlspecialchars($glac['glac_name']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -75,6 +88,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <th>Note</th>
                                 <th>Slip</th>
                                 <th>Status</th>
+                                <th>Gl Account</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -93,6 +107,11 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                     <td><?php if ($exp['exp_slip']): ?><a href="../expenses/<?= htmlspecialchars($exp['exp_slip']); ?>" target="_blank">View</a><?php endif; ?></td>
                                     <td><?= ($exp['status'] === 'A') ? 'Active' : 'Inactive'; ?></td>
                                     <td>
+                                      <?php 
+                                        $glac = array_filter($glacs, function($g) use ($exp) { return $g['id'] == $exp['glac_id']; });
+                                        echo $glac ? htmlspecialchars(array_values($glac)[0]['glac_name']) : 'N/A';
+                                    ?></td>
+                                    <td>
                                         <form action="../process/expenses_process.php" method="post" style="display:inline-block;">
                                             <input type="hidden" name="id" value="<?= $exp['id']; ?>">
                                             <button type="submit" name="action" value="delete" class="btn btn-danger btn-sm" onclick="return confirm('Delete This Expense?');">
@@ -106,7 +125,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                             <?= json_encode($exp["amount"]); ?>,
                                             <?= json_encode($exp["reference"]); ?>,
                                             <?= json_encode($exp["note"]); ?>,
-                                            <?= json_encode($exp["status"]); ?>
+                                            <?= json_encode($exp["status"]); ?>,
+                                            <?= json_encode($exp["glac_id"]); ?>
                                         )'>
                                             <i class="fa fa-edit"></i>
                                         </button>
@@ -142,6 +162,15 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <option value="">Select Category</option>
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?= $cat['id']; ?>"><?= htmlspecialchars($cat['name']); ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="edit_gl_acc" class="form-label">Gl Account</label>
+                  <select class="form-control" id="edit_gl_acc" name="edit_gl_acc" required>
+                    <option value="">Select Account</option>
+                    <?php foreach ($glacs as $glac): ?>
+                        <option value="<?= $glac['id']; ?>"><?= htmlspecialchars($glac['glac_name']); ?></option>
                     <?php endforeach; ?>
                   </select>
                 </div>
@@ -233,7 +262,7 @@ function previewEditExpSlip(event) {
 }
 
 // Show existing slip in edit modal
-function editExpense(id, exp_date, exp_cat, amount, reference, note, status) {
+function editExpense(id, exp_date, exp_cat, amount, reference, note, status, gl_acc) {
   document.getElementById('edit_id').value = id;
   document.getElementById('edit_exp_date').value = exp_date;
   document.getElementById('edit_exp_cat').value = exp_cat;
@@ -241,6 +270,7 @@ function editExpense(id, exp_date, exp_cat, amount, reference, note, status) {
   document.getElementById('edit_reference').value = reference;
   document.getElementById('edit_note').value = note;
   document.getElementById('edit_status').value = status;
+  document.getElementById('edit_gl_acc').value = gl_acc;
   document.getElementById('edit_exp_slip').value = '';
   document.getElementById('edit_exp_slip_preview').innerHTML = '';
   // Find the expense in JS from PHP array
