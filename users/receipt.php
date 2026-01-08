@@ -7,8 +7,15 @@ if (!isset($_SESSION['user_id'])) {
 
 include_once __DIR__ . '/../config/config.php';
 
+function englishToBanglaNumber($number) {
+    $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ','];
+    $bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯', '.', ','];
+    return str_replace($en, $bn, $number);
+}
+
+$selected_year = isset($_POST['payment_year']) ? (int)$_POST['payment_year'] : (int)date('Y');
+
 $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
-$current_year = (int)date('Y');
 
 /* --------- Number to Words Function --------- */
 function numberToWords($num) {
@@ -96,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
 
     $stmt = $pdo->prepare("
         SELECT b.no_share, a.trans_no, DATE_FORMAT(a.created_at, '%d-%m-%Y %H:%i') AS created_at,  
-               a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date,
+               a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date, a.pay_mode,
                SUM(a.amount) AS total_amount,
                SUM(CASE WHEN a.for_fees = 'idcard_fee' THEN a.amount ELSE 0 END) AS idcard_fee_amount,
                SUM(CASE WHEN a.for_fees = 'passbook_fee' THEN a.amount ELSE 0 END) AS passbook_fee_amount,
@@ -134,12 +141,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
 }
 .receipt-container { width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; }
 .dotted-input-solid { border: none; border-bottom: 1px solid #000; background: transparent; outline: none; padding: 0 5px; flex-grow: 1; }
-.header-bg { background: var(--bs-corporate-orange); position: relative; }
-.header-bg::before { content:''; position:absolute; top:0; left:0; width:35%; height:100%; background:var(--bs-corporate-blue); transform:skewX(-20deg); transform-origin: top left; z-index:1; }
+.header-bg { position: relative; }
+.header-bg::before { content:''; position:absolute; top:0; left:0; width:35%; height:100%;  }
 .header-content { position:relative; z-index:2; }
 .logo-box-custom { width:100px; height:100px; margin-right:10px; }
-.footer-bg { background:var(--bs-corporate-orange); position:relative; z-index:10; }
-.footer-bg::after { content:''; position:absolute; bottom:0; right:0; width:50px; height:100%; background:var(--bs-corporate-blue); clip-path:polygon(100% 0,100% 100%,0 100%); z-index:11; }
+.footer-bg { border-top: 2px solid var(--bs-corporate-blue); background: #f1f1f1; position:relative; z-index:10; }
+
+.receipt-institute {
+    text-align: right;
+    font-size: 14px;
+    color: #333;
+}
+
+.receipt-body::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 250px;
+    height: 250px;
+    transform: translate(-50%, -50%);
+    background: url('<?php echo BASE_URL; ?>assets/img/logo.png') no-repeat center center;
+    background-size: 250px 250px;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.15));
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.button-center {
+  display: flex;
+  align-items: center;
+}
 </style>
 
 <?php 
@@ -156,7 +189,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
             <!-- ===== Receipt Form ===== -->
             <form method="post" class="mb-4 row g-3">
-              <div class="col-md-4 mb-3">
+              <div class="col-12 col-md-4 mb-3">
                 <label for="payment_type" class="form-label">Payments (পেমেন্ট)</label>
                 <select class="form-select" id="payment_type" name="payment_type" required>
                   <option value="">Select (বাছাই করুন)</option>
@@ -166,9 +199,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                           'admission' => 'সদস্য এন্ট্রি ফি',
                           'Samity Share' => 'সমিতি শেয়ার ফি',
                           'Project Share' => 'প্রকল্প শেয়ার ফি',
-                      ];
-                  } else {
-                      $months = [
                           'january'   => 'January (জানুয়ারি)',
                           'february'  => 'February (ফেব্রুয়ারি)',
                           'march'     => 'March (মার্চ)',
@@ -182,7 +212,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                           'november'  => 'November (নভেম্বর)',
                           'december'  => 'December (ডিসেম্বর)'
                       ];
-                  }
+                  } 
                   foreach ($months as $key => $val): ?>
                     <option value="<?= $key ?>" <?= (!empty($payment_type) && $payment_type == $key) ? 'selected' : '' ?>>
                       <?= $val ?>
@@ -191,28 +221,34 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 </select>
               </div>
 
-              <div class="col-md-4 mb-3">
+              <div class="col-12 col-md-2 mb-3">
                 <label for="payment_year" class="form-label">Year (বছর)</label>
-                <select class="form-select" id="payment_year" name="payment_year" required>
-                  <?php 
-                  for ($y = $current_year; $y <= ($current_year + 0); $y++): 
-                    $is_selected = (empty($payment_year) && $y == $current_year) || (!empty($payment_year) && $payment_year == $y);
-                  ?>
-                    <option value="<?= $y ?>" <?= $is_selected ? 'selected' : '' ?>>
-                      <?= $y ?>
-                    </option>
-                  <?php endfor; ?>
+                <select name="payment_year" id="payment_year" class="form-select" onchange="this.form.submit()">
+                    <?php
+                     $current_year = (int)date('Y');
+                     for ($i = 0; $i < 2; $i++) {
+                        $year = $current_year - $i;
+                        $selected = ($year == $selected_year) ? 'selected' : '';
+                         echo '<option value="' . $year . '" ' . $selected . '>' . englishToBanglaNumber($year) . '</option>';
+                     }
+                    ?>
                 </select>
               </div>
 
-              <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100">Generate Receipt (রসিদ তৈরি করুন)</button>
+              <div class="col-12 col-md-3 mb-3 button-center">
+                <button type="submit" class="btn btn-primary w-75">Generate Receipt (রসিদ তৈরি করুন)</button>
+              </div>
+
+              <div class="col-12 col-md-3 mb-3 button-center">
+                <button type="button" class="btn btn-danger" onclick="downloadPDF()">
+                    <i class="fas fa-file-pdf me-2"></i>PDF ডাউনলোড করুন
+                </button>
               </div>
             </form>
 
             <!-- ===== Show Receipt or Alert ===== -->
             <?php if ($receipt): ?>
-              <div class="container receipt-container bg-white mt-5 p-0">
+              <div class="container receipt-container bg-white mt-5 p-0" id ="receipt-content">
     <div class="row m-0 p-0">
         <div class="col-md-12 p-0">
             <div class="header-bg py-3 px-4 d-flex align-items-center">
@@ -220,7 +256,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 <div class="col-md-6 d-flex align-items-center">
                     <div class="header-content align-items-center">
                         <div class="logo-box-custom align-items-center">
-                            <div class="p-2 bg-white rounded-circle shadow-sm" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <div class="p-2" style="width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                                 <img src="<?php echo BASE_URL; ?>assets/img/<?= htmlspecialchars($logo) ?>" alt="Logo" class="img-fluid">
                             </div>
                         </div>
@@ -228,19 +264,21 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 </div>
                 <!-- Company Details -->
                 <div class="col-md-6 text-end">
-                    <div class="header-content small">
-                        <p class="fw-bold mb-0" style="color: var(--bs-corporate-blue);"><?= $siteName ?? 'Company Name Here' ?></p>
+                    <div class="receipt-institute">
+                        <p class="fw-bold mb-0"><?= $siteName ?? 'Company Name Here' ?></p>
                         <p class="mb-0"><?= $reg_no ?? 'Your Business Address 0000' ?></p>
-                        <p class="mb-0 small" style="color: var(--bs-corporate-blue);">📞 <?= $phone ?? '0000-000000' ?> <br/>✉️ <?= $email ?? 'Your Mail Here' ?></p>
-                        <p class="mb-0 small" style="color: #FFF;"><?= $slogan ?></p>
+                        <p class="mb-0 small">📞 <?= $phone ?? '0000-000000' ?> <br/>✉️ <?= $email ?? 'Your Mail Here' ?></p>
+                        <p class="mb-0 small"><?= $slogan ?></p>
                     </div>
                 </div>
             </div>
-            <hr class="m-0 border border-4" style="border-color: var(--bs-corporate-orange) !important;">
+            <hr class="m-0 border border-2" style="border-color: var(--bs-corporate-orange) !important;">
 
             <!-- Receipt Information -->
+            <div class="receipt-body">
+
+            
             <div class="row my-3 px-4 small">
-                <div class="col-md-12 text-center fw-bold fs-5 border-bottom">Money Receipt</div>
                 <div class="col-6 d-flex align-items-center">
                     <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);">NO :</label>
                     <span class="text-dark"><?= htmlspecialchars($receipt['trans_no'] ?? 'trans_no') ?></span>
@@ -263,7 +301,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
                 <div class="row g-3 mb-3">
                     <div class="col-6 d-flex align-items-center">
-                        <label class="me-2 text-dark">For</label>
+                        <label class="me-2 text-dark">For Purpose</label>
                         <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
                             <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['payment_method'] ?? 'Payment Method') ?></h5>
                         </div>
@@ -278,7 +316,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
                 <div class="row g-3 mb-3">
                     <div class="col-6 d-flex align-items-center">
-                        <label class="me-2 text-dark">Bank Trans</label>
+                        <label class="me-2 text-dark">Bank Trans No</label>
                         <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
                             <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['bank_trans_no'] ?? 'bank_trans_no') ?></h5>
                         </div>
@@ -286,24 +324,33 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <div class="col-6 d-flex align-items-center">
                         <label class="me-2 text-dark">Bank Pay Date</label>
                         <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
-                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['bank_pay_date'] ?? 'bank_pay_date') ?></h5>
+                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['bank_pay_date'] ?? '') ?></h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 d-flex align-items-center">
+                        <label class="me-2 text-dark">Amount of Taka</label>
+                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
+                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['net_amount'] ?? 'net_amount') ?></h5>
+                        </div>
+                    </div>
+                    <div class="col-6 d-flex align-items-center">
+                        <label class="me-2 text-dark">By Paid</label>
+                        <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
+                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['pay_mode'] ?? '') ?></h5>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-2 d-flex align-items-center">
-                    <label class="me-2 text-dark">Due of Amount</label>
-                    <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
-                        <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['net_amount'] ?? 'net_amount') ?></h5>
-                    </div>
-                </div>
-
-                <div class="mb-2 d-flex align-items-center">
-                    <label class="me-2 text-dark">In word</label>
-                    <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
+                    <label class="me-2 text-dark">In words: </label>
+                    <div class="flex-grow-1">
                         <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['total_amount_words'] ?? 'total_amount_words') ?></h5>
                     </div>
                 </div>
+              </div>
             </div>
         </div>
 
@@ -313,7 +360,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 <div class="footer-bg py-3 px-4 d-flex justify-content-between align-items-end">
                     <!-- Amount -->
                     <div class="d-flex align-items-center me-3" style="z-index: 12;">
-                        <p class="fw-bold mb-0 small" style="color: var(--bs-corporate-blue);">Amount=</p>
+                        <p class="fw-bold mb-0 small">Amount=</p>
                         <div class="bg-white border border-primary ms-2" style="width: 100px; height: 25px;">
                             <?= htmlspecialchars($receipt['total_amount'] ?? 'total_amount') ?>
                         </div>
@@ -321,7 +368,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
                     <!-- Print Date -->
                     <div class="d-flex align-items-end me-3" style="width: 35%; z-index: 12;">
-                        <label class="fw-bold me-2" style="color: var(--bs-corporate-blue);">Print Date :</label>
+                        <label class="fw-bold me-2">Print Date :</label>
                         <span class="text-dark"><?= date('d-m-Y H:i') ?></span>
                     </div>
 
@@ -335,7 +382,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <div class="signature-line"></div>
                           <div class="signature-label">কোষাধ্যক্ষ</div>
                     </div>
-                    
                 </div>
             </div>
         </div>
@@ -356,5 +402,50 @@ include_once __DIR__ . '/../includes/side_bar.php';
     </main>
   </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+function downloadPDF() {
+    const element = document.getElementById('receipt-content');
+    const memberCode = '<?= htmlspecialchars($member['member_code']) ?>';
+    const year = '<?= $selected_year ?>';
+    
+    // Create a wrapper for proper sizing
+    const wrapper = document.createElement('div');
+    wrapper.style.width = '300mm'; // A4 width
+    wrapper.style.padding = '35mm';
+    wrapper.style.boxSizing = 'border-box';
+    wrapper.style.backgroundColor = 'white';
+    wrapper.innerHTML = element.innerHTML;
+    
+    // Temporarily add to body
+    document.body.appendChild(wrapper);
+    
+    const opt = {
+        margin: 0,
+        filename: `Receipt_${memberCode}_${year}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            scrollY: -window.scrollY,
+            scrollX: 0
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'landscape'
+        }
+    };
+    
+    html2pdf().set(opt).from(wrapper).save().then(() => {
+        // Remove temporary wrapper
+        document.body.removeChild(wrapper);
+    });
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

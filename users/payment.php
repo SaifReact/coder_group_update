@@ -5,11 +5,19 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 include_once __DIR__ . '/../config/config.php';
+include_once __DIR__ . '/../includes/function.php';
+
+function englishToBanglaNumber($number) {
+    $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ','];
+    $bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯', '.', ','];
+    return str_replace($en, $bn, $number);
+}
+
+$selected_year = isset($_POST['payment_year']) ? (int)$_POST['payment_year'] : (int)date('Y');
 
 $member_id = $_SESSION['member_id'];
 $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
 $admission_paid = false;
-$current_year = (int)date('Y');
 
 $monthly = 0; // Default value
 $late = 0; // Default value
@@ -90,22 +98,17 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
     <div class="col-md-2 mb-3">
       <label for="payment_year" class="form-label">বছর (Year)</label>
-      <select class="form-select" id="payment_year" name="payment_year" required>
-        <?php 
-          for ($y = $current_year; $y <= ($current_year + 0); $y++): 
-            $is_selected = (empty($payment_year) && $y == $current_year) || (!empty($payment_year) && $payment_year == $y);
+      <select name="payment_year" id="payment_year" class="form-select" onchange="this.form.submit()">
+        <?php
+          $current_year = (int)date('Y');
+          for ($i = 0; $i < 2; $i++) {
+            $year = $current_year - $i;
+            $selected = ($year == $selected_year) ? 'selected' : '';
+            echo '<option value="' . $year . '" ' . $selected . '>' . englishToBanglaNumber($year) . '</option>';
+          }
         ?>
-          <option value="<?= $y ?>" <?= $is_selected ? 'selected' : '' ?>>
-            <?= $y ?>
-          </option>
-        <?php endfor; ?>
-      </select>
-    </div>
-
-    <!-- Project Select removed -->
-
-    <!-- Year Selection -->
-    
+        </select>
+    </div>    
 
     <!-- Amount Input -->
     <div class="col-md-5 mb-3">
