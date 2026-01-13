@@ -29,6 +29,22 @@ $stmt_member_projects = $pdo->prepare("SELECT mp.project_id, mp.project_share, p
 $stmt_member_projects->execute([$member_id]);
 $member_projects = $stmt_member_projects->fetchAll(PDO::FETCH_ASSOC);
 
+$shares = [];
+$stmt_share = $pdo->prepare("
+    SELECT a.*, 
+           CASE 
+               WHEN a.project_id > 0 THEN b.project_name_bn 
+               ELSE 'সমিতি শেয়ার (CPSSL)'
+           END AS project_name_bn
+    FROM share a
+    LEFT JOIN project b ON a.project_id = b.id
+    WHERE a.member_id = ?
+");
+$stmt_share->execute([$member_id]);
+if ($stmt_share) {
+    $shares = $stmt_share->fetchAll(PDO::FETCH_ASSOC);
+}
+
 // Handle form submission (CRUD)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $project_id = $_POST['project_id'] ?? '';
@@ -85,14 +101,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
             <div class="card-body p-4">
                 <h3 class="mb-3 text-primary fw-bold">Add Share <span class="text-secondary">( শেয়ার যোগ করুন )</span></h3>
                 <hr class="mb-4" />
-                <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
-                        <?php foreach ($errors as $err) echo '<div>' . htmlspecialchars($err) . '</div>'; ?>
-                    </div>
-                <?php endif; ?>
-                <?php if (!empty($success)): ?>
-                    <div class="alert alert-success"> <?php echo $success; ?> </div>
-                <?php endif; ?>
                 <form method="post" action="../process/share_process.php" autocomplete="off">
                         <input type="hidden" name="member_id" value="<?php echo htmlspecialchars($_SESSION['member_id']); ?>">
                         <input type="hidden" name="member_code" value="<?php echo htmlspecialchars($_SESSION['member_code']); ?>">
@@ -153,38 +161,52 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
-                                        <th>Service Name</th>
-                                        <th>Goal</th>
-                                        <th>Objective</th>
-                                        <th>Icon</th>
+                                        <th>Type</th>
+                                        <th>Project Name</th>
+                                        <th>No Share</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($services as $service): ?>
+                                    <?php foreach ($shares as $share): ?>
                                     <tr>
-                                        <td><?= $service['id']; ?></td>
-                                        <td><?= htmlspecialchars($service['service_name_en']); ?> </td>
-                                        <td><?= htmlspecialchars($service['service_name_bn']); ?></td>
-                                        <td><?= strip_tags($service['about_service'], '<p><ul><li><b><i><br>'); ?></td>
-                                        <td><i class="fa <?= htmlspecialchars($service['icon']); ?>"></i></td>
+                                        <td><?= $share['id']; ?></td>
+                                        <td><?= htmlspecialchars($share['type']); ?> </td>
+                                        <td><?= htmlspecialchars($share['project_name_bn']); ?></td>
+                                        <td><?= htmlspecialchars($share['no_share']); ?></td>
                                         <td>
-                                            <form action="../process/service_process.php" method="post" style="display:inline-block;">
-                                                <input type="hidden" name="id" value="<?= $service['id']; ?>">
+                                            <?php
+                                                if ($share['status'] == 'I') {
+                                                    echo 'অপেক্ষমান';
+                                                } elseif ($share['status'] == 'A') {
+                                                    echo 'অনুমোদিত';
+                                                } elseif ($share['status'] == 'R') {
+                                                    echo 'বাতিল';
+                                                } else {
+                                                    echo htmlspecialchars($share['status']);
+                                                }
+                                            ?>
+                                        </td>
+                                        <td>
+                                        <?php if ($share['status'] != 'A'): ?>
+                                            <form action="../process/share_process.php" method="post" style="display:inline-block;">
+                                                <input type="hidden" name="id" value="<?= $share['id']; ?>">
                                                 <button type="submit" name="action" value="delete" class="btn btn-danger btn-sm" onclick="return confirm('Delete This Service?');">
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             </form>
                                            <button type="button" class="btn btn-info btn-sm"
                                                 onclick='editService(
-                                                    <?= (int)$service["id"]; ?>,
-                                                    <?= json_encode($service["service_name_en"]); ?>,
-                                                    <?= json_encode($service["service_name_bn"]); ?>,
-                                                    <?= json_encode($service["about_service"]); ?>,
-                                                    <?= json_encode($service["icon"]); ?>
+                                                    <?= (int)$share["id"]; ?>,
+                                                    <?= json_encode($share["type"]); ?>,
+                                                    <?= json_encode($share["project_id"]); ?>,
+                                                    <?= json_encode($share["no_share"]); ?>,
+                                                    <?= json_encode($share["status"]); ?>
                                                 )'>
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                        <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -231,6 +253,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 infoBox.style.display = '';
             });
     });
+
+    // Edit modal logic
+    window.editService = function(id, type, project_id, no_share, status) {
+        document.getElementById('editShareId').value = id;
+        document.getElementById('editShareType').value = type;
+        document.getElementById('editShareProjectId').value = project_id;
+        document.getElementById('editShareNoShare').value = no_share;
+        document.getElementById('editShareStatus').value = status;
+        var modal = new bootstrap.Modal(document.getElementById('editShareModal'));
+        modal.show();
+    }
 });
 </script>
             </div>
@@ -241,15 +274,83 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var shareType = document.getElementById('share_type');
-    var projectBox = document.getElementById('projectSelectBox');
-    shareType.addEventListener('change', function() {
-        if (this.value === 'project') {
-            projectBox.style.display = '';
-        } else {
-            projectBox.style.display = 'none';
-        }
-    });
+        var shareType = document.getElementById('share_type');
+        var projectBox = document.getElementById('projectSelectBox');
+        shareType.addEventListener('change', function() {
+                if (this.value === 'project') {
+                        projectBox.style.display = '';
+                } else {
+                        projectBox.style.display = 'none';
+                }
+        });
+});
+
+// Modal HTML
+document.body.insertAdjacentHTML('beforeend', `
+<div class="modal fade" id="editShareModal" tabindex="-1" aria-labelledby="editShareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="../process/share_process.php" autocomplete="off">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="editShareModalLabel">শেয়ার সম্পাদনা করুন (Edit Share)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="editShareId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">শেয়ার টাইপ নির্বাচন করুন (Select Share Type)</label>
+                            <select class="form-select" name="type" id="editShareType" required>
+                                <option value="">নির্বাচন করুন (Select)</option>
+                                <option value="samity">সমিতি শেয়ার (CPSSL)</option>
+                                <option value="project">প্রকল্প শেয়ার (Project Share)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3" id="editProjectSelectBox">
+                            <label class="form-label">প্রকল্প নির্বাচন করুন (Select Project)</label>
+                            <select class="form-select" name="project_id" id="editShareProjectId">
+                                <option value="">প্রকল্প নির্বাচন করুন (Select Project)</option>
+                                <?php foreach ($projects as $project): ?>
+                                    <option value="<?php echo htmlspecialchars($project['id']); ?>">
+                                        <?php echo htmlspecialchars($project['project_name_bn']) . ' - ' . htmlspecialchars($project['project_name_en']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">শেয়ার সংখ্যা</label>
+                            <input type="number" class="form-control" name="no_share" id="editShareNoShare" min="1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">স্ট্যাটাস</label>
+                            <select class="form-select" name="status" id="editShareStatus">
+                                <option value="I">অপেক্ষমান</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" name="action" value="update" class="btn btn-info">হালনাগাদ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+`);
+
+// Show/hide project select in modal
+document.addEventListener('DOMContentLoaded', function() {
+    var editType = document.getElementById('editShareType');
+    var editProjectBox = document.getElementById('editProjectSelectBox');
+    if (editType && editProjectBox) {
+        editType.addEventListener('change', function() {
+            if (this.value === 'project') {
+                editProjectBox.style.display = '';
+            } else {
+                editProjectBox.style.display = 'none';
+            }
+        });
+    }
 });
 </script>
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

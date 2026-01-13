@@ -1,104 +1,73 @@
 <?php
-// process/share_add.php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login.php');
+
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
+    header("Location: ../login.php");
     exit;
 }
 
 include_once __DIR__ . '/../config/config.php';
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $member_id = $_SESSION['member_id'];
-    $member_code = $_SESSION['member_code'];
-    $type = isset($_POST['share_type']) ? $_POST['share_type'] : '';
-    $project_id = isset($_POST['project_id']) ? intval($_POST['project_id']) : 0;
-    $no_share = isset($_POST['share_amount']) ? intval($_POST['share_amount']) : 0;
-    $status = 'I'; // Default active
-    $errors = [];
-
-    if (!$type) {
-        $errors[] = 'শেয়ার টাইপ নির্বাচন করুন (Select share type)';
-    }
-    if ($no_share <= 0) {
-        $errors[] = 'শেয়ার সংখ্যা সঠিকভাবে দিন (Enter valid share amount)';
-    }
-    if ($type === 'project' && !$project_id) {
-        $errors[] = 'প্রকল্প নির্বাচন করুন (Select project)';
-    }
-
-    if (empty($errors)) {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO share (member_id, member_code, type, project_id, no_share, status, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$member_id, $member_code, $type, $project_id, $no_share, $status]);
-            $_SESSION['success_msg'] = 'শেয়ার সফলভাবে যোগ হয়েছে (Share added successfully)';
-        } catch (Exception $e) {
-            $_SESSION['share_error'] = 'DB Error: ' . $e->getMessage();
-        }
-        header('Location: ../users/add_share.php');
-        exit;
-    } else {
-        $_SESSION['share_error'] = implode('<br>', $errors);
-        header('Location: ../users/add_share.php');
-        exit;
-    }
-}
-
-
-// UPDATE share
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
-    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-    $type = isset($_POST['share_type']) ? $_POST['share_type'] : '';
-    $project_id = isset($_POST['project_id']) ? intval($_POST['project_id']) : 0;
-    $no_share = isset($_POST['share_amount']) ? intval($_POST['share_amount']) : 0;
-    $status = isset($_POST['status']) ? $_POST['status'] : 'I';
-    $errors = [];
-
-    if ($id <= 0) {
-        $errors[] = 'Invalid share ID.';
-    }
-    if (!$type) {
-        $errors[] = 'শেয়ার টাইপ নির্বাচন করুন (Select share type)';
-    }
-    if ($no_share <= 0) {
-        $errors[] = 'শেয়ার সংখ্যা সঠিকভাবে দিন (Enter valid share amount)';
-    }
-    if ($type === 'project' && !$project_id) {
-        $errors[] = 'প্রকল্প নির্বাচন করুন (Select project)';
-    }
-
-    if (empty($errors)) {
-        try {
-            $stmt = $pdo->prepare("UPDATE share SET type = ?, project_id = ?, no_share = ?, status = ? WHERE id = ?");
-            $stmt->execute([$type, $project_id, $no_share, $status, $id]);
-            $_SESSION['success_msg'] = 'শেয়ার সফলভাবে আপডেট হয়েছে (Share updated successfully)';
-        } catch (Exception $e) {
-            $_SESSION['share_error'] = 'DB Error: ' . $e->getMessage();
-        }
-        header('Location: ../users/add_share.php');
-        exit;
-    } else {
-        $_SESSION['share_error'] = implode('<br>', $errors);
-        header('Location: ../users/add_share.php');
-        exit;
-    }
-}
-
-// DELETE share
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete') {
-    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-    if ($id > 0) {
-        try {
+    $action = $_POST['action'] ?? '';
+    try {
+        if ($action === 'edit' || $action === 'insert') {
+            // Insert new share
+            $member_id = $_POST['member_id'] ?? '';
+            $member_code = $_POST['member_code'] ?? '';
+            $share_type = $_POST['share_type'] ?? ($_POST['type'] ?? '');
+            $project_id = $_POST['project_id'] ?? 0;
+            $no_share = intval($_POST['share_amount'] ?? $_POST['no_share'] ?? 0);
+            $status = $_POST['status'] ?? 'I';
+            if (!$share_type || $no_share <= 0) {
+                throw new Exception('শেয়ার টাইপ ও সংখ্যা দিন (Provide share type and amount)');
+            }
+            if ($share_type === 'samity') {
+                $project_id = 0;
+            }
+            $stmt = $pdo->prepare("INSERT INTO share (member_id, member_code, type, project_id, no_share, status) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, $share_type, $project_id, $no_share, $status]);
+            $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে যোগ হয়েছে (Share added successfully)";
+            header("Location: ../users/add_share.php");
+            exit;
+        } elseif ($action === 'update') {
+            // Update share
+            $id = $_POST['id'] ?? '';
+            $share_type = $_POST['type'] ?? '';
+            $project_id = $_POST['project_id'] ?? 0;
+            $no_share = intval($_POST['no_share'] ?? 0);
+            $status = $_POST['status'] ?? 'I';
+            if (!$id || !$share_type || $no_share <= 0) {
+                throw new Exception('সঠিক তথ্য দিন (Provide valid data)');
+            }
+            if ($share_type === 'samity') {
+                $project_id = 0;
+            }
+            $stmt = $pdo->prepare("UPDATE share SET type=?, project_id=?, no_share=?, status=? WHERE id=?");
+            $stmt->execute([$share_type, $project_id, $no_share, $status, $id]);
+            $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে হালনাগাদ হয়েছে (Share updated successfully)";
+            header("Location: ../users/add_share.php");
+            exit;
+        } elseif ($action === 'delete') {
+            // Delete share
+            $id = $_POST['id'] ?? '';
+            if (!$id) throw new Exception('ID missing');
             $stmt = $pdo->prepare("DELETE FROM share WHERE id = ?");
             $stmt->execute([$id]);
-            $_SESSION['success_msg'] = 'শেয়ার সফলভাবে ডিলিট হয়েছে (Share deleted successfully)';
-        } catch (Exception $e) {
-            $_SESSION['share_error'] = 'DB Error: ' . $e->getMessage();
+            $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে মুছে ফেলা হয়েছে (Share deleted successfully)";
+            header("Location: ../users/add_share.php");
+            exit;
+        } else {
+            throw new Exception('Invalid action');
         }
-    } else {
-        $_SESSION['share_error'] = 'Invalid share ID.';
+    } catch (Exception $e) {
+        $_SESSION['error_msg'] = $e->getMessage();
+        header("Location: ../users/add_share.php");
+        exit;
     }
-    header('Location: ../users/add_share.php');
+} else {
+    $_SESSION['error_msg'] = 'Invalid request';
+    header("Location: ../users/add_share.php");
     exit;
 }
-
