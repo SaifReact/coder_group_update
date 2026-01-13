@@ -101,24 +101,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_type'], $_POS
     $payment_type = $_POST['payment_type'];
     $payment_year = $_POST['payment_year'];
 
-    $stmt = $pdo->prepare("
-        SELECT b.no_share, a.trans_no, DATE_FORMAT(a.created_at, '%d-%m-%Y %H:%i') AS created_at,  
-               a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date, a.pay_mode,
-               SUM(a.amount) AS total_amount,
-               SUM(CASE WHEN a.for_fees = 'idcard_fee' THEN a.amount ELSE 0 END) AS idcard_fee_amount,
-               SUM(CASE WHEN a.for_fees = 'passbook_fee' THEN a.amount ELSE 0 END) AS passbook_fee_amount,
-               SUM(CASE WHEN a.for_fees = 'other_fee' THEN a.amount ELSE 0 END) AS other_fee_amount,
-               SUM(CASE WHEN a.for_fees = 'softuses_fee' THEN a.amount ELSE 0 END) AS softuses_fee_amount,
-               SUM(a.amount) 
-                 - SUM(CASE WHEN a.for_fees IN ('idcard_fee','passbook_fee','other_fee','softuses_fee') 
-                            THEN a.amount ELSE 0 END) AS net_amount
-        FROM member_payments a
-        JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
-        WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'A'
-        GROUP BY b.no_share, a.trans_no, a.created_at, a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date
-        LIMIT 1
-    ");
-    $stmt->execute([$member_id, $payment_type, $payment_year]);
+    if (in_array($payment_type, ['Samity Share', 'Project Share'])) {
+        $stmt = $pdo->prepare("
+            SELECT b.no_share, 
+                   SUM(a.amount) AS total_amount,
+                   a.payment_method, a.payment_year,
+                   MAX(a.trans_no) AS trans_no,
+                   MAX(DATE_FORMAT(a.created_at, '%d-%m-%Y %H:%i')) AS created_at,
+                   MAX(a.bank_trans_no) AS bank_trans_no,
+                   MAX(a.bank_pay_date) AS bank_pay_date,
+                   MAX(a.pay_mode) AS pay_mode,
+                   a.for_fees
+            FROM member_payments a
+            JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
+            WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'A'
+            GROUP BY b.no_share, a.payment_method, a.payment_year
+            LIMIT 1
+        ");
+        $stmt->execute([$member_id, $payment_type, $payment_year]);
+    } else {
+        // Handle monthly payments by mapping month names to payment_method 'Monthly' and for_fees as the month
+        $months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+        if (in_array(strtolower($payment_type), $months)) {
+            $stmt = $pdo->prepare("
+                SELECT b.no_share, a.trans_no, DATE_FORMAT(a.created_at, '%d-%m-%Y %H:%i') AS created_at,  
+                       a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date, a.pay_mode, a.for_fees,
+                       a.amount AS total_amount
+                FROM member_payments a
+                JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
+                WHERE a.member_id = ? AND a.payment_method = 'Monthly' AND a.for_fees = ? AND a.payment_year = ? AND a.status = 'A'
+                ORDER BY a.id DESC
+                LIMIT 1
+            ");
+            $stmt->execute([$member_id, ucfirst(strtolower($payment_type)), $payment_year]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT b.no_share, a.trans_no, DATE_FORMAT(a.created_at, '%d-%m-%Y %H:%i') AS created_at,  
+                       a.payment_method, a.payment_year, a.bank_trans_no, a.bank_pay_date, a.pay_mode, a.for_fees,
+                       a.amount AS total_amount
+                FROM member_payments a
+                JOIN member_share b ON a.member_id = b.member_id AND a.member_code = b.member_code
+                WHERE a.member_id = ? AND a.payment_method = ? AND a.payment_year = ? AND a.status = 'A'
+                ORDER BY a.id DESC
+                LIMIT 1
+            ");
+            $stmt->execute([$member_id, $payment_type, $payment_year]);
+        }
+    }
     $receipt = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Get Cashier signature
@@ -303,7 +332,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <div class="col-6 d-flex align-items-center">
                         <label class="me-2 text-dark">For Purpose</label>
                         <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
-                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['payment_method'] ?? 'Payment Method') ?></h5>
+                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['for_fees'] ?? 'For Purpose') ?></h5>
                         </div>
                     </div>
                     <div class="col-6 d-flex align-items-center">
@@ -333,7 +362,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <div class="col-6 d-flex align-items-center">
                         <label class="me-2 text-dark">Amount of Taka</label>
                         <div class="flex-grow-1 border-bottom border-dark border-1 pb-1">
-                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['net_amount'] ?? 'net_amount') ?></h5>
+                            <h5 class="mb-0 d-inline-block me-3"><?= htmlspecialchars($receipt['total_amount'] ?? 'total_amount') ?></h5>
                         </div>
                     </div>
                     <div class="col-6 d-flex align-items-center">

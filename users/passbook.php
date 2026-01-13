@@ -27,6 +27,7 @@ $member = $stmt->fetch();
 /* --------- Fetch All Payment Records --------- */
 $stmt = $pdo->prepare("
     SELECT a.payment_method, a.payment_year, a.trans_no, 
+           a.for_fees,
            DATE_FORMAT(
                CASE 
                    WHEN a.bank_pay_date = '0000-00-00' OR a.bank_pay_date IS NULL 
@@ -45,23 +46,16 @@ $stmt = $pdo->prepare("
     FROM member_payments a
     WHERE a.member_id = ? AND a.status = 'A' AND a.payment_year = ?
     ORDER BY 
-        CASE a.payment_method
-            WHEN 'admission' THEN 1
-            WHEN 'Samity Share' THEN 2
-            WHEN 'Project Share' THEN 3
-            WHEN 'january' THEN 4
-            WHEN 'february' THEN 5
-            WHEN 'march' THEN 6
-            WHEN 'april' THEN 7
-            WHEN 'may' THEN 8
-            WHEN 'june' THEN 9
-            WHEN 'july' THEN 10
-            WHEN 'august' THEN 11
-            WHEN 'september' THEN 12
-            WHEN 'october' THEN 13
-            WHEN 'november' THEN 14
-            WHEN 'december' THEN 15
+        CASE 
+            WHEN a.payment_method = 'admission' THEN 1
+            WHEN a.payment_method = 'Samity Share' THEN 2
+            WHEN a.payment_method = 'Project Share' THEN 3
+            WHEN a.payment_method = 'Monthly' THEN 4
+            ELSE 99
         END,
+        CASE WHEN a.payment_method = 'Monthly' THEN 
+            FIELD(a.for_fees, 'january','february','march','april','may','june','july','august','september','october','november','december')
+        ELSE 0 END,
         a.serial_no
 ");
 $stmt->execute([$member_id, $selected_year]);
@@ -212,7 +206,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 $share_payments = array_filter($payments, function($p) use ($method) {
                                     return $p['payment_method'] === $method;
                                 });
-                                
                                 if (count($share_payments) > 0) {
                                     foreach ($share_payments as $payment) {
                                         $share_transaction_count++;
@@ -245,19 +238,19 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 }
                                 continue; // Skip to next method
                             }
-                            
-                            // For non-share payments, find matching payment
+
+                            // For monthly payments, match payment_method = 'Monthly' and for_fees = month (case-insensitive)
                             $found = false;
                             foreach ($payments as $payment) {
-                                if ($payment['payment_method'] === $method) {
+                                if (
+                                    ($method == 'admission' && $payment['payment_method'] === 'admission') ||
+                                    ($method != 'admission' && $payment['payment_method'] === 'Monthly' && strtolower($payment['for_fees']) === strtolower($method))
+                                ) {
                                     $found = true;
-                                    
-                                    // For admission, show full amount as installment (no late fee)
-                                    if ($method == 'admission' || $method == 'Samity Share' || $method == 'Project Share') {
+                                    if ($method == 'admission') {
                                         $installment = $payment['amount'];
                                         $late_fee = 0;
                                     } else {
-                                        // For monthly payments, calculate late fee
                                         $installment = $payment['amount'] - $payment['late_fee'];
                                         $late_fee = $payment['late_fee'];
                                     }
@@ -274,7 +267,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                     break;
                                 }
                             }
-                            
                             // If no payment found, show empty row
                             if (!$found) {
                                 ?>
