@@ -299,9 +299,16 @@ include_once __DIR__ . '/../includes/side_bar.php';
     var bankTransDiv = document.getElementById('bankTransDiv');
     var paymentDateDiv = document.getElementById('paymentDateDiv');
     var paymentSlipDiv = document.getElementById('paymentSlipDiv');
+    var bankTransInput = document.getElementById('bank_trans');
+    var paymentDateInput = document.getElementById('payment_date');
+    var paymentSlipInput = document.getElementById('payment_slip');
     if (bankTransDiv) bankTransDiv.style.display = bp ? '' : 'none';
     if (paymentDateDiv) paymentDateDiv.style.display = bp ? '' : 'none';
     if (paymentSlipDiv) paymentSlipDiv.style.display = bp ? '' : 'none';
+    // Set required attribute
+    if (bankTransInput) bankTransInput.required = bp;
+    if (paymentDateInput) paymentDateInput.required = bp;
+    if (paymentSlipInput) paymentSlipInput.required = bp;
   }
 
               function previewPaymentSlip(event) {
@@ -321,6 +328,27 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 if (paymentDateInput) {
                   paymentDateInput.addEventListener('change', function() {
                     handlePaymentTypeChange();
+                  });
+                }
+                // Add form validation for Bank Pay
+                var form = document.querySelector('form');
+                if (form) {
+                  form.addEventListener('submit', function(e) {
+                    var bp = document.getElementById('BP').checked;
+                    if (bp) {
+                      var bankTrans = document.getElementById('bank_trans').value.trim();
+                      var paymentDate = document.getElementById('payment_date').value.trim();
+                      var paymentSlip = document.getElementById('payment_slip').files.length;
+                      var errorMsg = '';
+                      if (!bankTrans) errorMsg += 'ব্যাংক লেনদেন নং দিন। (Enter Bank Transaction Number)\n';
+                      if (!paymentDate) errorMsg += 'ব্যাংকে জমার তারিখ দিন। (Enter Bank Deposit Date)\n';
+                      if (!paymentSlip) errorMsg += 'পেমেন্ট স্লিপ দিন। (Upload Payment Slip)\n';
+                      if (errorMsg) {
+                        alert(errorMsg);
+                        e.preventDefault();
+                        return false;
+                      }
+                    }
                   });
                 }
               });
