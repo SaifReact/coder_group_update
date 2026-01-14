@@ -45,11 +45,11 @@ if ($row1 = $stmt1->fetch()) {
 
 // Fetch already paid monthly payments
 $payments = [];
-$stmt2 = $pdo->prepare("SELECT payment_method, payment_year FROM member_payments WHERE member_id = ?");
+$stmt2 = $pdo->prepare("SELECT for_fees, payment_year FROM member_payments WHERE member_id = ?");
 $stmt2->execute([$member_id]);
 while($row2 = $stmt2->fetch()) {
     // Use "type-year" key for JS lookup
-    $payments[] = $row2['payment_method'] . '-' . $row2['payment_year'];
+    $payments[] = $row2['for_fees'] . '-' . $row2['payment_year'];
 }
 ?>
 
