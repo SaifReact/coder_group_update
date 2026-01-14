@@ -44,52 +44,6 @@ $stmt_share->execute([$member_id]);
 if ($stmt_share) {
     $shares = $stmt_share->fetchAll(PDO::FETCH_ASSOC);
 }
-
-// Handle form submission (CRUD)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $project_id = $_POST['project_id'] ?? '';
-    $share_type = $_POST['share_type'] ?? '';
-    $share_amount = intval($_POST['share_amount'] ?? 0);
-    $errors = [];
-
-    if (!$share_type) {
-        $errors[] = 'শেয়ার টাইপ নির্বাচন করুন (Select share type)';
-    }
-    if ($share_amount <= 0) {
-        $errors[] = 'শেয়ার সংখ্যা সঠিকভাবে দিন (Enter valid share amount)';
-    }
-    if ($share_type === 'project' && !$project_id) {
-        $errors[] = 'প্রকল্প নির্বাচন করুন (Select project)';
-    }
-
-    if (empty($errors)) {
-        if ($share_type === 'samity') {
-            // Update samity_share
-            $stmt = $pdo->prepare("UPDATE member_share SET samity_share = samity_share + ? WHERE member_id = ?");
-            $stmt->execute([$share_amount, $member_id]);
-        } elseif ($share_type === 'project') {
-            // Update or insert project share
-            $stmt = $pdo->prepare("SELECT id FROM member_project WHERE member_id = ? AND project_id = ?");
-            $stmt->execute([$member_id, $project_id]);
-            $exists = $stmt->fetchColumn();
-            if ($exists) {
-                $stmt = $pdo->prepare("UPDATE member_project SET project_share = project_share + ? WHERE member_id = ? AND project_id = ?");
-                $stmt->execute([$share_amount, $member_id, $project_id]);
-            } else {
-                $stmt = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$member_id, $member_code, $project_id, $share_amount]);
-            }
-        }
-        $success = 'শেয়ার সফলভাবে যোগ হয়েছে (Share added successfully)';
-        // Refresh data
-        header('Location: add_share.php?success=1');
-        exit;
-    }
-}
-
-if (isset($_GET['success'])) {
-    $success = 'শেয়ার সফলভাবে যোগ হয়েছে (Share added successfully)';
-}
 ?>
 <?php 
 include_once __DIR__ . '/../includes/open.php'; 
@@ -105,6 +59,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <input type="hidden" name="member_id" value="<?php echo htmlspecialchars($_SESSION['member_id']); ?>">
                         <input type="hidden" name="member_code" value="<?php echo htmlspecialchars($_SESSION['member_code']); ?>">
                         <input type="hidden" name="findProject" id="findProject" value="<?php echo isset($project_id) ? htmlspecialchars($project_id) : '0'; ?>">
+                        <input type="hidden" name="action" value="insert">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">শেয়ার টাইপ নির্বাচন করুন (Select Share Type)</label>
@@ -151,7 +106,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         </div>
                         <div class="col-12 col-md-6 mb-3" id="projectInfoBox" style="display:none;"></div>
                         <div class="col-12 mt-4 text-end">
-                            <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">Add Share (শেয়ার যোগ করুন)</button>
+                            <button type="submit" name="action" value="insert" class="btn btn-primary btn-lg px-4 shadow-sm">Add Share (শেয়ার যোগ করুন)</button>
                         </div>
                     </div>
                 </form>

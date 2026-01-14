@@ -1,73 +1,75 @@
 <?php
 session_start();
-
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
-    header("Location: ../login.php");
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'user') {
+    header('Location: ../login.php');
     exit;
 }
 
 include_once __DIR__ . '/../config/config.php';
 
+// Check action
+$action = $_POST['action'] ?? $_GET['action'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    try {
-        if ($action === 'edit' || $action === 'insert') {
+try {
+    if ($action === 'insert') {
+        $member_id = $_POST['member_id'] ?? '';
+        $member_code = $_POST['member_code'] ?? '';
+        $share_type = $_POST['share_type'] ?? ($_POST['type'] ?? '');
+        $project_id = $_POST['project_id'] ?? 0;
+        $no_share = intval($_POST['share_amount'] ?? $_POST['no_share'] ?? 0);
+        $status = $_POST['status'] ?? 'I';
+
+        // Check if a share already exists for this member, project, and status='I'
+        $stmt = $pdo->prepare("SELECT id, no_share FROM share WHERE member_id = ? AND project_id = ? AND status = 'I' AND type = ?");
+        $stmt->execute([$member_id, $project_id, $share_type]);
+        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($existing) {
+            // Update the existing share's no_share
+            $new_no_share = $existing['no_share'] + $no_share;
+            $stmt = $pdo->prepare("UPDATE share SET no_share = ? WHERE id = ?");
+            $stmt->execute([$new_no_share, $existing['id']]);
+            $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে হালনাগাদ হয়েছে (Share updated successfully)";
+        } else {
             // Insert new share
-            $member_id = $_POST['member_id'] ?? '';
-            $member_code = $_POST['member_code'] ?? '';
-            $share_type = $_POST['share_type'] ?? ($_POST['type'] ?? '');
-            $project_id = $_POST['project_id'] ?? 0;
-            $no_share = intval($_POST['share_amount'] ?? $_POST['no_share'] ?? 0);
-            $status = $_POST['status'] ?? 'I';
-            if (!$share_type || $no_share <= 0) {
-                throw new Exception('শেয়ার টাইপ ও সংখ্যা দিন (Provide share type and amount)');
-            }
-            if ($share_type === 'samity') {
-                $project_id = 0;
-            }
             $stmt = $pdo->prepare("INSERT INTO share (member_id, member_code, type, project_id, no_share, status) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([$member_id, $member_code, $share_type, $project_id, $no_share, $status]);
             $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে যোগ হয়েছে (Share added successfully)";
-            header("Location: ../users/add_share.php");
-            exit;
-        } elseif ($action === 'update') {
-            // Update share
-            $id = $_POST['id'] ?? '';
-            $share_type = $_POST['type'] ?? '';
-            $project_id = $_POST['project_id'] ?? 0;
-            $no_share = intval($_POST['no_share'] ?? 0);
-            $status = $_POST['status'] ?? 'I';
-            if (!$id || !$share_type || $no_share <= 0) {
-                throw new Exception('সঠিক তথ্য দিন (Provide valid data)');
-            }
-            if ($share_type === 'samity') {
-                $project_id = 0;
-            }
-            $stmt = $pdo->prepare("UPDATE share SET type=?, project_id=?, no_share=?, status=? WHERE id=?");
-            $stmt->execute([$share_type, $project_id, $no_share, $status, $id]);
-            $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে হালনাগাদ হয়েছে (Share updated successfully)";
-            header("Location: ../users/add_share.php");
-            exit;
-        } elseif ($action === 'delete') {
-            // Delete share
-            $id = $_POST['id'] ?? '';
-            if (!$id) throw new Exception('ID missing');
-            $stmt = $pdo->prepare("DELETE FROM share WHERE id = ?");
-            $stmt->execute([$id]);
-            $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে মুছে ফেলা হয়েছে (Share deleted successfully)";
-            header("Location: ../users/add_share.php");
-            exit;
-        } else {
-            throw new Exception('Invalid action');
         }
-    } catch (Exception $e) {
-        $_SESSION['error_msg'] = $e->getMessage();
         header("Location: ../users/add_share.php");
         exit;
     }
-} else {
-    $_SESSION['error_msg'] = 'Invalid request';
+
+    if ($action === 'update') {
+        $id = $_POST['id'] ?? '';
+        $share_type = $_POST['type'] ?? '';
+        $project_id = $_POST['project_id'] ?? 0;
+        $no_share = intval($_POST['no_share'] ?? 0);
+        $status = $_POST['status'] ?? 'I';
+
+        $stmt = $pdo->prepare("UPDATE share SET type=?, project_id=?, no_share=?, status=? WHERE id=?");
+        $stmt->execute([$share_type, $project_id, $no_share, $status, $id]);
+        $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে হালনাগাদ হয়েছে (Share updated successfully)";
+        header("Location: ../users/add_share.php");
+        exit;
+    }
+
+    if ($action === 'delete') {
+        $id = $_POST['id'] ?? '';
+        if (!$id) throw new Exception('ID missing');
+        $stmt = $pdo->prepare("DELETE FROM share WHERE id = ?");
+        $stmt->execute([$id]);
+        $_SESSION['success_msg'] = "✅ শেয়ার সফলভাবে মুছে ফেলা হয়েছে (Share deleted successfully)";
+        header("Location: ../users/add_share.php");
+        exit;
+    }
+
+    // Invalid action
+    $_SESSION['error'] = "Error: Invalid action.";
+    header("Location: ../users/add_share.php");
+    exit;
+
+} catch (Exception $e) {
+    $_SESSION['error'] = "Error: " . $e->getMessage();
     header("Location: ../users/add_share.php");
     exit;
 }
