@@ -160,6 +160,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $other_fee = round($cur_amount * 0.05, 2);
                 $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$member_id, $member_code, 'Monthly', $project_id, $y, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $cur_amount, $cur_month, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+
+                var_dump($stmt);
+                print_r([$member_id, $member_code, 'Monthly', $project_id, $y, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $cur_amount, $cur_month, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+                die();
+                
                 // Update member_share table
                 $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
                 $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
@@ -175,6 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['error_msg'] = 'Already paid for selected months or invalid amount.';
         }
         header('Location: ../users/payment.php');
+        die();
         exit;
     } elseif ($amount > 0 && $payment_method !== 'advance') {
         $late_fee = 0;
