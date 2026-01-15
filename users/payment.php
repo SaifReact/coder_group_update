@@ -149,11 +149,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
       <input type="date" class="form-control" id="payment_date" name="payment_date">
     </div>
 
-    <div class="col-md-6 mb-3" id="paymentSlipDiv" style="display:none;">
-      <label for="payment_slip" class="form-label">পেমেন্ট স্লিপ (Payment Slip)</label>
-      <input type="file" class="form-control" id="payment_slip" name="payment_slip" accept="image/*" onchange="previewPaymentSlip(event)">
-    </div>
-
     <!-- Payment Slip -->
     <div class="col-md-6 mb-3" id="paymentSlipDiv" style="display:none;">
       <label for="payment_slip" class="form-label">পেমেন্ট স্লিপ (Payment Slip)</label>
@@ -227,7 +222,25 @@ include_once __DIR__ . '/../includes/side_bar.php';
       return;
     }
 
-    // Calculate late fine based on payment date
+    var paymentType = document.getElementById('payment_type').value;
+    if (paymentType === 'advance') {
+      // For advance, show inputted amount and months message only
+      var val = parseFloat(amountInput.value) || 0;
+      depositAmountInput.value = val;
+      amountInput.value = val;
+      amountInput.disabled = false;
+      submitButton.style.display = '';
+      var monthsAdvance = Math.floor(val / monthlyFee);
+      if (val > 0 && monthsAdvance > 0) {
+        admissionPaidMsg.style.display = '';
+        admissionPaidMsg.innerText = monthsAdvance + ' মাসের অগ্রিম প্রদান হবে। (Advance payment for ' + monthsAdvance + ' months)';
+      } else {
+        admissionPaidMsg.style.display = 'none';
+        admissionPaidMsg.innerText = '';
+      }
+      return;
+    }
+    // Calculate late fine based on payment date for monthly only
     var depositAmt = monthlyFee;
     var paymentDateInput = document.getElementById('payment_date');
     var paymentDate = paymentDateInput ? paymentDateInput.value : '';

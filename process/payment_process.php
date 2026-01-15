@@ -93,12 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
     if ($payment_method == 'advance') {
-        // Get all paid months for this user
+        // Get all paid months for this user (only for 'Monthly' payments)
         $paid_months = [];
-        $stmt = $pdo->prepare("SELECT payment_method, payment_year FROM member_payments WHERE member_id = ?");
+        $stmt = $pdo->prepare("SELECT for_fees, payment_year FROM member_payments WHERE member_id = ? AND payment_method = 'Monthly'");
         $stmt->execute([$member_id]);
         while($row = $stmt->fetch()) {
-            $paid_months[$row['payment_year'] . '-' . $row['payment_method']] = true;
+            $paid_months[$row['payment_year'] . '-' . strtolower($row['for_fees'])] = true;
         }
         $months_advance = max(1, floor($amount / $monthly_fee));
         $success_count = 0;
@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $for_install = round($cur_amount * 0.95, 2);
                 $other_fee = round($cur_amount * 0.05, 2);
                 $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$member_id, $member_code, 'Monthly', $project_id, $y, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $cur_amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+                $stmt->execute([$member_id, $member_code, 'Monthly', $project_id, $y, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $cur_amount, $cur_month, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
                 // Update member_share table
                 $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
                 $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
