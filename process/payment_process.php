@@ -21,7 +21,7 @@ function uploadPaymentSlip($file) {
     global $member_id;
     if ($file['error'] === UPLOAD_ERR_OK) {
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'pdf'])) {
             return null;
         }
         $filename = 'payment_slip_' . $member_id . '_' . time() . '_' . rand(1000,9999) . '.' . $ext;

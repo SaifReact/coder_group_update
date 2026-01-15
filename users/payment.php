@@ -156,7 +156,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
     </div>
 
     <div class="col-md-6 mb-3">
-      <img id="paymentSlipPreview" src="#" alt="Preview" style="display:none;max-height:80px;margin-top:8px;">
+      <span id="paymentSlipPreviewContainer">
+        <img id="paymentSlipPreview" src="#" alt="Preview" style="display:none;max-height:80px;margin-top:8px;">
+        <a id="paymentSlipPdfLink" href="#" target="_blank" style="display:none;">
+          <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/pdf.svg" alt="PDF" style="height:40px;margin-top:8px;vertical-align:middle;"> PDF Preview
+        </a>
+      </span>
     </div>
 
     <!-- Remarks -->
@@ -326,11 +331,26 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
               function previewPaymentSlip(event) {
                 var img = document.getElementById('paymentSlipPreview');
+                var pdfLink = document.getElementById('paymentSlipPdfLink');
                 if(event.target.files && event.target.files[0]) {
-                  img.src = URL.createObjectURL(event.target.files[0]);
-                  img.style.display = 'block';
+                  var file = event.target.files[0];
+                  var ext = file.name.split('.').pop().toLowerCase();
+                  var url = URL.createObjectURL(file);
+                  if(['jpg','jpeg','png'].includes(ext)) {
+                    img.src = url;
+                    img.style.display = 'block';
+                    pdfLink.style.display = 'none';
+                  } else if(ext === 'pdf') {
+                    img.style.display = 'none';
+                    pdfLink.href = url;
+                    pdfLink.style.display = 'inline-block';
+                  } else {
+                    img.style.display = 'none';
+                    pdfLink.style.display = 'none';
+                  }
                 } else {
                   img.style.display = 'none';
+                  pdfLink.style.display = 'none';
                 }
               }
               // Initial call for page load
