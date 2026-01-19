@@ -114,6 +114,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
     <div class="col-md-5 mb-3">
       <label for="deposit_amount" class="form-label">মাসিক ডিপোজিট (Monthly Deposit)</label>
       <input type="text" class="form-control" id="deposit_amount" name="deposit_amount" readonly>
+        <input type="hidden" id="monthsAdvance" name="monthsAdvance" value="">
       <div id="admissionPaidMsg" class="form-text text-danger" style="display:none;"></div>
     </div>
     <div class="col-md-6 mb-3">
@@ -236,6 +237,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
       amountInput.disabled = false;
       submitButton.style.display = '';
       var monthsAdvance = Math.floor(val / monthlyFee);
+      document.getElementById('monthsAdvance').value = monthsAdvance;
       if (val > 0 && monthsAdvance > 0) {
         admissionPaidMsg.style.display = '';
         admissionPaidMsg.innerText = monthsAdvance + ' মাসের অগ্রিম প্রদান হবে। (Advance payment for ' + monthsAdvance + ' months)';
@@ -295,6 +297,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
     } 
     if (val >= monthlyFee) {
       var monthsAdvance = Math.floor(val / monthlyFee);
+      document.getElementById('monthsAdvance').value = monthsAdvance;
       if (monthsAdvance > 1) {
         admissionPaidMsg.style.display = '';
         admissionPaidMsg.innerText = monthsAdvance + ' মাসের অগ্রিম প্রদান হবে। (Advance payment for ' + monthsAdvance + ' months)';
@@ -304,6 +307,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
       }
       depositAmountInput.value = monthlyFee;
     } else {
+      document.getElementById('monthsAdvance').value = '';
       admissionPaidMsg.style.display = 'none';
       admissionPaidMsg.innerText = '';
       depositAmountInput.value = val;
