@@ -69,6 +69,14 @@ $role = $_SESSION['role'] ?? '';
                         <span class="icon"><i class="bi bi-journal-bookmark"></i></span> 
                         <span class="description"> Gl Setup </span>
                     </a>
+                    <a class="nav-link" href="gl_mapping.php">
+                        <span class="icon"><i class="bi bi-journal-bookmark"></i></span> 
+                        <span class="description"> Gl Mapping </span>
+                    </a>
+                    <a class="nav-link" href="voucher.php">
+                        <span class="icon"><i class="bi bi-journal-bookmark"></i></span> 
+                        <span class="description"> Voucher Posting </span>
+                    </a>
                     </div>
 
                     <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#expenseMenu" aria-expanded="false" aria-controls="expenseMenu">
