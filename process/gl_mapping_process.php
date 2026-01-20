@@ -15,24 +15,20 @@ $ids = $_POST['row_id'] ?? [];
 $created_by = $_SESSION['user_id'];
 $now = date('Y-m-d H:i:s');
 
+
+// Delete all previous mappings (full replace)
+$pdo->exec("DELETE FROM gl_mapping");
+
+// Insert all submitted rows
 foreach ($tran_types as $i => $tran_type) {
     $tran_type_name = $tran_type_names[$i] ?? '';
     $glac_id = $gls[$i] ?? null;
     $contra_glac_id = $contras[$i] ?? null;
     $is_active = (isset($types[$i]) && $types[$i] == 'সক্রিয়') ? 1 : 0;
-    $id = $ids[$i] ?? null;
-
-    if (!empty($id)) {
-        // UPDATE
-        $stmt = $pdo->prepare("UPDATE gl_mapping SET tran_type=?, tran_type_name=?, glac_id=?, contra_glac_id=?, is_active=?, created_by=?, created_at=NOW() WHERE id=?");
-        $stmt->execute([$tran_type, $tran_type_name, $glac_id, $contra_glac_id, $is_active, $created_by, $id]);
-    } else {
-        // INSERT
-        $stmt = $pdo->prepare("INSERT INTO gl_mapping (tran_type, tran_type_name, glac_id, contra_glac_id, is_active, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$tran_type, $tran_type_name, $glac_id, $contra_glac_id, $is_active, $created_by, $now]);
-    }
+    $stmt = $pdo->prepare("INSERT INTO gl_mapping (tran_type, tran_type_name, glac_id, contra_glac_id, is_active, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$tran_type, $tran_type_name, $glac_id, $contra_glac_id, $is_active, $created_by, $now]);
 }
 
 $_SESSION['success_msg'] = 'GL Mapping saved successfully!';
-header('Location: gl_mapping.php');
+header('Location: ../admin/gl_mapping.php');
 exit;
