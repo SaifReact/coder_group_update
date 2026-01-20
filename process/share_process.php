@@ -19,6 +19,19 @@ try {
         $no_share = intval($_POST['share_amount'] ?? $_POST['no_share'] ?? 0);
         $status = $_POST['status'] ?? 'I';
 
+        // Normalize share_type for 'samity' (if needed)
+        $share_type = trim(strtolower($share_type));
+        if ($share_type === 'samity') {
+            $share_type = 'samity'; // keep as is, or map to DB value if needed
+        }
+
+        // Prevent insert if type is empty
+        if ($share_type === '') {
+            $_SESSION['error'] = "Error: শেয়ার টাইপ নির্বাচন করুন (Please select share type)";
+            header("Location: ../users/add_share.php");
+            exit;
+        }
+
         // Check if a share already exists for this member, project, and status='I'
         $stmt = $pdo->prepare("SELECT id, no_share FROM share WHERE member_id = ? AND project_id = ? AND status = 'I' AND type = ?");
         $stmt->execute([$member_id, $project_id, $share_type]);
