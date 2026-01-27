@@ -15,7 +15,7 @@ try {
         $member_id = $_POST['member_id'] ?? '';
         $member_code = $_POST['member_code'] ?? '';
         $share_type = $_POST['share_type'] ?? ($_POST['type'] ?? '');
-        $project_id = $_POST['project_id'] ?? 0;
+        $project_id = $_POST['project_id'] ?? 1;
         $no_share = intval($_POST['share_amount'] ?? $_POST['no_share'] ?? 0);
         $status = $_POST['status'] ?? 'I';
 

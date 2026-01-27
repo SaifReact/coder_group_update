@@ -11,9 +11,9 @@ include_once __DIR__ . '/../config/config.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Fetch all users
-$stmt = $pdo->query("SELECT a.id, a.member_id, a.status, a.no_share, b.member_code, b.name_en, b.name_bn,
+$stmt = $pdo->query("SELECT a.id, a.member_id, a.member_code, a.status, a.no_share, b.member_code, b.name_en, b.name_bn,
 CASE 
-    WHEN a.project_id > 0 THEN c.project_name_bn 
+    WHEN a.project_id > 1 THEN c.project_name_bn 
     ELSE 'সমিতি শেয়ার (CPSSL)'
 END AS project_name_bn 
 FROM share a 
@@ -22,41 +22,95 @@ LEFT JOIN project c ON a.project_id = c.id
 ORDER BY a.id DESC");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Note: do not assume a single $member_id from the result set here.
+// We'll determine the member_id from the submitted share id when processing POST.
+
 // Handle status update
-if ($method === 'POST' && isset($_POST['user_id'], $_POST['status'])) {
-    $user_id = (int)$_POST['user_id'];
-    $status = in_array($_POST['status'], ['P', 'A', 'I', 'R']) ? $_POST['status'] : 'I';
-    
-    // Get member_id from user_login table
-    // find member_project table getting member_id
-    
-    $stmt = $pdo->prepare("SELECT member_id FROM user_login WHERE id = ?");
-    $stmt->execute([$user_id]);
-    $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
-    $member_id = $user_data['member_id'];
-    
-    // Check if status is 'A' (Approved), verify all 4 documents exist
-    if ($status === 'A') {
-        $stmt = $pdo->prepare("SELECT COUNT(*) as doc_count FROM member_documents WHERE member_id = ?");
-        $stmt->execute([$member_id]);
-        $doc_data = $stmt->fetch(PDO::FETCH_ASSOC);
-        $doc_count = (int)$doc_data['doc_count'];
-        
-        if ($doc_count < 3) {
-            $_SESSION['error_msg'] = '❌ সদস্যকে অনুমোদন করা যাবে না! সকল ডকুমেন্ট জমা দেওয়া হয়নি। (মোট ' . $doc_count . '/3 টি ছবি পাওয়া গেছে)';
-            // Stay on the same page
-            header('Location: ' . $_SERVER['REQUEST_URI']);
-            exit;
+if ($method === 'POST' && isset($_POST['status'])) {
+
+    $status = in_array($_POST['status'], ['A', 'I', 'R']) ? $_POST['status'] : 'I';
+
+    // determine which share was submitted and resolve member info from it
+    $submitted_share_id = (int)($_POST['user_id'] ?? 0);
+    $member_id = 0;
+    $member_code_from_share = null;
+    if ($submitted_share_id > 0) {
+        $stmtShareSingle = $pdo->prepare("SELECT * FROM share WHERE id = ? LIMIT 1");
+        $stmtShareSingle->execute([$submitted_share_id]);
+        $shareData = $stmtShareSingle->fetch(PDO::FETCH_ASSOC);
+        if ($shareData) {
+            $member_id = (int)$shareData['member_id'];
+            $member_code_from_share = $shareData['member_code'] ?? null;
         }
     }
-    
-    $stmt = $pdo->prepare("UPDATE user_login SET status = ? WHERE id = ?");
-    $stmt->execute([$status, $user_id]);
 
-    // Set dynamic success message based on status
-    if ($status === 'P') {
-        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও মেম্বারশিপ ফি জমা দেয়ার জন্য আপনাকে প্রক্রিয়াধীন রাখা হইলো!";
-    } elseif ($status === 'A') {
+        // If approving, generate project_share rows and update member_share when project_id = 1
+        if ($status === 'A') {
+            // determine member_code (prefer value from share row if present)
+            if (!empty($member_code_from_share)) {
+                $member_code_val = $member_code_from_share;
+            } else {
+                $stmtMC = $pdo->prepare("SELECT member_code FROM members_info WHERE id = ? LIMIT 1");
+                $stmtMC->execute([$member_id]);
+                $member_code_val = $stmtMC->fetchColumn();
+            }
+
+            // find pending share entries for this member (status = 'I' or pending)
+            $stmtShares = $pdo->prepare("SELECT * FROM share WHERE member_id = ? AND status = 'I'");
+            $stmtShares->execute([$member_id]);
+            while ($shareRow = $stmtShares->fetch(PDO::FETCH_ASSOC)) {
+                $project_id = (int)($shareRow['project_id'] ?? 0);
+                $addCount = (int)($shareRow['no_share'] ?? 0);
+                if ($project_id === 1 && $addCount > 0) {
+                    // ensure a member_project record exists for project_id = 1
+                    $stmtMP = $pdo->prepare("SELECT id FROM member_project WHERE member_id = ? AND member_code = ? AND project_id = 1 LIMIT 1");
+                    $stmtMP->execute([$member_id, $member_code_val]);
+                    $mp = $stmtMP->fetch(PDO::FETCH_ASSOC);
+                    if ($mp && !empty($mp['id'])) {
+                        $member_project_id = (int)$mp['id'];
+                    } else {
+                        $stmtCreateMP = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, 1, 0, 0, NOW())");
+                        $stmtCreateMP->execute([$member_id, $member_code_val]);
+                        $member_project_id = (int)$pdo->lastInsertId();
+                    }
+
+                    // get last share sequence for project_id = 1
+                    $stmtLast = $pdo->prepare("SELECT share_id FROM project_share WHERE member_id = ? ORDER BY id DESC LIMIT 1");
+                    $stmtLast->execute([$member_id]);
+                    $last = $stmtLast->fetch(PDO::FETCH_ASSOC);
+                    $startingNumber = 1;
+                    if ($last && !empty($last['share_id'])) {
+                        $lastThree = substr($last['share_id'], -3);
+                        if (is_numeric($lastThree)) {
+                            $startingNumber = intval($lastThree) + 1;
+                        }
+                    }
+                    
+
+                    // insert project_share rows
+                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+                    for ($i = 0; $i < $addCount; $i++) {
+                        $num = $startingNumber + $i;
+                        $n = str_pad($num, 3, '0', STR_PAD_LEFT);
+                        $share_id = "samity" . $member_id . $member_project_id . "1" . $n;
+                        $stmtInsert->execute([$member_project_id, $member_id, $member_code_val, 1, $share_id]);
+                    }
+
+                    // update member_share totals
+                    $stmtUpdateMS = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, samity_share = samity_share + ? WHERE member_id = ? AND member_code = ?");
+                    $stmtUpdateMS->execute([$addCount, $addCount, $member_id, $member_code_val]);
+
+                    // mark this share row as approved
+                    $stmtMark = $pdo->prepare("UPDATE share SET status = 'A' WHERE id = ?");
+                    $stmtMark->execute([$shareRow['id']]);
+                } elseif ($project_id > 1 && $addCount > 0) {
+                    // For other projects, just mark as approved
+                    $stmtMark = $pdo->prepare("UPDATE share SET status = 'A' WHERE id = ?");
+                    $stmtMark->execute([$shareRow['id']]);
+                }   
+            }
+        }
+    if ($status === 'A') {
         $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও শেয়ার ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
     } elseif ($status === 'I') {
         $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় আপনাকে নিষ্ক্রিয় করে রাখা হইলো !";
@@ -105,7 +159,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                             <form method="post" class="d-flex align-items-center">
                                                 <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
                                                 <select name="status" class="form-select form-select-sm me-2">
-                                                    <option value="P" <?= $user['status'] === 'P' ? 'selected' : '' ?>>⏳ Processing</option>
                                                     <option value="A" <?= $user['status'] === 'A' ? 'selected' : '' ?>>✅ Approved</option>
                                                     <option value="I" <?= $user['status'] === 'I' ? 'selected' : '' ?>>⏸️ Inactive</option>
                                                     <option value="R" <?= $user['status'] === 'R' ? 'selected' : '' ?>>❌ Rejected</option>

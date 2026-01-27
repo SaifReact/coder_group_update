@@ -22,7 +22,7 @@ $committee_role = $stmt_committee_role->fetchAll(PDO::FETCH_ASSOC);
 $stmt_share = $pdo->prepare("SELECT samity_share FROM member_share WHERE member_id = ?");
 $stmt_share->execute([$member_id]);
 $samity_share = $stmt_share->fetchColumn();
-if ($samity_share === false) $samity_share = 0;
+if ($samity_share === false) $samity_share = 1;
 
 // Fetch project shares
 $stmt_member_projects = $pdo->prepare("SELECT mp.project_id, mp.project_share, p.project_name_bn FROM member_project mp JOIN project p ON mp.project_id = p.id WHERE mp.member_id = ?");
@@ -33,7 +33,7 @@ $shares = [];
 $stmt_share = $pdo->prepare("
     SELECT a.*, 
            CASE 
-               WHEN a.project_id > 0 THEN b.project_name_bn 
+               WHEN a.project_id > 1 THEN b.project_name_bn 
                ELSE 'সমিতি শেয়ার (CPSSL)'
            END AS project_name_bn
     FROM share a
@@ -59,6 +59,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <input type="hidden" name="member_id" value="<?php echo htmlspecialchars($_SESSION['member_id']); ?>">
                         <input type="hidden" name="member_code" value="<?php echo htmlspecialchars($_SESSION['member_code']); ?>">
                         <input type="hidden" name="findProject" id="findProject" value="<?php echo isset($project_id) ? htmlspecialchars($project_id) : '0'; ?>">
+                        <!-- ensure a project_id is always submitted; samity shares should use project_id = 1 -->
+                        <input type="hidden" name="project_id" id="hiddenProjectId" value="<?php echo isset($project_id) ? htmlspecialchars($project_id) : '0'; ?>">
                         <input type="hidden" name="action" value="insert">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -73,7 +75,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         </div>
                         <div class="col-md-6 mb-3" id="projectSelectBox" style="display:none;">
                             <label class="form-label">প্রকল্প নির্বাচন করুন (Select Project)</label>
-                            <select class="form-select" name="project_id" id="project_id">
+                            <select class="form-select" name="project_selector" id="project_id">
                                 <option value="">প্রকল্প নির্বাচন করুন (Select Project)</option>
                                 <?php foreach ($projects as $project): ?>
                                     <option value="<?php echo htmlspecialchars($project['id']); ?>">
@@ -172,11 +174,15 @@ include_once __DIR__ . '/../includes/side_bar.php';
 document.addEventListener('DOMContentLoaded', function() {
     var projectSelect = document.getElementById('project_id');
     var findProjectInput = document.getElementById('findProject');
+    var hiddenProjectId = document.getElementById('hiddenProjectId');
     var infoBox = document.getElementById('projectInfoBox');
     projectSelect.addEventListener('change', function() {
         var pid = this.value;
         if (findProjectInput) {
-            findProjectInput.value = pid ? pid : '0';
+            findProjectInput.value = pid ? pid : '1';
+        }
+        if (hiddenProjectId) {
+            hiddenProjectId.value = pid ? pid : '1';
         }
         if (!infoBox) return;
         if (!pid) {
@@ -231,13 +237,25 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
         var shareType = document.getElementById('share_type');
         var projectBox = document.getElementById('projectSelectBox');
-        shareType.addEventListener('change', function() {
-                if (this.value === 'project') {
-                        projectBox.style.display = '';
-                } else {
-                        projectBox.style.display = 'none';
-                }
-        });
+    shareType.addEventListener('change', function() {
+        if (this.value === 'project') {
+            projectBox.style.display = '';
+            // if switching to project, set hidden project id from selector (or 0)
+            var sel = document.getElementById('project_id');
+            if (sel && sel.value) {
+                document.getElementById('hiddenProjectId').value = sel.value;
+                document.getElementById('findProject').value = sel.value;
+            } else {
+                document.getElementById('hiddenProjectId').value = '0';
+                document.getElementById('findProject').value = '0';
+            }
+        } else {
+            projectBox.style.display = 'none';
+            // samity share => project_id should be 1
+            document.getElementById('hiddenProjectId').value = '1';
+            document.getElementById('findProject').value = '1';
+        }
+    });
 });
 
 // Modal HTML
