@@ -134,25 +134,23 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <table class="table table-bordered table-striped align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th width="10%">সদস্য নং </th>
-                                        <th width="10%">সদস্য কোড </th>
-                                        <th width="30%">সদস্যের নাম</th>
-                                        <th width="5%">মোবাইল</th>
-                                        <th width="5%">পাসওয়ার্ড </th>
-                                        <th colspan="2" width="40%">অবস্থা</th>
+                                        <th width="12%">সদস্য নং </th>
+                                        <th width="15%">সদস্য কোড </th>
+                                        <th width="25%">সদস্যের নাম</th>
+                                        <th width="3%">পাসওয়ার্ড </th>
+                                        <th colspan="2" width="45%">অবস্থা</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 <?php foreach ($users as $user): ?>
                                     <tr>
-                                        <td width="10%"><?= htmlspecialchars($user['id']) ?></td>
-                                        <td width="10%"><?= htmlspecialchars($user['member_code']) ?></td>
-                                        <td width="30%"><?= htmlspecialchars($user['name_bn']) ?><br/>
-                                            <?= htmlspecialchars($user['name_en']) ?></td>
-                                        <td width="5%"><?= htmlspecialchars($user['mobile']) ?></td>
-                                        <td width="5%"><?= htmlspecialchars($user['user_name']) ?><br/>
+                                        <td width="12%"><?= htmlspecialchars($user['id']) ?></td>
+                                        <td width="15%"><?= htmlspecialchars($user['member_code']) ?></td>
+                                        <td width="25%"><?= htmlspecialchars($user['name_bn']) ?><br/>
+                                            <?= htmlspecialchars($user['name_en']) ?><br/><?= htmlspecialchars($user['mobile']) ?></td>
+                                        <td width="3%"><?= htmlspecialchars($user['user_name']) ?><br/>
                                             <?= htmlspecialchars($user['re_password']) ?></td>
-                                        <td width="35%">
+                                        <td width="40%">
                                             <form method="post" class="d-flex align-items-center">
                                                 <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
                                                 <select name="status" class="form-select form-select-sm me-2">

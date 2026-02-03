@@ -74,14 +74,14 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                                 <input type="hidden" name="member_id" value="<?= $m['member_id'] ?>">
                                                 <div class="me-2" style="min-width:140px;">
                                                     <select name="late_assign" class="form-select form-select-sm">
-                                                        <option value="A" <?= $m['late_assign'] === 'A' ? 'selected' : '' ?>>✅ A (Active)</option>
-                                                        <option value="I" <?= $m['late_assign'] === 'I' ? 'selected' : '' ?>>⏸️ I (Inactive)</option>
+                                                        <option value="A" <?= $m['late_assign'] === 'A' ? 'selected' : '' ?>>✅ Approved</option>
+                                                        <option value="I" <?= $m['late_assign'] === 'I' ? 'selected' : '' ?>>⏸️ Inactive</option>
                                                     </select>
                                                 </div>
                                                 <div class="flex-grow-1 me-2">
                                                     <textarea name="late_cause" class="form-control form-control-sm" rows="2" placeholder="Late cause/details"><?= htmlspecialchars($m['late_cause']) ?></textarea>
                                                 </div>
-                                                <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                                                <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
                                             </form>
                                         </td>
                                     </tr>

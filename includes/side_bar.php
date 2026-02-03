@@ -29,6 +29,10 @@ $role = $_SESSION['role'] ?? '';
                             <span class="icon"><i class="bi bi-cash-coin"></i></span> 
                             <span class="description"> Shares </span>
                         </a>
+                        <a class="nav-link" href="late_assign.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Late Assign </span>
+                        </a>
                     </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#setupMenu" aria-expanded="false" aria-controls="setupMenu">
