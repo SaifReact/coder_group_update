@@ -57,9 +57,9 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <thead class="table-light">
                                     <tr>
                                         <th width="10%">সদস্য নং</th>
-                                        <th width="10%">সদস্য কোড</th>
-                                        <th width="30%">সদস্যের নাম</th>
-                                        <th width="50%">Late Assign</th>
+                                        <th width="15%">সদস্য কোড</th>
+                                        <th width="25%">সদস্যের নাম</th>
+                                        <th width="50%">বিলম্ব ফি কার্যকলাপ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
