@@ -25,9 +25,9 @@ $role = $_SESSION['role'] ?? '';
                             <span class="icon"><i class="bi bi-person-lines-fill"></i></span> 
                             <span class="description"> Members </span>
                         </a>
-                        <a class="nav-link" href="payment_approval.php">
+                        <a class="nav-link" href="share_approval.php">
                             <span class="icon"><i class="bi bi-cash-coin"></i></span> 
-                            <span class="description"> Payments </span>
+                            <span class="description"> Shares </span>
                         </a>
                     </div>
 
@@ -60,6 +60,23 @@ $role = $_SESSION['role'] ?? '';
                         <span class="description"> Committee </span>
                     </a>
                 </div>
+                
+                <?php elseif ($role === 'Account'): ?>
+                
+                <a class="nav-link" href="index.php">
+                    <span class="icon"><i class="bi bi-speedometer2"></i></span> 
+                    <span class="description">Dashboard</span>
+                </a>
+                
+                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#approvalMenu" aria-expanded="false" aria-controls="approvalMenu">
+                    <span class="icon"><i class="bi bi-check-circle"></i></span> 
+                    <span class="description"> Approval <i class="bi bi-caret-down-fill"></i></span></a>
+                    <div class="sub-menu collapse" id="approvalMenu">
+                        <a class="nav-link" href="payment_approval.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Payments </span>
+                        </a>
+                    </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#accountsMenu" aria-expanded="false" aria-controls="accountsMenu">
                     <span class="icon"><i class="bi bi-currency-dollar"></i></span> 
@@ -79,19 +96,7 @@ $role = $_SESSION['role'] ?? '';
                     </a>
                     </div>
 
-                    <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#expenseMenu" aria-expanded="false" aria-controls="expenseMenu">
-                    <span class="icon"><i class="bi bi-wallet2"></i></span> 
-                    <span class="description"> Expense <i class="bi bi-caret-down-fill"></i></span></a>
-                    <div class="sub-menu collapse" id="expenseMenu">
-                    <a class="nav-link" href="expense_category.php">
-                        <span class="icon"><i class="bi bi-tags"></i></span> 
-                        <span class="description"> Expense Category </span>
-                    </a>
-                    <a class="nav-link" href="expenses.php">
-                        <span class="icon"><i class="bi bi-file-earmark-minus"></i></span> 
-                        <span class="description"> Expenses </span>
-                    </a>
-                    </div>
+                    
                 <?php else: ?>
                 <a class="nav-link"
                    href="index.php" style="font-size:.8rem;">

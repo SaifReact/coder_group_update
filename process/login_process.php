@@ -48,6 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Redirect based on role
         if ($user['role'] === 'Admin') {
             header('Location: ../admin/index.php');
+        } elseif ($user['role'] === 'Account') {
+            header('Location: ../account/index.php');
         } elseif ($user['role'] === 'user') {
             header('Location: ../users/index.php');
         } else {

@@ -443,7 +443,7 @@ function downloadPDF() {
     // Create a wrapper for proper sizing
     const wrapper = document.createElement('div');
     wrapper.style.width = '300mm'; // A4 width
-    wrapper.style.padding = '35mm';
+    wrapper.style.padding = '40mm';
     wrapper.style.boxSizing = 'border-box';
     wrapper.style.backgroundColor = 'white';
     wrapper.innerHTML = element.innerHTML;

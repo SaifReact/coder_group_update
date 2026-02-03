@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($payment_method === 'admission') {
         if ($share_data && isset($share_data['admission_fee']) && (float)$share_data['admission_fee'] > 0) {
             $_SESSION['error_msg'] = 'Admission fee already paid for this user.';
-            header('Location: ../users/payment.php');
+            header('Location: ../account/payment.php');
             exit;
         }
     }
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$member_id, $payment_method, $payment_year]);
         if ($stmt->fetch()) {
             $_SESSION['error_msg'] = 'Payment for this month and year already exists.';
-            header('Location: ../users/payment.php');
+            header('Location: ../account/payment.php');
             exit;
         }
     }
@@ -135,18 +135,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->commit();
 
                 $_SESSION['success_msg'] = '✅ Admission Fee Payment Successfully..! (সফলভাবে সদস্য এন্ট্রি ফি পেমেন্ট করা হলো..!)';
-                header('Location: ../admin/payment_approval.php');
+                header('Location: ../account/payment_approval.php');
                 exit;
             } else {
                 $pdo->rollBack();
                 $_SESSION['error_msg'] = '❌ Member Share Record Not Found for member_id: ' . $member_id . ' and member_code: ' . $member_code;
-                header('Location: ../users/payment.php');
+                header('Location: ../account/payment.php');
                 exit;
             }
         } catch (Exception $e) {
             $pdo->rollBack();
             $_SESSION['error_msg'] = '❌ Error: ' . $e->getMessage();
-            header('Location: ../users/payment.php');
+            header('Location: ../account/payment.php');
             exit;
         }
     }
@@ -188,12 +188,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             $_SESSION['success_msg'] = '✅ Samity Share Fee Payment Successfully..! (সফলভাবে সমিতি শেয়ার ফি পেমেন্ট করা হলো..!)';
-            header('Location: ../admin/payment_approval.php');
+            header('Location: ../account/payment_approval.php');
             exit;
         } catch (Exception $e) {
             $pdo->rollBack();
             $_SESSION['error_msg'] = '❌ Error: ' . $e->getMessage();
-            header('Location: ../users/payment.php');
+            header('Location: ../account/payment.php');
             exit;
         }
     }
@@ -245,12 +245,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             $_SESSION['success_msg'] = '✅ Project Share Fee Payment Successfully..! (সফলভাবে প্রকল্প শেয়ার ফি পেমেন্ট করা হলো..!)';
-            header('Location: ../admin/payment_approval.php');
+            header('Location: ../account/payment_approval.php');
             exit;
         } catch (Exception $e) {
             $pdo->rollBack();
             $_SESSION['error_msg'] = '❌ Error: ' . $e->getMessage();
-            header('Location: ../users/payment.php');
+            header('Location: ../account/payment.php');
             exit;
         }
     }
@@ -283,12 +283,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful, please wait for approval)';
-            header('Location: ../users/payment.php');
+            header('Location: ../account/payment.php');
             exit;
         } catch (Exception $e) {
             $pdo->rollBack();
             $_SESSION['error_msg'] = '❌ Error: ' . $e->getMessage();
-            header('Location: ../users/payment.php');
+            header('Location: ../account/payment.php');
             exit;
         }
     }
@@ -296,7 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ===================== INVALID PAYMENT =====================
     else {
         $_SESSION['error_msg'] = '❌ Invalid payment type or amount.';
-        header('Location: ../users/payment.php');
+        header('Location: ../account/payment.php');
         exit;
     }
 }

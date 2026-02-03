@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Account') {
     header('Location: ../login.php');
     exit;
 }
@@ -30,5 +30,5 @@ foreach ($tran_types as $i => $tran_type) {
 }
 
 $_SESSION['success_msg'] = 'GL Mapping saved successfully!';
-header('Location: ../admin/gl_mapping.php');
+header('Location: ../account/gl_mapping.php');
 exit;

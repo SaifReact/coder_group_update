@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Jan 12, 2026 at 12:22 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- Host: localhost:3306
+-- Generation Time: Feb 04, 2026 at 12:02 AM
+-- Server version: 11.4.9-MariaDB
+-- PHP Version: 8.4.16
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -79,8 +79,8 @@ INSERT INTO `committee_member` (`id`, `member_id`, `member_code`, `committee_rol
 (12, 42, 'CPSS-00042', 4, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL),
 (13, 30, 'CPSS-00002', 5, 'ana_pvz@yahoo.com', 'linkedin.com', 'Entrepreneur', NULL),
 (14, 34, 'CPSS-00032', 3, 'facebook.com', 'anwarapparels@gmail.com', 'Committee Member', NULL),
-(15, 76, 'CPSS-00076', 6, 'facebook.com', 'linkedin.com', 'Committee Member', NULL),
-(16, 82, 'CPSS-00080', 7, 'facebook.com', 'linkedin.com', 'Committee Member', NULL);
+(15, 76, 'CPSS-00076', 6, 'facebook.com', 'linkedin.com', 'Entrepreneur', NULL),
+(16, 74, 'CPSS-00074', 7, 'facebook.com', 'linkedin.com', 'Committee Member', NULL);
 
 -- --------------------------------------------------------
 
@@ -151,16 +151,8 @@ CREATE TABLE `expenses` (
   `note` text NOT NULL,
   `exp_slip` text NOT NULL,
   `status` varchar(3) NOT NULL,
-  `glac_id` int(11) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `expenses`
---
-
-INSERT INTO `expenses` (`id`, `exp_date`, `exp_cat`, `amount`, `reference`, `note`, `exp_slip`, `status`, `glac_id`, `created_at`) VALUES
-(3, '2026-01-07', 1, 12222, '3ewrfghb', 'fedbghnhgewdwd', '1767765210_WhatsApp Image 2025-12-24 at 11.19.36 PM.jpeg', 'A', 57, '2026-01-07 05:53:13');
 
 -- --------------------------------------------------------
 
@@ -176,17 +168,6 @@ CREATE TABLE `expense_category` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `expense_category`
---
-
-INSERT INTO `expense_category` (`id`, `name`, `description`, `status`, `created_at`) VALUES
-(1, 'Md. Saifur Rahman', 'dsvffsecsfswdcx', 'A', '2026-01-06 16:06:16'),
-(2, 'efgrhtjy;kljhgf', 'k,jhgfredwqsdfgmhj,kjhgfdwsa', 'A', '2026-01-06 16:07:06'),
-(3, 'dfghngfdwsbfgnhgbfds', 'dwarfuhjklkjhewdsqdfgrhj,kmjh', 'A', '2026-01-06 16:07:14'),
-(5, 'SDFGRTHYJUK,JHGFDE', 'DFRGHJK,JNHGFDSWDE', 'A', '2026-01-06 16:17:39'),
-(6, 'dfnghj,mjnhbgfewddwfgbnm', '<p>sdfgbhmj.,jhtrgewsfgrthjmk,jhge</p>', 'A', '2026-01-06 16:27:41');
-
 -- --------------------------------------------------------
 
 --
@@ -197,17 +178,17 @@ CREATE TABLE `glac_mst` (
   `id` int(11) NOT NULL,
   `glac_code` varchar(30) NOT NULL,
   `glac_name` varchar(200) NOT NULL,
-  `parent_child` varchar(1) NOT NULL,
+  `parent_child` varchar(3) DEFAULT NULL,
   `parent_id` int(11) DEFAULT NULL,
-  `glac_type` varchar(1) NOT NULL,
+  `glac_type` varchar(1) DEFAULT NULL,
   `level_code` int(11) DEFAULT NULL,
-  `gl_nature` varchar(1) NOT NULL,
-  `allow_manual_dr` varchar(1) NOT NULL,
-  `allow_manual_cr` varchar(1) NOT NULL,
+  `gl_nature` varchar(1) DEFAULT NULL,
+  `allow_manual_dr` varchar(1) DEFAULT NULL,
+  `allow_manual_cr` varchar(1) DEFAULT NULL,
   `status` varchar(1) NOT NULL DEFAULT 'N',
   `auth_by` varchar(50) DEFAULT NULL,
   `auth_date` date DEFAULT NULL,
-  `created_by` varchar(50) NOT NULL,
+  `created_by` varchar(50) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_by` varchar(50) DEFAULT NULL,
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -223,21 +204,45 @@ CREATE TABLE `glac_mst` (
 --
 
 INSERT INTO `glac_mst` (`id`, `glac_code`, `glac_name`, `parent_child`, `parent_id`, `glac_type`, `level_code`, `gl_nature`, `allow_manual_dr`, `allow_manual_cr`, `status`, `auth_by`, `auth_date`, `created_by`, `created_at`, `updated_by`, `updated_at`, `is_default`, `is_abonton`, `is_percentage`, `is_carry_forward`, `is_income_expense`) VALUES
-(20, '10000000', 'সম্পদ ও সম্পত্তি সমূহ ক্রয়', 'P', 0, '1', 1, 'D', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-28 05:34:23', '2', '2025-12-29 04:10:04', 0, 0, 0, 0, 0),
-(37, '20000000', 'মূলধন ও দায়সমূহ', 'P', 0, '2', 1, 'C', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-29 04:04:34', NULL, '2025-12-29 04:04:34', 0, 0, 0, 0, 0),
-(38, '30000000', 'আয়সমূহ', 'P', 0, '3', 1, 'C', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-29 04:04:59', '2', '2025-12-29 04:05:13', 0, 0, 0, 0, 0),
-(39, '40000000', 'খরচসমূহ', 'P', 0, '4', 1, 'D', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-29 04:05:40', NULL, '2025-12-29 04:05:40', 0, 0, 0, 0, 0),
-(48, '10100000', 'সম্পদ ও সম্পত্তি ক্রয়', 'P', 20, '1', 2, 'D', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-29 04:28:12', NULL, '2025-12-29 04:28:12', 0, 0, 0, 0, 0),
-(49, '10101000', 'সম্পদ ও সম্পত্তি', 'C', 48, '1', 3, 'D', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-29 04:29:12', NULL, '2025-12-29 04:29:12', 0, 0, 0, 0, 0),
-(50, '10101001', 'জমি বাবদ', 'C', 49, '1', 4, 'C', 'Y', 'Y', 'A', NULL, NULL, '2', '2025-12-29 04:30:31', NULL, '2025-12-29 04:30:31', 0, 0, 0, 0, 0),
-(51, '10101002', 'আসবাবপত্র ও সাজসরঞ্জাম', 'C', 49, '1', 4, 'C', 'Y', 'Y', 'A', NULL, NULL, '2', '2025-12-29 04:31:33', NULL, '2025-12-29 04:31:33', 0, 0, 0, 0, 0),
-(52, '30100000', 'পরিচালনা আয়', 'P', 38, '3', 2, 'C', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-29 07:30:34', NULL, '2025-12-29 07:30:34', 0, 0, 0, 0, 0),
-(53, '30101000', 'অন্যান্য পরিচালনা আয়', 'P', 52, '3', 3, 'C', 'N', 'N', 'A', NULL, NULL, '2', '2025-12-29 07:31:39', NULL, '2025-12-29 07:31:39', 0, 0, 0, 0, 0),
-(54, '30101001', 'সদস্য এন্ট্রি ফি', 'C', 53, '3', 4, 'C', 'Y', 'Y', 'A', NULL, NULL, '2', '2025-12-29 07:32:09', '2', '2025-12-29 07:32:59', 0, 0, 0, 0, 0),
-(55, '40100000', 'পরিচালনা ব্যয়', 'P', 39, '4', 2, 'D', 'N', 'N', 'A', NULL, NULL, '2', '2026-01-07 05:29:04', NULL, '2026-01-07 05:29:04', 0, 0, 0, 0, 0),
-(56, '40101000', 'সকল পরিচালনা ব্যয়', 'P', 55, '4', 3, 'D', 'N', 'N', 'A', NULL, NULL, '2', '2026-01-07 05:29:52', NULL, '2026-01-07 05:29:52', 0, 0, 0, 0, 0),
-(57, '40101001', 'বিবিধ ব্যয়', 'C', 56, '4', 4, 'D', 'Y', 'Y', 'A', NULL, NULL, '2', '2026-01-07 05:30:40', NULL, '2026-01-07 05:30:40', 0, 0, 0, 0, 0),
-(58, '40101002', 'জমি ক্রয় সংক্রান্ত', 'C', 56, '4', 4, 'D', 'Y', 'Y', 'A', NULL, NULL, '2', '2026-01-07 05:31:55', NULL, '2026-01-07 05:31:55', 0, 0, 0, 0, 0);
+(1, '1', 'Asset', 'P', 0, '1', 1, 'D', 'N', 'N', 'N', NULL, NULL, '2', '2026-01-20 15:52:06', NULL, '2026-01-20 15:52:06', 0, 0, 0, 0, 0),
+(2, '101', 'Fixed Asset', 'P', 1, '1', 2, 'D', 'N', 'N', 'N', NULL, NULL, '2', '2026-01-20 15:52:29', NULL, '2026-01-20 15:52:29', 0, 0, 0, 0, 0),
+(3, '10101', 'Land & Development', 'P', 2, '1', 3, 'D', 'N', 'N', 'N', NULL, NULL, '2', '2026-01-20 15:52:42', NULL, '2026-01-20 15:52:42', 0, 0, 0, 0, 0),
+(4, '10101001', 'Land', 'C', 3, '1', 4, 'D', 'Y', 'Y', 'N', NULL, NULL, '2', '2026-01-20 15:52:58', NULL, '2026-01-20 15:52:58', 0, 0, 0, 0, 0),
+(5, '10101002', 'Building', 'C', 3, '1', 4, 'D', 'Y', 'Y', 'N', NULL, NULL, '2', '2026-01-20 15:53:13', NULL, '2026-01-20 15:53:13', 0, 0, 0, 0, 0),
+(6, '102', 'Current Assets', 'P', 1, '1', 2, 'D', 'N', 'N', 'N', NULL, NULL, '2', '2026-01-21 05:47:23', NULL, '2026-01-21 05:47:23', 0, 0, 0, 0, 0),
+(7, '10201', 'Cash in Hand', 'P', 6, '1', 3, 'D', 'N', 'N', 'N', NULL, NULL, '2', '2026-01-21 05:47:59', NULL, '2026-01-21 05:47:59', 0, 0, 0, 0, 0),
+(8, '10201001', 'Cash in Hand', 'C', 7, '1', 4, 'D', 'Y', 'Y', 'N', NULL, NULL, '2', '2026-01-21 05:48:13', NULL, '2026-01-21 05:48:13', 0, 0, 0, 0, 0),
+(10, '10202', 'Cash At Bank', 'P', 6, '1', 3, 'D', 'N', 'N', 'N', NULL, NULL, '2', '2026-01-21 05:49:34', NULL, '2026-01-21 05:49:34', 0, 0, 0, 0, 0),
+(11, '10202001', 'Bank Asia Ltd (50301001763)', 'C', 10, '1', 4, 'D', 'Y', 'Y', 'N', NULL, NULL, '2', '2026-01-21 05:49:56', NULL, '2026-01-21 05:49:56', 0, 0, 0, 0, 0),
+(12, '10202002', 'Bank Asia Ltd (50311010265)', 'C', 10, '1', 4, 'D', 'Y', 'Y', 'N', NULL, NULL, '2', '2026-01-21 05:51:41', NULL, '2026-01-21 05:51:41', 0, 0, 0, 0, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gl_mapping`
+--
+
+CREATE TABLE `gl_mapping` (
+  `id` bigint(20) NOT NULL,
+  `tran_type` int(11) NOT NULL,
+  `tran_type_name` varchar(100) NOT NULL,
+  `glac_id` int(11) NOT NULL,
+  `contra_glac_id` int(11) NOT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_by` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `gl_mapping`
+--
+
+INSERT INTO `gl_mapping` (`id`, `tran_type`, `tran_type_name`, `glac_id`, `contra_glac_id`, `is_active`, `created_by`, `created_at`) VALUES
+(11, 1, 'এন্ট্রি ফি', 4, 4, 1, '65', '2026-01-28 10:34:07'),
+(12, 2, 'মাসিক কিস্তি', 8, 11, 1, '65', '2026-01-28 10:34:07'),
+(13, 3, 'বিলম্ব ফি', 4, 4, 1, '65', '2026-01-28 10:34:07'),
+(14, 4, 'সমিতি শেয়ার', 4, 5, 1, '65', '2026-01-28 10:34:07'),
+(15, 5, 'প্রকল্প শেয়ার', 5, 4, 1, '65', '2026-01-28 10:34:07');
 
 -- --------------------------------------------------------
 
@@ -255,13 +260,6 @@ CREATE TABLE `meeting` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `presided_by` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `meeting`
---
-
-INSERT INTO `meeting` (`id`, `mdate`, `place`, `agenda`, `decision`, `members`, `created_at`, `presided_by`) VALUES
-(7, '2025-12-21', 'bgdfg', ',cfdhj', 'jkhfzzxcv', '[\"1) মোঃ সাইফুর রহমান\",\"34) মোঃ সাইফুল ইসলাম\",\"39) এইচ. এন.  আশিকুর রুহুল্লাহ\",\"42) সিরাজুল ইসলাম\",\"47) মোঃ মসিদুজ্জামান\",\"51) সোনিয়া আফরোজ\",\"57) মোঃ আরিফুল ইসলাম\",\"63) সাকিফ আব্দুল্লাহ\",\"67) এনামুল হক\",\"70) সুলতান আহমেদ\",\"73) মুকতাসিব উন নুর\",\"77) এ কে এম আশরাফুল আলম\",\"82) মোঃ রুহুল আমিন\",\"90) রাহিমুল ইসলাম\",\"95) মোঃ নাজমুল হক\",\"100) খন্দকার অনিম হাসান আদনান\",\"103) মোহাম্মদ আল মামুন\",\"107) মো: তারিক হোসেন\",\"110) মোঃ আল সামিউল আমিন রিশাত\"]', '2025-12-24 18:20:30', 'l;igh');
 
 -- --------------------------------------------------------
 
@@ -354,7 +352,10 @@ INSERT INTO `members_info` (`id`, `member_code`, `name_bn`, `name_en`, `father_n
 (108, 'CPSS-00108', 'মোঃ আব্দুল্লাহ আল হাদী', 'MD ABDULLA AL HADI', 'Md. Abdul Hamid', 'Most. Maksuda Begum', '2402054734', '1995-09-05', 'ইসলাম', 'Married', 'Joly Khatun', '01724666834', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00108/profile_image_1764564534_692d1e362d804.jpg', '2025-12-01 04:48:54', 'CPSS-00108', 'hadihamid.cse@gmail.com', 'MP'),
 (109, 'CPSS-00109', 'মো: দিদারুল ইসলাম', 'MD DIDARUL ISLAM', 'রফিকুল আলম', 'Sarmin Akter', '6452209882', '1997-08-01', 'ইসলাম', 'Married', 'Anika Akter', '01679706957', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00109/profile_image_1764581857_692d61e1ead2e.jpg', '2025-12-01 09:37:37', 'Saifur', 'mddidarulislamrony778@gmail.com', 'MP'),
 (110, 'CPSS-00110', 'মোঃ আল সামিউল আমিন রিশাত', 'MD AL SAMIUL AMIN RISHAT', 'আল আমিন', 'শিউলী আক্তার', '4654183583', '1999-10-27', 'ইসলাম', 'Single', '', '01738356180', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00110/profile_image_1764608387_692dc983c0171.jpg', '2025-12-01 16:59:47', 'Saifur Rahman', 'samiaulamin@gmail.com', 'MP'),
-(112, 'CPSS-00111', 'রানো আক্তার', 'RANO AKTER', 'মোঃ জসিম উদ্দিন', 'সুরেখা বেগম', '8681441195', '1986-06-01', 'ইসলাম', 'Married', 'মুহাম্মদ ইকবাল হোসেন', '01810031390', 'Female', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00111/profile_image_1764819618_693102a2a3bc9.jpg', '2025-12-04 03:40:18', 'AP', '', 'MP');
+(112, 'CPSS-00111', 'রানো আক্তার', 'RANO AKTER', 'মোঃ জসিম উদ্দিন', 'সুরেখা বেগম', '8681441195', '1986-06-01', 'ইসলাম', 'Married', 'মুহাম্মদ ইকবাল হোসেন', '01810031390', 'Female', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00111/profile_image_1764819618_693102a2a3bc9.jpg', '2025-12-04 03:40:18', 'AP', '', 'MP'),
+(123, 'CPSS-00113', 'মোঃ সিদ্দিকুর রহমান খান', 'MD SIDDQUR RAHMAN KHAN', 'Md. Abdul Jalil Khan', 'Mrs, Sufia Akhter', '5080305435', '1977-12-01', 'ইসলাম', 'Married', 'Ayesha Siddika', '01917540114', 'Male', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00113/profile_image_1767520537_695a391914094.jpg', '2026-01-04 09:55:37', 'AP', 'siddqurera@gmail.com', 'MP'),
+(130, 'CPSS-00124', 'মোছাঃ ফাহমিদা শাহরিন', 'MS FAHMIDA SHAHRIN', 'Abdul Hamid', 'MS Latifa Begum', '3709039089', '1990-02-20', 'ইসলাম', 'Married', 'Shakil', '01748065751', 'Female', 'স্নাতকোত্তর/সমমান', 1, 'user_images/member_CPSS-00124/profile_image_1770041397_6980b035e50d8.jpg', '2026-02-02 14:09:57', 'D010', '', 'MP'),
+(131, 'CPSS-00131', 'মোঃ আতিকুল হাসান', 'MD ATIQUL HASAN', 'Md Abdul Mannan', 'Sahana Akter', '4602476212', '1988-11-26', 'ইসলাম', 'Single', '', '01911937558', 'Male', 'স্নাতক/সমমান', 1, 'user_images/member_CPSS-00131/profile_image_1770042289_6980b3b1021fc.jpg', '2026-02-02 14:24:49', 'D013', '', 'MP');
 
 -- --------------------------------------------------------
 
@@ -383,7 +384,8 @@ CREATE TABLE `member_bank` (
 INSERT INTO `member_bank` (`id`, `member_id`, `member_code`, `ac_no`, `ac_title`, `bank_name`, `branch_name`, `routing_no`, `status`, `created_at`, `updated_at`) VALUES
 (1, 1, 'CPSS-00001', '04934004088', 'মোঃ সাইফুর রহমান', 'ব্যাংক এশিয়া লিঃ (Bank Asia Ltd.)', 'Paltan Branch, Dhaka', '', 'A', '2025-11-26 10:48:37', '2025-11-26 10:48:37'),
 (2, 78, 'CPSS-00078', '04934008982', 'MEHEDI HASAN ZIDAN', 'BANK ASIA LTD', 'PALTAN', '', 'A', '2025-12-06 13:47:44', '2025-12-06 13:47:44'),
-(3, 45, 'CPSS-00043', '04934010066', 'MD. SUMRIA RAIHAN', 'BANK ASIA PLC', 'PALTAN', '070275207', 'A', '2025-12-07 05:16:12', '2025-12-07 05:22:21');
+(3, 45, 'CPSS-00043', '04934010066', 'MD. SUMRIA RAIHAN', 'BANK ASIA PLC', 'PALTAN', '070275207', 'A', '2025-12-07 05:16:12', '2025-12-07 05:22:21'),
+(4, 41, 'CPSS-00041', '2801475888001', 'Current Account', 'City Bank Ltd', 'Mirpur-1, Br', '225262986', 'A', '2026-01-14 05:24:04', '2026-01-14 05:24:04');
 
 -- --------------------------------------------------------
 
@@ -413,7 +415,12 @@ INSERT INTO `member_documents` (`id`, `member_id`, `member_code`, `doc_type`, `d
 (6, 30, 'CPSS-00002', 102, 'user_images/member_CPSS-00002/doc_102_1762605753_2c214f3f.jpg', '2025-11-08 18:42:33'),
 (9, 31, 'CPSS-00031', 101, 'user_images/member_CPSS-00031/doc_101_1762607037_78054ef2.jpg', '2025-11-08 19:03:57'),
 (10, 31, 'CPSS-00031', 102, 'user_images/member_CPSS-00031/doc_102_1762607123_ea53818d.jpg', '2025-11-08 19:05:23'),
-(11, 85, 'CPSS-00083', 101, 'user_images/member_CPSS-00083/doc_101_1763552756_ca69ceaa.jpg', '2025-11-19 17:45:56');
+(11, 85, 'CPSS-00083', 101, 'user_images/member_CPSS-00083/doc_101_1763552756_ca69ceaa.jpg', '2025-11-19 17:45:56'),
+(13, 106, 'CPSS-00105', 101, 'user_images/member_CPSS-00105/doc_101_1767815115_a2d92fb4.jpg', '2026-01-08 01:45:15'),
+(14, 106, 'CPSS-00105', 103, 'user_images/member_CPSS-00105/doc_103_1767815285_f054e290.jpg', '2026-01-08 01:48:05'),
+(15, 98, 'CPSS-00098', 101, 'user_images/member_CPSS-00098/doc_101_1769988051_584676bc.jpg', '2026-02-02 05:20:51'),
+(16, 98, 'CPSS-00098', 103, 'user_images/member_CPSS-00098/doc_103_1769988170_136a0c86.jpg', '2026-02-02 05:22:50'),
+(17, 98, 'CPSS-00098', 102, 'user_images/member_CPSS-00098/doc_102_1769988259_74766c52.png', '2026-02-02 05:24:19');
 
 -- --------------------------------------------------------
 
@@ -504,7 +511,10 @@ INSERT INTO `member_nominee` (`id`, `member_id`, `member_code`, `name`, `relatio
 (95, 108, 'CPSS-00108', 'Joly Khatun', 'Spouse', '6452016956', '1997-04-04 00:00:00', 100, 'user_images/member_CPSS-00108/nominee_1_1764564534_692d1e362e3e6.jpeg', '2025-12-01 10:48:54'),
 (96, 109, 'CPSS-00109', 'Anika Akter', 'Wife', '20080610213106639', '2008-07-26 00:00:00', 100, 'user_images/member_CPSS-00109/nominee_1_1764581857_692d61e1ec4f1.jpg', '2025-12-01 15:37:38'),
 (97, 110, 'CPSS-00110', 'Sheulee Akter', 'Mother', '5548069995', '1970-04-10 00:00:00', 100, 'user_images/member_CPSS-00110/nominee_1_1764608387_692dc983c1154.jpeg', '2025-12-01 22:59:47'),
-(98, 112, 'CPSS-00111', 'মুহাম্মদ ইকবাল হোসেন', 'Husband', '19796816474388035', '1979-04-04 00:00:00', 100, 'user_images/member_CPSS-00111/nominee_1_1764819618_693102a2aca65.jpg', '2025-12-04 09:40:18');
+(98, 112, 'CPSS-00111', 'মুহাম্মদ ইকবাল হোসেন', 'Husband', '19796816474388035', '1979-04-04 00:00:00', 100, 'user_images/member_CPSS-00111/nominee_1_1764819618_693102a2aca65.jpg', '2025-12-04 09:40:18'),
+(99, 123, 'CPSS-00113', 'Ayesha Siddika', 'Wife', '1234567890', '1981-01-12 00:00:00', 100, 'user_images/member_CPSS-00113/nominee_1_1767520537_695a391915241.jpg', '2026-01-04 15:55:37'),
+(100, 130, 'CPSS-00124', 'Shakil', 'Husband', '1111111111', '1995-01-01 00:00:00', 100, 'user_images/member_CPSS-00124/nominee_1_1770041397_6980b035e6b15.jpg', '2026-02-02 20:09:57'),
+(101, 131, 'CPSS-00131', 'Shahana Akter', 'Mother', '7752479480', '1957-04-28 00:00:00', 100, 'user_images/member_CPSS-00131/nominee_1_1770042289_6980b3b102f59.jpg', '2026-02-02 20:24:49');
 
 -- --------------------------------------------------------
 
@@ -586,7 +596,10 @@ INSERT INTO `member_office` (`id`, `member_id`, `member_code`, `office_name`, `o
 (99, 108, 'CPSS-00108', 'Era Infotech Ltd.', 'Fareast Tower, 35 Topkhana Road, (Level-3), Dhaka-1000', 'Associate Engineer', '2025-12-01 10:48:54', 'SA Tower, House No: 11, Road No: 03, Basila Model Town, Basila, Mohammadpur', 'Vill: Hoza Annata Kandi, P.O: Pananagar, P.S: Durgapur, District: Rajshahi'),
 (100, 109, 'CPSS-00109', 'Era Infotech Ltd', 'Purana paltan, Dhaka', 'Associate Software Engineer', '2025-12-01 15:37:37', '4a, 134, south kamlapur, Dhaka', 'Village+Post: Vojergati, Thana+District :Gopalgonj'),
 (101, 110, 'CPSS-00110', 'ERA Infotech Ltd.', 'Level 3, Fareast Tower, 35 Topkhana Road, Dhaka 1000, Bangladesh', 'Associate Software Engineer', '2025-12-01 22:59:47', 'House#7,Road #2/E Sector-4,Uttara Dhaka-1230', 'C-Block, House 562, MouBhag, West Madda, Brahmanbaria-3400, Brahmanbaria'),
-(102, 112, 'CPSS-00111', 'Bank Asia PLC', 'Purana Paltan', 'Senior Officer', '2025-12-04 09:40:18', 'গ্রামঃ গোবিন্দপুর, ডাকঘরঃ আশারামপুর, উপজেলাঃ রায়পুরা, জেলাঃ নরসিংদী', 'গ্রামঃ গোবিন্দপুর, ডাকঘরঃ আশারামপুর, উপজেলাঃ রায়পুরা, জেলাঃ নরসিংদী');
+(102, 112, 'CPSS-00111', 'Bank Asia PLC', 'Purana Paltan', 'Senior Officer', '2025-12-04 09:40:18', 'গ্রামঃ গোবিন্দপুর, ডাকঘরঃ আশারামপুর, উপজেলাঃ রায়পুরা, জেলাঃ নরসিংদী', 'গ্রামঃ গোবিন্দপুর, ডাকঘরঃ আশারামপুর, উপজেলাঃ রায়পুরা, জেলাঃ নরসিংদী'),
+(104, 123, 'CPSS-00113', 'ERA', 'Dhaka', 'Manager', '2026-01-04 15:55:37', '778, East, Monipur, Mirpur, Dhaka', '19, Shankipara, Cantonment Mour, Mymensingh -2200'),
+(105, 130, 'CPSS-00124', 'NRBG', 'Gulshan', 'Executive', '2026-02-02 20:09:57', '51, Dhapzel Road, Ragunathganj, Rangpur', '51, Dhapzel Road, Ragunathganj, Rangpur'),
+(106, 131, 'CPSS-00131', 'ERA InfoTech Ltd', '35, Farest Tower, Topkhana Road, Dhaka-1000', 'Excutive', '2026-02-02 20:24:49', 'Dewvog, Munshiganj', 'Dewvog, Munshiganj');
 
 -- --------------------------------------------------------
 
@@ -633,7 +646,6 @@ INSERT INTO `member_payments` (`id`, `member_id`, `member_code`, `payment_method
 (113, 31, 'CPSS-00031', 'Samity Share', 1, NULL, '', 'TRSAMITY SHARE20256', 10000, 2025, '2025-12-06 07:30:36', 2, 6, 'Samity Share', NULL, 'A', 'AD', 'Adjustment From Coder Home Deposit Anwar'),
 (114, 36, 'CPSS-00036', 'admission', 0, NULL, '', 'TRADMISSION20255', 1500, 2025, '2025-12-06 07:32:34', 2, 5, 'admission', NULL, 'A', 'AD', 'Adjustment From Bank Slip No 7EF0D07F'),
 (115, 36, 'CPSS-00036', 'Samity Share', 1, '2025-11-29 18:00:00', '049WB323337', 'TRSAMITY SHARE20257', 10000, 2025, '2025-12-06 07:33:54', 2, 7, 'Samity Share', 'payment_slip_36_1765006434_9502.jpg', 'A', 'BP', 'Adjustment From Bank Deposit 7EF0D07F'),
-(116, 36, 'CPSS-00036', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20252', 5000, 2025, '2025-12-06 07:34:29', 2, 2, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Bank Slip No 7EF0D07F'),
 (117, 39, 'CPSS-00037', 'admission', 0, NULL, '', 'TRADMISSION20256', 1500, 2025, '2025-12-06 07:35:49', 2, 6, 'admission', NULL, 'A', 'AD', 'Adjustment From Bank Deposit E77FF6F9'),
 (118, 39, 'CPSS-00037', 'Samity Share', 1, '2025-11-08 18:00:00', '049WB319683', 'TRSAMITY SHARE20258', 10000, 2025, '2025-12-06 07:37:21', 2, 8, 'Samity Share', 'payment_slip_39_1765006641_6354.jpg', 'A', 'BP', 'Adjustment From This Slip'),
 (119, 39, 'CPSS-00037', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20253', 10000, 2025, '2025-12-06 07:38:02', 2, 3, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Bank Slip No E77FF6F9'),
@@ -760,16 +772,88 @@ INSERT INTO `member_payments` (`id`, `member_id`, `member_code`, `payment_method
 (241, 35, 'CPSS-00035', 'Samity Share', 1, NULL, '', 'TRSAMITY SHARE202552', 10000, 2025, '2025-12-08 12:02:34', 2, 52, 'Samity Share', NULL, 'A', 'AD', 'Adjustment From Land Price'),
 (242, 112, 'CPSS-00111', 'admission', 0, NULL, '', 'TRADMISSION202550', 1500, 2025, '2025-12-08 12:02:59', 2, 50, 'admission', NULL, 'A', 'AD', 'Adjustment From Land Price'),
 (243, 112, 'CPSS-00111', 'Samity Share', 1, NULL, '', 'TRSAMITY SHARE202553', 10000, 2025, '2025-12-08 12:03:24', 2, 53, 'Samity Share', NULL, 'A', 'AD', 'Adjustment From Land Price'),
-(251, 1, 'CPSS-00001', 'january', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-01-06 14:55:29', 3, 1, 'advance', NULL, 'I', 'AD', 'era'),
-(252, 1, 'CPSS-00001', 'february', 0, NULL, '', 'TRFEBRUARY20261', 2000, 2026, '2026-01-06 14:55:30', 3, 1, 'advance', NULL, 'I', 'AD', 'era'),
-(253, 1, 'CPSS-00001', 'march', 0, NULL, '', 'TRMARCH20261', 2000, 2026, '2026-01-06 14:58:02', 3, 1, 'march', NULL, 'I', 'AD', 'edgtfbhyjukjuhgtfrd'),
-(254, 1, 'CPSS-00001', 'april', 0, NULL, '', 'TRAPRIL20261', 2000, 2026, '2026-01-06 15:12:26', 3, 1, 'advance', NULL, 'I', 'AD', '.,vgfcjhjlkjj'),
-(255, 1, 'CPSS-00001', 'may', 0, NULL, '', 'TRMAY20261', 2000, 2026, '2026-01-06 15:12:27', 3, 1, 'advance', NULL, 'I', 'AD', '.,vgfcjhjlkjj'),
-(256, 1, 'CPSS-00001', 'june', 0, NULL, '', 'TRJUNE20261', 2000, 2026, '2026-01-06 15:12:27', 3, 1, 'advance', NULL, 'I', 'AD', '.,vgfcjhjlkjj'),
-(257, 1, 'CPSS-00001', 'july', 0, NULL, '', 'TRJULY20261', 2000, 2026, '2026-01-06 15:13:18', 3, 1, 'july', NULL, 'I', 'AD', 'lugydfguhijo'),
-(258, 1, 'CPSS-00001', 'august', 0, '2026-08-05 18:00:00', 'dggfgdssdgr', 'TRAUGUST20261', 2000, 2026, '2026-01-06 15:23:54', 3, 1, 'august', NULL, 'I', 'BP', 'wfjkl'),
-(259, 1, 'CPSS-00001', 'september', 0, '2026-09-05 18:00:00', 'ererertetr', 'TRSEPTEMBER20261', 2000, 2026, '2026-01-06 15:28:37', 3, 1, 'september', NULL, 'I', 'BP', 'er;l.\"?'),
-(260, 1, 'CPSS-00001', 'october', 0, '2026-10-06 18:00:00', 'jcvbg', 'TROCTOBER20261', 2000, 2026, '2026-01-06 15:35:35', 3, 1, 'october', NULL, 'I', 'BP', 'SQWDTHKL;\'/LKJHGRFDSA');
+(261, 36, 'CPSS-00036', 'Monthly', 0, '2026-01-13 18:00:00', '04934007904', 'TRJANUARY20261', 2000, 2026, '2026-01-15 10:50:14', 9, 1, 'january', 'payment_slip_36_1768474214_2032.pdf', 'A', 'BP', 'Monthly Payment Jan\'2026'),
+(263, 41, 'CPSS-00041', 'Monthly', 0, '2026-01-13 18:00:00', '260143199720', 'TRJANUARY20261', 2000, 2026, '2026-01-15 11:00:32', 12, 1, 'january', 'payment_slip_41_1768474832_4248.jpeg', 'A', 'BP', 'Advance pay 1500 and new pay 500 = 2000'),
+(264, 52, 'CPSS-00052', 'Monthly', 0, '2026-01-14 18:00:00', '049WB332059', 'TRJANUARY20261', 2000, 2026, '2026-01-15 11:02:17', 20, 1, 'january', 'payment_slip_52_1768474937_4722.jpeg', 'A', 'BP', 'January Month Pay for this slip'),
+(288, 72, 'CPSS-00072', 'Monthly', 0, '2026-01-14 18:00:00', '049WB332057', 'TRJANUARY20262', 2000, 2026, '2026-01-15 17:45:45', 34, 2, 'january', 'payment_slip_72_1768499145_2408.jpeg', 'A', 'BP', 'January Monthly Payment'),
+(289, 62, 'CPSS-00060', 'Monthly', 0, '2026-01-14 18:00:00', '049WB332059', 'TRJANUARY20263', 2000, 2026, '2026-01-15 17:47:52', 25, 3, 'january', 'payment_slip_62_1768499272_2335.jpeg', 'A', 'BP', 'January Month Payment for this slip'),
+(290, 39, 'CPSS-00037', 'Monthly', 0, '2026-01-17 18:00:00', '049WB332500', 'TRJANUARY20264', 2000, 2026, '2026-01-18 07:05:43', 10, 4, 'january', NULL, 'A', 'BP', 'JUANUARY MONTH PAYMENT CLEAR. '),
+(291, 48, 'CPSS-00048', 'Monthly', 0, '2026-01-18 18:00:00', '049WB332650', 'TRJANUARY20265', 2000, 2026, '2026-01-19 04:36:57', 17, 5, 'january', 'payment_slip_48_1768797417_1599.jpeg', 'A', 'BP', 'CPSS-00048 January payment'),
+(292, 63, 'CPSS-00063', 'Monthly', 0, '2026-01-18 18:00:00', '04943010015', 'TRJANUARY20266', 2000, 2026, '2026-01-19 06:15:07', 26, 6, 'january', 'payment_slip_63_1768803307_3772.jpeg', 'A', 'BP', 'January Month Deposit'),
+(296, 1, 'CPSS-00001', 'Monthly', 0, '2026-01-14 18:00:00', '57691730', 'TRJANUARY20261', 2000, 2026, '2026-01-19 10:12:19', 3, 1, 'january', 'payment_slip_1_1768817539_7871.jpeg', 'A', 'BP', 'Advance Monthly Deposit Jan-Jun\'2026'),
+(297, 1, 'CPSS-00001', 'Monthly', 0, '2026-01-14 18:00:00', '57691730', 'TRFEBRUARY20261', 2000, 2026, '2026-01-19 10:12:19', 3, 1, 'february', 'payment_slip_1_1768817539_7871.jpeg', 'A', 'BP', 'Advance Monthly Deposit Jan-Jun\'2026'),
+(298, 1, 'CPSS-00001', 'Monthly', 0, '2026-01-14 18:00:00', '57691730', 'TRMARCH20261', 2000, 2026, '2026-01-19 10:12:19', 3, 1, 'march', 'payment_slip_1_1768817539_7871.jpeg', 'A', 'BP', 'Advance Monthly Deposit Jan-Jun\'2026'),
+(299, 1, 'CPSS-00001', 'Monthly', 0, '2026-01-14 18:00:00', '57691730', 'TRAPRIL20261', 2000, 2026, '2026-01-19 10:12:19', 3, 1, 'april', 'payment_slip_1_1768817539_7871.jpeg', 'A', 'BP', 'Advance Monthly Deposit Jan-Jun\'2026'),
+(300, 1, 'CPSS-00001', 'Monthly', 0, '2026-01-14 18:00:00', '57691730', 'TRMAY20261', 2000, 2026, '2026-01-19 10:12:19', 3, 1, 'may', 'payment_slip_1_1768817539_7871.jpeg', 'A', 'BP', 'Advance Monthly Deposit Jan-Jun\'2026'),
+(301, 1, 'CPSS-00001', 'Monthly', 0, '2026-01-14 18:00:00', '57691730', 'TRJUNE20261', 2000, 2026, '2026-01-19 10:12:19', 3, 1, 'june', 'payment_slip_1_1768817539_7871.jpeg', 'A', 'BP', 'Advance Monthly Deposit Jan-Jun\'2026'),
+(302, 108, 'CPSS-00108', 'Monthly', 0, '2026-01-18 18:00:00', '049WB332687', 'TRJANUARY20261', 2000, 2026, '2026-01-25 07:40:23', 59, 1, 'january', NULL, 'A', 'BP', 'Monthly Payment for January 2026'),
+(303, 78, 'CPSS-00078', 'Monthly', 0, '2026-01-17 18:00:00', '049WB332500', 'TRJANUARY20261', 2000, 2026, '2026-01-25 07:48:26', 40, 1, 'january', 'payment_slip_78_1769327306_7930.jpg', 'A', 'BP', ''),
+(304, 73, 'CPSS-00073', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-01-25 08:48:09', 35, 1, 'january', NULL, 'A', 'AD', ''),
+(305, 74, 'CPSS-00074', 'Monthly', 0, '2026-01-24 18:00:00', '602514580228', 'TRJANUARY20261', 2000, 2026, '2026-01-25 09:15:25', 36, 1, 'january', 'payment_slip_74_1769332525_2107.jpg', 'A', 'BP', 'Monthly Chada - 1'),
+(306, 66, 'CPSS-00066', 'Monthly', 0, '2026-01-24 18:00:00', '049WB333754', 'TRJANUARY20261', 2000, 2026, '2026-01-25 15:34:31', 28, 1, 'january', 'payment_slip_66_1769355271_2774.jpeg', 'A', 'BP', 'paid'),
+(307, 59, 'CPSS-00058', 'Monthly', 0, '2026-01-25 18:00:00', '049WB333882 and 049WB333911', 'TRJANUARY20261', 2000, 2026, '2026-01-26 05:42:05', 24, 1, 'january', 'payment_slip_59_1769406125_1086.pdf', 'A', 'BP', ''),
+(308, 45, 'CPSS-00043', 'Monthly', 0, '2026-01-25 18:00:00', '04934010066', 'TRJANUARY20261', 2000, 2026, '2026-01-26 08:04:42', 14, 1, 'january', 'payment_slip_45_1769414682_1186.jpeg', 'A', 'BP', 'Monthly Deposit January 2026'),
+(309, 47, 'CPSS-00047', 'Monthly', 0, '2026-01-18 18:00:00', '049WB332682', 'TRJANUARY20261', 2000, 2026, '2026-01-27 07:59:49', 16, 1, 'january', 'payment_slip_47_1769500789_6138.jpeg', 'A', 'BP', ''),
+(310, 92, 'CPSS-00091', 'Monthly', 0, '2026-01-18 18:00:00', '049WB332682', 'TRJANUARY20261', 2000, 2026, '2026-01-28 03:39:28', 47, 1, 'january', 'payment_slip_92_1769571568_1841.jpeg', 'A', 'BP', 'January Monthly Payment'),
+(311, 40, 'CPSS-00040', 'admission', 0, '2026-01-26 18:00:00', '049WB334277', 'TRADMISSION20261', 1500, 2026, '2026-01-28 03:45:44', 2, 1, 'admission', 'payment_slip_40_1769571944_9132.jpeg', 'A', 'BP', 'Admission Fee Adjustment From this Slip'),
+(312, 40, 'CPSS-00040', 'Samity Share', 1, '2026-01-26 18:00:00', '049WB334277', 'TRSAMITY SHARE20261', 10000, 2026, '2026-01-28 03:47:12', 2, 1, 'Samity Share', 'payment_slip_40_1769572032_6788.jpeg', 'A', 'BP', 'Samity Share Fee Adjustment From This Slip'),
+(313, 40, 'CPSS-00040', 'Project Share', 4, '2026-01-26 18:00:00', '049WB334277', 'TRPROJECT SHARE20261', 40000, 2026, '2026-01-28 03:48:39', 2, 1, 'Project Share', 'payment_slip_40_1769572119_9125.jpeg', 'A', 'BP', 'Project Share Fee Adjustment From this Slip'),
+(314, 40, 'CPSS-00040', 'Monthly', 0, '2026-01-26 18:00:00', '049WB334277', 'TRJANUARY20261', 2000, 2026, '2026-01-28 03:50:46', 11, 1, 'january', 'payment_slip_40_1769572246_1794.jpeg', 'A', 'BP', 'January\'26 Monthly Deposit Adjustment From This Slip'),
+(315, 93, 'CPSS-00093', 'Project Share', 4, '2026-01-26 18:00:00', 'AA2193704', 'TRPROJECT SHARE20262', 10000, 2026, '2026-01-28 09:18:41', 2, 2, 'Project Share', 'payment_slip_93_1769591921_6957.jpeg', 'A', 'BP', 'Adjustment From Cheque No.-AA 2193704'),
+(316, 107, 'CPSS-00107', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20263', 5000, 2026, '2026-01-28 09:20:12', 2, 3, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(317, 106, 'CPSS-00105', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20264', 10000, 2026, '2026-01-28 09:20:51', 2, 4, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(318, 100, 'CPSS-00099', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20265', 15000, 2026, '2026-01-28 09:22:23', 2, 5, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(319, 102, 'CPSS-00102', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20266', 10000, 2026, '2026-01-28 09:22:51', 2, 6, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(320, 109, 'CPSS-00109', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20267', 15000, 2026, '2026-01-28 09:25:21', 2, 7, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(321, 97, 'CPSS-00096', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20268', 5000, 2026, '2026-01-28 09:26:06', 2, 8, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(322, 95, 'CPSS-00094', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE20269', 1000, 2026, '2026-01-28 09:27:29', 2, 9, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(323, 103, 'CPSS-00103', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202610', 10000, 2026, '2026-01-28 09:28:05', 2, 10, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(324, 85, 'CPSS-00083', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202611', 15000, 2026, '2026-01-28 09:28:37', 2, 11, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(325, 90, 'CPSS-00090', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202612', 15000, 2026, '2026-01-28 09:29:16', 2, 12, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(326, 110, 'CPSS-00110', 'Project Share', 4, '2025-12-17 18:00:00', '049WB326463', 'TRPROJECT SHARE202613', 15000, 2026, '2026-01-28 09:46:48', 2, 13, 'Project Share', 'payment_slip_110_1769593608_3070.jpeg', 'A', 'BP', 'Adjustment From Cheque AA 2193704( Bank Slip: 10000+ Cheque: 5000) = 15000'),
+(327, 101, 'CPSS-00101', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202614', 10000, 2026, '2026-01-28 09:50:03', 2, 14, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(328, 95, 'CPSS-00094', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202615', 9000, 2026, '2026-01-28 09:50:56', 2, 15, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Cheque AA 2193704'),
+(329, 107, 'CPSS-00107', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-01-28 09:56:33', 58, 1, 'january', NULL, 'A', 'AD', 'Adjustment From Cheque AA 2193704'),
+(330, 106, 'CPSS-00105', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-01-28 09:58:34', 57, 1, 'january', NULL, 'A', 'AD', 'Adjustment From Cheque AA 2193704'),
+(331, 98, 'CPSS-00098', 'Monthly', 0, '2026-01-26 18:00:00', 'AA 2193704', 'TRJANUARY20261', 2000, 2026, '2026-01-28 10:05:40', 51, 1, 'january', 'payment_slip_98_1769594740_3545.jpeg', 'A', 'BP', 'Adjustment From Cheque No.-AA 2193704'),
+(332, 98, 'CPSS-00098', 'Monthly', 0, '2026-01-26 18:00:00', 'AA 2193704', 'TRFEBRUARY20261', 2000, 2026, '2026-01-28 10:05:40', 51, 1, 'february', 'payment_slip_98_1769594740_3545.jpeg', 'A', 'BP', 'Adjustment From Cheque No.-AA 2193704'),
+(333, 109, 'CPSS-00109', 'Monthly', 0, '2026-01-26 18:00:00', '', 'TRJANUARY20261', 2000, 2026, '2026-01-28 12:12:51', 60, 1, 'january', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(334, 109, 'CPSS-00109', 'Monthly', 0, '2026-01-26 18:00:00', '', 'TRFEBRUARY20261', 2000, 2026, '2026-01-28 12:12:51', 60, 1, 'february', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(335, 109, 'CPSS-00109', 'Monthly', 0, '2026-01-26 18:00:00', '', 'TRMARCH20261', 2000, 2026, '2026-01-28 12:12:51', 60, 1, 'march', NULL, 'A', 'AD', 'Adjustment From Cheque No.-AA 2193704'),
+(336, 101, 'CPSS-00101', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-01-28 12:20:18', 53, 1, 'january', NULL, 'A', 'AD', 'Adjustment From Cheque AA 2193704'),
+(337, 97, 'CPSS-00096', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-01-28 12:23:31', 50, 1, 'january', NULL, 'A', 'AD', 'January\'2026 Monthly Fee Adjustment from Cheque No - AA 2193704'),
+(338, 110, 'CPSS-00110', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-01-28 12:25:56', 61, 1, 'january', NULL, 'A', 'AD', 'January\'2026 Monthly Fee Adjustment from Cheque No- AA 2193704'),
+(339, 104, 'CPSS-00104', 'Monthly', 0, '2026-01-28 18:00:00', '049WB334666', 'TRJANUARY20261', 2000, 2026, '2026-01-29 04:51:28', 56, 1, 'january', 'payment_slip_104_1769662288_6971.jpeg', 'A', 'BP', 'January-February\'26 Payment'),
+(340, 104, 'CPSS-00104', 'Monthly', 0, '2026-01-28 18:00:00', '049WB334666', 'TRFEBRUARY20261', 2000, 2026, '2026-01-29 04:51:28', 56, 1, 'february', 'payment_slip_104_1769662288_6971.jpeg', 'A', 'BP', 'January-February\'26 Payment'),
+(341, 104, 'CPSS-00104', 'Project Share', 4, '2026-01-28 18:00:00', '049WB334666', 'TRPROJECT SHARE202616', 10000, 2026, '2026-01-29 05:16:43', 65, 16, 'Project Share', 'payment_slip_104_1769663803_8059.jpeg', 'A', 'BP', 'Adjustment For this Slip'),
+(342, 57, 'CPSS-00057', 'Monthly', 0, '2026-01-28 18:00:00', '260294481730', 'TRJANUARY20261', 2000, 2026, '2026-01-29 05:57:47', 23, 1, 'january', 'payment_slip_57_1769666267_9568.jpeg', 'A', 'BP', 'Paid 2000 for Jan 2026'),
+(343, 34, 'CPSS-00032', 'admission', 0, '2025-11-12 18:00:00', '049WB320396', 'TRADMISSION20262', 1500, 2026, '2026-01-29 06:07:24', 65, 2, 'admission', 'payment_slip_34_1769666844_6835.jpeg', 'A', 'BP', 'Adjustment from this slip'),
+(344, 34, 'CPSS-00032', 'Samity Share', 1, '2025-11-12 18:00:00', '049WB320396', 'TRSAMITY SHARE20262', 10000, 2026, '2026-01-29 06:08:25', 65, 2, 'Samity Share', 'payment_slip_34_1769666905_3355.jpeg', 'A', 'BP', 'Samity Share Fee Adjustment from this slip'),
+(345, 76, 'CPSS-00076', 'Monthly', 0, '2026-01-24 18:00:00', '049WB333408', 'TRJANUARY20261', 2000, 2026, '2026-01-29 06:14:40', 38, 1, 'january', 'payment_slip_76_1769667280_4108.jpeg', 'A', 'BP', 'January\'26 Monthly Payment Done'),
+(346, 76, 'CPSS-00076', 'Samity Share', 1, '2025-12-02 18:00:00', '049WB324109', 'TRSAMITY SHARE20263', 15000, 2026, '2026-01-29 06:21:59', 65, 3, 'Samity Share', 'payment_slip_76_1769667719_4833.jpeg', 'A', 'BP', 'Adjustment from this slip'),
+(347, 123, 'CPSS-00113', 'admission', 0, '2026-01-28 18:00:00', '00334009987', 'TRADMISSION20263', 1500, 2026, '2026-01-29 07:57:36', 65, 3, 'admission', NULL, 'A', 'BP', 'Adjustment From this slip'),
+(348, 123, 'CPSS-00113', 'Samity Share', 1, NULL, '', 'TRSAMITY SHARE20264', 10000, 2026, '2026-01-29 07:58:35', 65, 4, 'Samity Share', NULL, 'A', 'AD', 'Adjustment From this slip 00334009987'),
+(349, 123, 'CPSS-00113', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202617', 10000, 2026, '2026-01-29 08:02:45', 65, 17, 'Project Share', NULL, 'A', 'AD', 'Adjustment From this slip 00334009987'),
+(350, 123, 'CPSS-00113', 'Monthly', 0, '2026-01-28 18:00:00', '00334009987', 'TRJANUARY20261', 2000, 2026, '2026-01-29 08:14:52', 63, 1, 'january', 'payment_slip_123_1769674492_2762.pdf', 'A', 'BP', 'Jan-Feb\'2026, Monthly Payment Done'),
+(351, 123, 'CPSS-00113', 'Monthly', 0, '2026-01-28 18:00:00', '00334009987', 'TRFEBRUARY20261', 2000, 2026, '2026-01-29 08:14:52', 63, 1, 'february', 'payment_slip_123_1769674492_2762.pdf', 'A', 'BP', 'Jan-Feb\'2026, Monthly Payment Done'),
+(352, 30, 'CPSS-00002', 'Monthly', 0, '2026-01-28 18:00:00', '049WB334726', 'TRJANUARY20261', 2000, 2026, '2026-01-30 05:27:21', 4, 1, 'january', 'payment_slip_30_1769750841_3994.jpeg', 'A', 'BP', 'January\' 26 monthly deposit'),
+(353, 31, 'CPSS-00031', 'Monthly', 0, '2026-01-28 18:00:00', '049WB334726', 'TRJANUARY20261', 2000, 2026, '2026-01-30 05:29:26', 5, 1, 'january', 'payment_slip_31_1769750966_6126.jpeg', 'A', 'BP', 'January\'26 Monthly Deposit'),
+(354, 56, 'CPSS-00056', 'Monthly', 0, '2026-01-29 18:00:00', 'vide chq# 5767B217', 'TRJANUARY20261', 2000, 2026, '2026-01-30 08:58:51', 22, 1, 'january', 'payment_slip_56_1769763531_7745.jpeg', 'A', 'BP', 'I forgot to take screen short of transaction, so attached the sms screen short'),
+(355, 68, 'CPSS-00068', 'Monthly', 0, '2026-01-30 18:00:00', '049WB335181', 'TRJANUARY20261', 2000, 2026, '2026-01-31 10:47:19', 30, 1, 'january', 'payment_slip_68_1769856439_8120.jpeg', 'A', 'BP', 'January-26 amt.2000'),
+(356, 34, 'CPSS-00032', 'Monthly', 0, '2026-01-29 18:00:00', '7D7D5B76', 'TRJANUARY20261', 2000, 2026, '2026-01-31 16:50:08', 7, 1, 'january', 'payment_slip_34_1769878208_3702.jpeg', 'A', 'BP', 'Md.Saiful Islam'),
+(357, 68, 'CPSS-00068', 'admission', 0, NULL, '', 'TRADMISSION20264', 1500, 2026, '2026-02-01 05:46:03', 65, 4, 'admission', NULL, 'A', 'AD', 'Adjustment From Coder Home Due Amt=29000/-'),
+(358, 68, 'CPSS-00068', 'Samity Share', 1, NULL, '', 'TRSAMITY SHARE20265', 10000, 2026, '2026-02-01 05:46:22', 65, 5, 'Samity Share', NULL, 'A', 'AD', 'Adjustment From Coder Home Due Amt=29000/-'),
+(359, 68, 'CPSS-00068', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202618', 15000, 2026, '2026-02-01 05:46:44', 65, 18, 'Project Share', NULL, 'A', 'AD', 'Adjustment From Coder Home Due Amt=29000/-'),
+(360, 89, 'CPSS-00086', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-02-01 05:52:08', 45, 1, 'january', NULL, 'A', 'AD', 'Adjustment From Coder Home Due Amt=2500/-'),
+(361, 71, 'CPSS-00071', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-02-01 05:52:33', 33, 1, 'january', NULL, 'A', 'AD', 'Adjustment From Coder Home Due Amt=2500/-'),
+(362, 68, 'CPSS-00068', 'Monthly', 0, NULL, '', 'TRFEBRUARY20261', 2000, 2026, '2026-02-01 05:55:08', 30, 1, 'february', NULL, 'A', 'AD', 'Adjustment From Coder Home Due Amt=2500/-'),
+(363, 51, 'CPSS-00051', 'Monthly', 0, '2026-01-31 18:00:00', '049WB335314', 'TRJANUARY20261', 2000, 2026, '2026-02-01 05:59:35', 19, 1, 'january', 'payment_slip_51_1769925575_4171.jpeg', 'A', 'BP', 'Adjustment from this slip'),
+(364, 79, 'CPSS-00079', 'Monthly', 0, '2026-01-25 18:00:00', 'fte96f23f1e21b71', 'TRJANUARY20261', 2000, 2026, '2026-02-01 09:50:11', 41, 1, 'january', NULL, 'A', 'BP', ''),
+(365, 130, 'CPSS-00124', 'admission', 0, NULL, '', 'TRADMISSION20265', 1500, 2026, '2026-02-02 14:11:44', 65, 5, 'admission', NULL, 'A', 'AD', 'Adjustment From CoderHome= 14000/-'),
+(366, 130, 'CPSS-00124', 'Samity Share', 1, NULL, '', 'TRSAMITY SHARE20266', 10000, 2026, '2026-02-02 14:12:16', 65, 6, 'Samity Share', NULL, 'A', 'AD', 'Adjustment From CoderHome =14000/-'),
+(367, 130, 'CPSS-00124', 'Monthly', 0, NULL, '', 'TRJANUARY20261', 2000, 2026, '2026-02-02 14:13:28', 66, 1, 'january', NULL, 'A', 'AD', 'Adjustment From CoderHome =14000/- Due of 500/- For February'),
+(368, 123, 'CPSS-00113', 'Project Share', 4, '2026-02-02 18:00:00', 'Bank Online Slip', 'TRPROJECT SHARE202619', 10000, 2026, '2026-02-03 17:36:32', 65, 19, 'Project Share', 'payment_slip_123_1770140192_7966.jpeg', 'A', 'BP', 'New 2 Project Share Buy from CPSSL'),
+(369, 36, 'CPSS-00036', 'Project Share', 4, NULL, '', 'TRPROJECT SHARE202620', 5000, 2026, '2026-02-03 17:46:04', 65, 20, 'Project Share', NULL, 'A', 'AD', 'Remove Data For Mismatch Again Adjustment Entry');
 
 -- --------------------------------------------------------
 
@@ -801,7 +885,6 @@ INSERT INTO `member_project` (`id`, `member_id`, `member_code`, `project_id`, `p
 (43, 30, 'CPSS-00002', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 13:29:03'),
 (44, 31, 'CPSS-00031', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 13:30:36'),
 (45, 36, 'CPSS-00036', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 13:33:54'),
-(46, 36, 'CPSS-00036', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 13:34:29'),
 (47, 39, 'CPSS-00037', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 13:37:21'),
 (48, 39, 'CPSS-00037', 4, 2, 10000.00, 10000, 0, 'A', '2025-12-06 13:38:02'),
 (49, 41, 'CPSS-00041', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 13:40:53'),
@@ -847,42 +930,51 @@ INSERT INTO `member_project` (`id`, `member_id`, `member_code`, `project_id`, `p
 (89, 79, 'CPSS-00079', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:46:45'),
 (90, 79, 'CPSS-00079', 4, 5, 25000.00, 25000, 0, 'A', '2025-12-06 18:48:14'),
 (91, 85, 'CPSS-00083', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:50:13'),
-(92, 85, 'CPSS-00083', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 18:50:33'),
+(92, 85, 'CPSS-00083', 4, 4, 20000.00, 20000, 0, 'A', '2025-12-06 18:50:33'),
 (93, 89, 'CPSS-00086', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:51:47'),
 (94, 89, 'CPSS-00086', 4, 5, 25000.00, 25000, 0, 'A', '2025-12-06 18:52:07'),
 (95, 90, 'CPSS-00090', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:54:23'),
-(96, 90, 'CPSS-00090', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 18:55:29'),
+(96, 90, 'CPSS-00090', 4, 4, 20000.00, 20000, 0, 'A', '2025-12-06 18:55:29'),
 (97, 92, 'CPSS-00091', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:55:56'),
 (98, 93, 'CPSS-00093', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:56:39'),
-(99, 93, 'CPSS-00093', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 18:56:55'),
+(99, 93, 'CPSS-00093', 4, 3, 15000.00, 15000, 0, 'A', '2025-12-06 18:56:55'),
 (100, 95, 'CPSS-00094', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:58:20'),
-(101, 95, 'CPSS-00094', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 18:58:39'),
+(101, 95, 'CPSS-00094', 4, 3, 15000.00, 15000, 0, 'A', '2025-12-06 18:58:39'),
 (102, 97, 'CPSS-00096', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 18:59:11'),
-(103, 97, 'CPSS-00096', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 18:59:30'),
+(103, 97, 'CPSS-00096', 4, 2, 10000.00, 10000, 0, 'A', '2025-12-06 18:59:30'),
 (104, 98, 'CPSS-00098', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:00:00'),
 (105, 98, 'CPSS-00098', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:00:14'),
 (106, 100, 'CPSS-00099', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:01:25'),
-(107, 100, 'CPSS-00099', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:02:06'),
+(107, 100, 'CPSS-00099', 4, 4, 20000.00, 20000, 0, 'A', '2025-12-06 19:02:06'),
 (108, 101, 'CPSS-00101', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:02:41'),
-(109, 101, 'CPSS-00101', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:03:01'),
+(109, 101, 'CPSS-00101', 4, 3, 15000.00, 15000, 0, 'A', '2025-12-06 19:03:01'),
 (110, 102, 'CPSS-00102', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:03:53'),
-(111, 102, 'CPSS-00102', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:04:15'),
+(111, 102, 'CPSS-00102', 4, 3, 15000.00, 15000, 0, 'A', '2025-12-06 19:04:15'),
 (112, 103, 'CPSS-00103', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:04:46'),
-(113, 103, 'CPSS-00103', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:05:02'),
+(113, 103, 'CPSS-00103', 4, 3, 15000.00, 15000, 0, 'A', '2025-12-06 19:05:02'),
 (114, 104, 'CPSS-00104', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:06:09'),
-(115, 104, 'CPSS-00104', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:06:26'),
+(115, 104, 'CPSS-00104', 4, 3, 15000.00, 15000, 0, 'A', '2025-12-06 19:06:26'),
 (116, 106, 'CPSS-00105', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:07:09'),
-(117, 106, 'CPSS-00105', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:07:23'),
+(117, 106, 'CPSS-00105', 4, 3, 15000.00, 15000, 0, 'A', '2025-12-06 19:07:23'),
 (118, 107, 'CPSS-00107', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:08:00'),
 (119, 108, 'CPSS-00108', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:08:34'),
 (120, 109, 'CPSS-00109', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:09:06'),
-(121, 109, 'CPSS-00109', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:09:24'),
+(121, 109, 'CPSS-00109', 4, 4, 20000.00, 20000, 0, 'A', '2025-12-06 19:09:24'),
 (122, 110, 'CPSS-00110', 1, 0, 0.00, 0, 0, 'A', '2025-12-06 19:09:49'),
-(123, 110, 'CPSS-00110', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-06 19:10:04'),
-(124, 107, 'CPSS-00107', 4, 1, 5000.00, 5000, 0, 'A', '2025-12-07 10:22:24'),
+(123, 110, 'CPSS-00110', 4, 4, 20000.00, 20000, 0, 'A', '2025-12-06 19:10:04'),
+(124, 107, 'CPSS-00107', 4, 2, 10000.00, 10000, 0, 'A', '2025-12-07 10:22:24'),
 (125, 35, 'CPSS-00035', 1, 0, 0.00, 0, 0, 'A', '2025-12-08 18:02:34'),
 (126, 112, 'CPSS-00111', 1, 0, 0.00, 0, 0, 'A', '2025-12-08 18:03:24'),
-(128, 1, 'CPSS-00001', 4, 2, 10000.00, 0, 10000, 'I', '2026-01-09 23:01:55');
+(127, 123, 'CPSS-00113', 1, 0, 0.00, 0, 0, 'A', '2026-01-04 15:55:37'),
+(128, 40, 'CPSS-00040', 1, 0, 0.00, 0, 0, 'I', '2026-01-28 09:47:12'),
+(129, 40, 'CPSS-00040', 4, 8, 40000.00, 40000, 0, 'A', '2026-01-28 09:48:39'),
+(130, 34, 'CPSS-00032', 1, 0, 0.00, 0, 0, 'A', '2026-01-29 12:08:25'),
+(131, 123, 'CPSS-00113', 4, 4, 20000.00, 20000, 0, 'A', '2026-01-29 14:02:45'),
+(132, 68, 'CPSS-00068', 1, 0, 0.00, 0, 0, 'I', '2026-02-01 11:46:22'),
+(133, 68, 'CPSS-00068', 4, 3, 15000.00, 15000, 0, 'A', '2026-02-01 11:46:44'),
+(134, 130, 'CPSS-00124', 1, 0, 0.00, 0, 0, 'A', '2026-02-02 20:09:57'),
+(135, 131, 'CPSS-00131', 1, 0, 0.00, 0, 0, 'I', '2026-02-02 20:24:49'),
+(136, 36, 'CPSS-00036', 4, 1, 5000.00, 5000, 0, 'A', '2026-02-03 23:32:27');
 
 -- --------------------------------------------------------
 
@@ -921,64 +1013,67 @@ CREATE TABLE `member_share` (
 --
 
 INSERT INTO `member_share` (`id`, `member_id`, `member_code`, `no_share`, `samity_share`, `samity_share_amt`, `admission_fee`, `idcard_fee`, `passbook_fee`, `softuses_fee`, `sms_fee`, `office_rent`, `office_staff`, `other_fee`, `for_install`, `project_id`, `extra_share`, `install_advance`, `sundry_samity_share`, `share_amount`, `late_assign`, `late_fee`, `created_at`) VALUES
-(1, 1, 'CPSS-00001', 30, 28, 125000, 1500, 150, 200, 400, 100, 300, 200, 1000, 19000, 4, 0, 0, 40000, 122500, 'A', 8000, '2026-01-06 10:35:35'),
-(19, 30, 'CPSS-00002', 13, 13, 65000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 490000, 'A', 0, NULL),
-(20, 31, 'CPSS-00031', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 9800, 'A', 0, NULL),
-(22, 34, 'CPSS-00032', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'A', 0, NULL),
-(23, 35, 'CPSS-00035', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(24, 36, 'CPSS-00036', 3, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(25, 39, 'CPSS-00037', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 19600, 'A', 0, NULL),
-(26, 40, 'CPSS-00040', 10, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 0, 10000, 0, 'A', 0, NULL),
-(27, 41, 'CPSS-00041', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 9800, 'A', 0, NULL),
-(28, 42, 'CPSS-00042', 40, 32, 160000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 8, 0, 0, 0, 'A', 0, NULL),
-(29, 45, 'CPSS-00043', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(30, 46, 'CPSS-00046', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'A', 0, NULL),
-(31, 47, 'CPSS-00047', 41, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(32, 48, 'CPSS-00048', 20, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(33, 50, 'CPSS-00049', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'A', 0, NULL),
-(34, 51, 'CPSS-00051', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(35, 52, 'CPSS-00052', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 24500, 'A', 0, NULL),
-(36, 55, 'CPSS-00053', 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 0, 10000, 0, 'A', 0, NULL),
-(37, 56, 'CPSS-00056', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(38, 57, 'CPSS-00057', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, NULL),
-(39, 59, 'CPSS-00058', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 9800, 'A', 0, NULL),
-(40, 62, 'CPSS-00060', 25, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 122500, 'A', 0, NULL),
-(41, 63, 'CPSS-00063', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 9800, 'A', 0, NULL),
-(42, 65, 'CPSS-00064', 20, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 10:08:49'),
-(43, 66, 'CPSS-00066', 3, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 10:18:32'),
-(44, 67, 'CPSS-00067', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 10:27:48'),
-(45, 68, 'CPSS-00068', 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 13, 0, 10000, 0, 'A', 0, '2025-11-08 10:35:39'),
-(46, 69, 'CPSS-00069', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 10:47:57'),
-(47, 70, 'CPSS-00070', 46, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 10:59:16'),
-(48, 71, 'CPSS-00071', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 11:16:10'),
-(49, 72, 'CPSS-00072', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 17:21:45'),
-(50, 73, 'CPSS-00073', 15, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 17:25:00'),
-(51, 74, 'CPSS-00074', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-08 17:25:35'),
-(52, 75, 'CPSS-00075', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'A', 0, '2025-11-08 17:45:17'),
-(53, 76, 'CPSS-00076', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-09 03:14:59'),
-(54, 77, 'CPSS-00077', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-09 03:52:07'),
-(55, 78, 'CPSS-00078', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'A', 0, '2025-11-09 15:25:00'),
-(56, 79, 'CPSS-00079', 7, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 34300, 'A', 0, '2025-11-10 06:53:35'),
-(57, 82, 'CPSS-00080', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'A', 0, '2025-11-14 16:37:17'),
-(58, 85, 'CPSS-00083', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 3, 0, 0, 0, 'A', 0, '2025-11-19 11:11:52'),
-(62, 89, 'CPSS-00086', 7, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'A', 0, '2025-11-22 06:30:10'),
-(63, 90, 'CPSS-00090', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 3, 0, 0, 0, 'A', 0, '2025-11-25 11:51:19'),
-(64, 92, 'CPSS-00091', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'A', 0, '2025-11-26 06:06:46'),
-(65, 93, 'CPSS-00093', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 3, 0, 0, 0, 'A', 0, '2025-11-27 06:41:40'),
-(66, 95, 'CPSS-00094', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 2, 0, 0, 0, 'A', 0, '2025-11-27 17:09:16'),
-(67, 97, 'CPSS-00096', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 1, 0, 0, 0, 'A', 0, '2025-11-27 17:40:10'),
-(68, 98, 'CPSS-00098', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 1, 0, 0, 0, 'A', 0, '2025-11-28 12:34:08'),
-(69, 100, 'CPSS-00099', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 3, 0, 0, 0, 'A', 0, '2025-11-28 15:04:04'),
-(70, 101, 'CPSS-00101', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 2, 0, 0, 0, 'A', 0, '2025-11-28 16:41:00'),
-(71, 102, 'CPSS-00102', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 2, 0, 0, 0, 'A', 0, '2025-11-28 16:54:13'),
-(72, 103, 'CPSS-00103', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 7, 0, 0, 0, 'A', 0, '2025-11-29 11:53:34'),
-(73, 104, 'CPSS-00104', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 3, 0, 0, 0, 'A', 0, '2025-11-29 12:56:00'),
-(74, 106, 'CPSS-00105', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 2, 0, 0, 0, 'A', 0, '2025-11-29 16:07:29'),
-(75, 107, 'CPSS-00107', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 1, 0, 0, 0, 'A', 0, '2025-11-30 04:44:32'),
-(76, 108, 'CPSS-00108', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'A', 0, '2025-12-01 04:48:54'),
-(77, 109, 'CPSS-00109', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 3, 0, 0, 0, 'A', 0, '2025-12-01 09:37:38'),
-(78, 110, 'CPSS-00110', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 3, 0, 0, 0, 'A', 0, '2025-12-01 16:59:47'),
-(79, 112, 'CPSS-00111', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'A', 0, '2025-12-04 03:40:18');
+(1, 1, 'CPSS-00001', 25, 25, 125000, 1500, 150, 200, 400, 100, 300, 200, 750, 11400, 4, 0, 0, 0, 122500, 'I', 0, '2026-01-19 04:12:19'),
+(19, 30, 'CPSS-00002', 13, 13, 65000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 490000, 'I', 0, '2026-01-29 23:27:21'),
+(20, 31, 'CPSS-00031', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 9800, 'I', 0, '2026-01-29 23:29:26'),
+(22, 34, 'CPSS-00032', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-31 10:50:08'),
+(23, 35, 'CPSS-00035', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, NULL),
+(24, 36, 'CPSS-00036', 3, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-15 04:50:14'),
+(25, 39, 'CPSS-00037', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 19600, 'I', 0, '2026-01-18 01:05:43'),
+(26, 40, 'CPSS-00040', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-27 21:50:46'),
+(27, 41, 'CPSS-00041', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 9800, 'I', 0, '2026-01-15 05:00:32'),
+(28, 42, 'CPSS-00042', 32, 32, 160000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, NULL),
+(29, 45, 'CPSS-00043', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-26 02:04:42'),
+(30, 46, 'CPSS-00046', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'I', 0, NULL),
+(31, 47, 'CPSS-00047', 41, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-27 01:59:49'),
+(32, 48, 'CPSS-00048', 20, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-18 22:36:57'),
+(33, 50, 'CPSS-00049', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'I', 0, NULL),
+(34, 51, 'CPSS-00051', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-31 23:59:35'),
+(35, 52, 'CPSS-00052', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 24500, 'I', 0, '2026-01-15 05:02:17'),
+(36, 55, 'CPSS-00053', 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 0, 10000, 0, 'I', 0, NULL),
+(37, 56, 'CPSS-00056', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-30 02:58:51'),
+(38, 57, 'CPSS-00057', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-28 23:57:47'),
+(39, 59, 'CPSS-00058', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 9800, 'I', 0, '2026-01-25 23:42:05'),
+(40, 62, 'CPSS-00060', 25, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 122500, 'I', 0, '2026-01-15 11:47:52'),
+(41, 63, 'CPSS-00063', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 9800, 'I', 0, '2026-01-19 00:15:07'),
+(42, 65, 'CPSS-00064', 20, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, '2025-11-08 10:08:49'),
+(43, 66, 'CPSS-00066', 3, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-25 09:34:31'),
+(44, 67, 'CPSS-00067', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, '2025-11-08 10:27:48'),
+(45, 68, 'CPSS-00068', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 3800, 4, 0, 0, 0, 0, 'I', 0, '2026-01-31 23:55:08'),
+(46, 69, 'CPSS-00069', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, '2025-11-08 10:47:57'),
+(47, 70, 'CPSS-00070', 46, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, '2025-11-08 10:59:16'),
+(48, 71, 'CPSS-00071', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-31 23:52:33'),
+(49, 72, 'CPSS-00072', 10, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 350, 3800, 4, 0, 0, 0, 0, 'I', 0, '2026-01-15 11:45:45'),
+(50, 73, 'CPSS-00073', 15, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-25 02:48:09'),
+(51, 74, 'CPSS-00074', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-25 03:15:25'),
+(52, 75, 'CPSS-00075', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'I', 0, '2025-11-08 17:45:17'),
+(53, 76, 'CPSS-00076', 5, 5, 25000, 1500, 150, 200, 400, 100, 300, 200, 450, 5700, 4, 0, 0, 0, 0, 'I', 0, '2026-01-29 00:14:40'),
+(54, 77, 'CPSS-00077', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, '2025-11-09 03:52:07'),
+(55, 78, 'CPSS-00078', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 0, 'I', 0, '2026-01-25 01:48:26'),
+(56, 79, 'CPSS-00079', 7, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 4, 0, 0, 0, 34300, 'I', 0, '2026-02-01 03:50:11'),
+(57, 82, 'CPSS-00080', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 10000, 0, 'I', 0, '2025-11-14 16:37:17'),
+(58, 85, 'CPSS-00083', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 4, 0, 0, 0, 0, 'I', 0, '2025-11-19 11:11:52'),
+(62, 89, 'CPSS-00086', 7, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-31 23:52:08'),
+(63, 90, 'CPSS-00090', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'I', 0, '2025-11-25 11:51:19'),
+(64, 92, 'CPSS-00091', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-27 21:39:28'),
+(65, 93, 'CPSS-00093', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'I', 0, '2025-11-27 06:41:40'),
+(66, 95, 'CPSS-00094', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'I', 0, '2025-11-27 17:09:16'),
+(67, 97, 'CPSS-00096', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 06:23:31'),
+(68, 98, 'CPSS-00098', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 350, 3800, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 04:05:40'),
+(69, 100, 'CPSS-00099', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'I', 0, '2025-11-28 15:04:04'),
+(70, 101, 'CPSS-00101', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 06:20:18'),
+(71, 102, 'CPSS-00102', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'I', 0, '2025-11-28 16:54:13'),
+(72, 103, 'CPSS-00103', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'I', 0, '2025-11-29 11:53:34'),
+(73, 104, 'CPSS-00104', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 350, 3800, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 22:51:28'),
+(74, 106, 'CPSS-00105', 5, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 03:58:34'),
+(75, 107, 'CPSS-00107', 4, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 03:56:33'),
+(76, 108, 'CPSS-00108', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-25 01:40:23'),
+(77, 109, 'CPSS-00109', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 450, 5700, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 06:12:51'),
+(78, 110, 'CPSS-00110', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'I', 0, '2026-01-28 06:25:56'),
+(79, 112, 'CPSS-00111', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 150, 0, 0, 0, 0, 0, 0, 'I', 0, '2025-12-04 03:40:18'),
+(80, 123, 'CPSS-00113', 6, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 350, 3800, 0, 0, 0, 0, 0, 'I', 0, '2026-01-29 02:14:52'),
+(81, 130, 'CPSS-00124', 2, 2, 10000, 1500, 150, 200, 400, 100, 300, 200, 250, 1900, 0, 0, 0, 0, 0, 'A', 0, '2026-02-02 08:13:28'),
+(82, 131, 'CPSS-00131', 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 'A', 0, '2026-02-02 14:24:49');
 
 -- --------------------------------------------------------
 
@@ -1073,7 +1168,6 @@ INSERT INTO `project_share` (`id`, `member_project_id`, `member_id`, `member_cod
 (273, 44, 31, 'CPSS-00031', 1, 'samity31441002', '2025-12-06 07:30:36'),
 (274, 45, 36, 'CPSS-00036', 1, 'samity36451001', '2025-12-06 07:33:54'),
 (275, 45, 36, 'CPSS-00036', 1, 'samity36451002', '2025-12-06 07:33:54'),
-(276, 46, 36, 'CPSS-00036', 4, 'share36464001', '2025-12-06 07:34:29'),
 (277, 47, 39, 'CPSS-00037', 1, 'samity39471001', '2025-12-06 07:37:21'),
 (278, 47, 39, 'CPSS-00037', 1, 'samity39471002', '2025-12-06 07:37:21'),
 (279, 48, 39, 'CPSS-00037', 4, 'share39484001', '2025-12-06 07:38:02'),
@@ -1423,11 +1517,68 @@ INSERT INTO `project_share` (`id`, `member_project_id`, `member_id`, `member_cod
 (623, 125, 35, 'CPSS-00035', 1, 'samity351251002', '2025-12-08 12:02:34'),
 (624, 126, 112, 'CPSS-00111', 1, 'samity1121261001', '2025-12-08 12:03:24'),
 (625, 126, 112, 'CPSS-00111', 1, 'samity1121261002', '2025-12-08 12:03:24'),
-(664, 40, 1, 'CPSS-00001', 1, 'samity1401026', '2026-01-09 16:51:52'),
-(665, 40, 1, 'CPSS-00001', 1, 'samity1401027', '2026-01-09 16:51:52'),
-(666, 40, 1, 'CPSS-00001', 1, 'samity1401028', '2026-01-09 16:51:52'),
-(695, 128, 1, 'CPSS-00001', 4, 'share11284001', '2026-01-09 17:01:55'),
-(696, 128, 1, 'CPSS-00001', 4, 'share11284002', '2026-01-09 17:01:55');
+(626, 127, 123, 'CPSS-00113', 1, 'samity1231271001', '2026-01-04 09:55:37'),
+(627, 127, 123, 'CPSS-00113', 1, 'samity1231271002', '2026-01-04 09:55:37'),
+(628, 128, 40, 'CPSS-00040', 1, 'samity401281001', '2026-01-28 03:47:12'),
+(629, 128, 40, 'CPSS-00040', 1, 'samity401281002', '2026-01-28 03:47:12'),
+(630, 129, 40, 'CPSS-00040', 4, 'share401294001', '2026-01-28 03:48:39'),
+(631, 129, 40, 'CPSS-00040', 4, 'share401294002', '2026-01-28 03:48:39'),
+(632, 129, 40, 'CPSS-00040', 4, 'share401294003', '2026-01-28 03:48:39'),
+(633, 129, 40, 'CPSS-00040', 4, 'share401294004', '2026-01-28 03:48:39'),
+(634, 129, 40, 'CPSS-00040', 4, 'share401294005', '2026-01-28 03:48:39'),
+(635, 129, 40, 'CPSS-00040', 4, 'share401294006', '2026-01-28 03:48:39'),
+(636, 129, 40, 'CPSS-00040', 4, 'share401294007', '2026-01-28 03:48:39'),
+(637, 129, 40, 'CPSS-00040', 4, 'share401294008', '2026-01-28 03:48:39'),
+(638, 99, 93, 'CPSS-00093', 4, 'share93994002', '2026-01-28 08:14:17'),
+(639, 99, 93, 'CPSS-00093', 4, 'share93994003', '2026-01-28 08:14:17'),
+(640, 96, 90, 'CPSS-00090', 4, 'share90964002', '2026-01-28 09:13:29'),
+(641, 96, 90, 'CPSS-00090', 4, 'share90964003', '2026-01-28 09:13:30'),
+(642, 96, 90, 'CPSS-00090', 4, 'share90964004', '2026-01-28 09:13:30'),
+(643, 92, 85, 'CPSS-00083', 4, 'share85924002', '2026-01-28 09:13:32'),
+(644, 92, 85, 'CPSS-00083', 4, 'share85924003', '2026-01-28 09:13:32'),
+(645, 92, 85, 'CPSS-00083', 4, 'share85924004', '2026-01-28 09:13:32'),
+(646, 103, 97, 'CPSS-00096', 4, 'share971034002', '2026-01-28 09:13:34'),
+(647, 113, 103, 'CPSS-00103', 4, 'share1031134002', '2026-01-28 09:13:38'),
+(648, 113, 103, 'CPSS-00103', 4, 'share1031134003', '2026-01-28 09:13:38'),
+(649, 101, 95, 'CPSS-00094', 4, 'share951014002', '2026-01-28 09:13:41'),
+(650, 101, 95, 'CPSS-00094', 4, 'share951014003', '2026-01-28 09:13:41'),
+(651, 109, 101, 'CPSS-00101', 4, 'share1011094002', '2026-01-28 09:13:45'),
+(652, 109, 101, 'CPSS-00101', 4, 'share1011094003', '2026-01-28 09:13:45'),
+(654, 111, 102, 'CPSS-00102', 4, 'share1021114002', '2026-01-28 09:13:50'),
+(655, 111, 102, 'CPSS-00102', 4, 'share1021114003', '2026-01-28 09:13:50'),
+(656, 107, 100, 'CPSS-00099', 4, 'share1001074002', '2026-01-28 09:13:56'),
+(657, 107, 100, 'CPSS-00099', 4, 'share1001074003', '2026-01-28 09:13:56'),
+(658, 107, 100, 'CPSS-00099', 4, 'share1001074004', '2026-01-28 09:13:56'),
+(659, 117, 106, 'CPSS-00105', 4, 'share1061174002', '2026-01-28 09:13:59'),
+(660, 117, 106, 'CPSS-00105', 4, 'share1061174003', '2026-01-28 09:13:59'),
+(661, 124, 107, 'CPSS-00107', 4, 'share1071244002', '2026-01-28 09:14:04'),
+(662, 121, 109, 'CPSS-00109', 4, 'share1091214002', '2026-01-28 09:14:07'),
+(663, 121, 109, 'CPSS-00109', 4, 'share1091214003', '2026-01-28 09:14:07'),
+(664, 121, 109, 'CPSS-00109', 4, 'share1091214004', '2026-01-28 09:14:07'),
+(667, 123, 110, 'CPSS-00110', 4, 'share1101234002', '2026-01-28 09:42:05'),
+(668, 123, 110, 'CPSS-00110', 4, 'share1101234003', '2026-01-28 09:42:05'),
+(669, 123, 110, 'CPSS-00110', 4, 'share1101234004', '2026-01-28 09:42:05'),
+(670, 115, 104, 'CPSS-00104', 4, 'share1041154002', '2026-01-29 05:15:20'),
+(671, 115, 104, 'CPSS-00104', 4, 'share1041154003', '2026-01-29 05:15:20'),
+(672, 130, 34, 'CPSS-00032', 1, 'samity341301001', '2026-01-29 06:08:25'),
+(673, 130, 34, 'CPSS-00032', 1, 'samity341301002', '2026-01-29 06:08:25'),
+(674, 84, 76, 'CPSS-00076', 1, 'samity76841003', '2026-01-29 06:15:32'),
+(675, 84, 76, 'CPSS-00076', 1, 'samity76841004', '2026-01-29 06:15:32'),
+(676, 84, 76, 'CPSS-00076', 1, 'samity76841005', '2026-01-29 06:15:32'),
+(677, 131, 123, 'CPSS-00113', 4, 'share1231314001', '2026-01-29 08:02:45'),
+(678, 131, 123, 'CPSS-00113', 4, 'share1231314002', '2026-01-29 08:02:45'),
+(680, 132, 68, 'CPSS-00068', 1, 'samity681321001', '2026-02-01 05:46:22'),
+(681, 132, 68, 'CPSS-00068', 1, 'samity681321002', '2026-02-01 05:46:22'),
+(682, 133, 68, 'CPSS-00068', 4, 'share681334001', '2026-02-01 05:46:44'),
+(683, 133, 68, 'CPSS-00068', 4, 'share681334002', '2026-02-01 05:46:44'),
+(684, 133, 68, 'CPSS-00068', 4, 'share681334003', '2026-02-01 05:46:44'),
+(685, 134, 130, 'CPSS-00124', 1, 'samity1301341001', '2026-02-02 14:09:57'),
+(686, 134, 130, 'CPSS-00124', 1, 'samity1301341002', '2026-02-02 14:09:57'),
+(687, 135, 131, 'CPSS-00131', 1, 'samity1311351001', '2026-02-02 14:24:49'),
+(688, 135, 131, 'CPSS-00131', 1, 'samity1311351002', '2026-02-02 14:24:49'),
+(689, 131, 123, 'CPSS-00113', 4, 'share1231314003', '2026-02-03 17:32:11'),
+(690, 131, 123, 'CPSS-00113', 4, 'share1231314004', '2026-02-03 17:32:11'),
+(691, 136, 36, 'CPSS-00036', 4, 'share361364001', '2026-02-03 17:32:27');
 
 -- --------------------------------------------------------
 
@@ -1507,12 +1658,12 @@ INSERT INTO `setup` (`id`, `site_name_bn`, `site_name_en`, `registration_no`, `a
 
 CREATE TABLE `share` (
   `id` int(11) NOT NULL,
-  `member_id` int(11) NOT NULL,
-  `member_code` varchar(25) NOT NULL,
-  `type` varchar(10) NOT NULL,
-  `project_id` int(11) NOT NULL,
-  `no_share` int(11) NOT NULL,
-  `status` varchar(3) NOT NULL,
+  `member_id` int(11) DEFAULT NULL,
+  `member_code` varchar(25) DEFAULT NULL,
+  `type` varchar(10) DEFAULT NULL,
+  `project_id` int(11) DEFAULT NULL,
+  `no_share` int(11) DEFAULT NULL,
+  `status` varchar(3) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -1521,8 +1672,23 @@ CREATE TABLE `share` (
 --
 
 INSERT INTO `share` (`id`, `member_id`, `member_code`, `type`, `project_id`, `no_share`, `status`, `created_at`) VALUES
-(1, 108, 'CPSS-00108', 'project', 4, 5, 'I', '2026-01-12 10:17:53'),
-(2, 108, 'CPSS-00108', 'project', 4, 5, 'I', '2026-01-12 10:20:14');
+(2, 110, 'CPSS-00110', 'project', 4, 3, 'A', '2026-01-27 05:56:27'),
+(3, 109, 'CPSS-00109', 'project', 4, 3, 'A', '2026-01-27 05:57:44'),
+(4, 107, 'CPSS-00107', 'project', 4, 1, 'A', '2026-01-27 05:59:37'),
+(5, 106, 'CPSS-00105', 'project', 4, 2, 'A', '2026-01-27 06:00:32'),
+(6, 100, 'CPSS-00099', 'project', 4, 3, 'A', '2026-01-27 06:01:35'),
+(7, 102, 'CPSS-00102', 'project', 4, 2, 'A', '2026-01-27 06:02:48'),
+(8, 101, 'CPSS-00101', 'project', 4, 3, 'A', '2026-01-27 06:03:28'),
+(9, 95, 'CPSS-00094', 'project', 4, 2, 'A', '2026-01-27 06:04:18'),
+(10, 103, 'CPSS-00103', 'project', 4, 2, 'A', '2026-01-27 06:05:35'),
+(11, 97, 'CPSS-00096', 'project', 4, 1, 'A', '2026-01-27 06:06:19'),
+(12, 85, 'CPSS-00083', 'project', 4, 3, 'A', '2026-01-27 06:07:47'),
+(13, 90, 'CPSS-00090', 'project', 4, 3, 'A', '2026-01-27 06:09:09'),
+(14, 93, 'CPSS-00093', 'project', 4, 2, 'A', '2026-01-27 06:10:03'),
+(15, 104, 'CPSS-00104', 'project', 4, 2, 'A', '2026-01-29 04:49:58'),
+(16, 76, 'CPSS-00076', 'samity', 1, 3, 'A', '2026-01-29 06:14:56'),
+(17, 123, 'CPSS-00113', 'project', 4, 2, 'A', '2026-01-29 06:41:07'),
+(18, 36, 'CPSS-00036', 'project', 4, 1, 'A', '2026-02-02 13:42:00');
 
 -- --------------------------------------------------------
 
@@ -1921,29 +2087,346 @@ INSERT INTO `user_access` (`id`, `user_id`, `member_id`, `login`, `logout`) VALU
 (508, 23, 57, '2025-12-19 23:45:17', '2025-12-19 23:45:17'),
 (509, 59, 108, '2025-12-19 23:53:39', '2025-12-19 23:57:06'),
 (510, 59, 108, '2025-12-20 00:03:35', '2025-12-20 00:07:39'),
-(511, 2, 0, '2025-12-22 13:49:33', '2025-12-24 16:53:52'),
+(511, 2, 0, '2025-12-22 13:49:33', '2025-12-22 14:23:02'),
 (512, 10, 39, '2025-12-23 15:41:59', '2025-12-23 15:41:59'),
-(513, 2, 0, '2025-12-24 16:54:02', '2025-12-24 17:24:26'),
-(514, 2, 0, '2025-12-24 17:24:36', '2025-12-25 00:21:05'),
-(515, 3, 1, '2025-12-25 00:21:17', '2025-12-25 00:21:17'),
-(516, 2, 0, '2025-12-25 09:37:40', '2025-12-25 09:37:40'),
-(517, 2, 0, '2025-12-28 11:33:29', '2025-12-28 11:33:29'),
-(518, 2, 0, '2025-12-29 09:45:57', '2025-12-29 13:38:19'),
-(519, 2, 0, '2025-12-29 13:38:32', '2025-12-29 13:39:55'),
-(520, 3, 1, '2026-01-04 19:01:24', '2026-01-04 19:26:04'),
-(521, 2, 0, '2026-01-04 19:26:13', '2026-01-04 19:36:56'),
-(522, 3, 1, '2026-01-06 09:34:50', '2026-01-06 15:01:05'),
-(523, 2, 0, '2026-01-06 15:01:16', '2026-01-06 15:08:37'),
-(524, 3, 1, '2026-01-06 15:09:17', '2026-01-06 16:19:44'),
-(525, 3, 1, '2026-01-06 20:15:09', '2026-01-06 21:55:24'),
-(526, 2, 0, '2026-01-06 21:55:33', '2026-01-06 21:55:33'),
-(527, 2, 0, '2026-01-07 10:30:19', '2026-01-07 10:30:19'),
-(528, 2, 0, '2026-01-08 21:25:21', '2026-01-08 21:25:26'),
-(529, 3, 1, '2026-01-08 21:25:41', '2026-01-09 00:29:16'),
-(530, 3, 1, '2026-01-09 20:09:29', '2026-01-09 20:09:29'),
-(531, 3, 1, '2026-01-12 09:33:42', '2026-01-12 15:41:04'),
-(532, 2, 0, '2026-01-12 15:41:15', '2026-01-12 15:41:33'),
-(533, 59, 108, '2026-01-12 15:41:43', '2026-01-12 15:41:43');
+(513, 2, 0, '2025-12-25 01:31:22', '2025-12-25 01:31:55'),
+(514, 3, 1, '2025-12-25 01:32:06', '2025-12-25 01:34:04'),
+(515, 3, 1, '2025-12-25 01:34:14', '2025-12-25 01:36:44'),
+(516, 2, 0, '2025-12-25 09:19:24', '2025-12-25 09:27:32'),
+(517, 2, 0, '2025-12-29 09:44:21', '2025-12-29 09:45:19'),
+(518, 17, 48, '2026-01-01 12:11:36', '2026-01-01 12:14:38'),
+(519, 56, 104, '2026-01-02 23:05:12', '2026-01-02 23:05:12'),
+(520, 2, 0, '2026-01-04 16:43:14', '2026-01-04 16:43:50'),
+(521, 2, 0, '2026-01-04 17:29:00', '2026-01-04 17:31:55'),
+(522, 3, 1, '2026-01-04 19:06:05', '2026-01-04 19:37:46'),
+(523, 38, 76, '2026-01-05 14:35:37', '2026-01-05 14:39:38'),
+(524, 38, 76, '2026-01-06 14:03:51', '2026-01-06 14:05:07'),
+(525, 3, 1, '2026-01-06 21:42:16', '2026-01-06 21:42:16'),
+(526, 2, 0, '2026-01-06 22:44:28', '2026-01-06 23:54:29'),
+(527, 3, 1, '2026-01-06 23:54:39', '2026-01-06 23:54:39'),
+(528, 3, 1, '2026-01-07 15:09:33', '2026-01-07 15:20:52'),
+(529, 2, 0, '2026-01-07 15:21:05', '2026-01-07 15:22:33'),
+(530, 3, 1, '2026-01-07 15:22:52', '2026-01-07 15:23:28'),
+(531, 57, 106, '2026-01-07 15:23:32', '2026-01-07 15:32:35'),
+(532, 2, 0, '2026-01-07 18:12:26', '2026-01-07 18:12:26'),
+(533, 57, 106, '2026-01-08 01:29:51', '2026-01-08 01:29:51'),
+(534, 57, 106, '2026-01-08 01:40:51', '2026-01-08 01:50:37'),
+(535, 3, 1, '2026-01-08 22:00:12', '2026-01-08 22:00:12'),
+(536, 2, 0, '2026-01-08 23:24:22', '2026-01-08 23:24:22'),
+(537, 3, 1, '2026-01-08 23:37:43', '2026-01-09 00:05:27'),
+(538, 63, 123, '2026-01-12 11:46:39', '2026-01-12 11:54:58'),
+(539, 2, 0, '2026-01-12 11:55:12', '2026-01-12 11:56:06'),
+(540, 2, 0, '2026-01-12 11:56:50', '2026-01-12 11:57:13'),
+(541, 63, 123, '2026-01-12 11:57:17', '2026-01-12 12:08:17'),
+(542, 2, 0, '2026-01-12 18:18:08', '2026-01-12 18:18:35'),
+(543, 2, 0, '2026-01-12 18:18:45', '2026-01-12 18:18:57'),
+(544, 2, 0, '2026-01-12 18:19:19', '2026-01-12 18:19:19'),
+(545, 4, 30, '2026-01-12 18:20:50', '2026-01-12 18:21:49'),
+(546, 2, 0, '2026-01-12 18:22:12', '2026-01-12 18:22:33'),
+(547, 4, 30, '2026-01-12 18:22:43', '2026-01-12 18:26:55'),
+(548, 2, 0, '2026-01-12 18:27:03', '2026-01-12 18:27:32'),
+(549, 4, 30, '2026-01-12 18:27:45', '2026-01-12 18:28:18'),
+(550, 2, 0, '2026-01-12 18:28:26', '2026-01-12 18:28:35'),
+(551, 4, 30, '2026-01-12 18:28:47', '2026-01-12 18:29:12'),
+(552, 4, 30, '2026-01-12 18:29:24', '2026-01-12 18:38:43'),
+(553, 4, 30, '2026-01-12 18:38:59', '2026-01-12 18:50:02'),
+(554, 38, 76, '2026-01-13 09:44:33', '2026-01-13 09:44:33'),
+(555, 2, 0, '2026-01-13 09:51:48', '2026-01-13 09:52:49'),
+(556, 2, 0, '2026-01-13 09:53:06', '2026-01-13 09:53:59'),
+(557, 38, 76, '2026-01-13 09:54:10', '2026-01-13 09:56:12'),
+(558, 2, 0, '2026-01-13 09:56:19', '2026-01-13 09:56:36'),
+(559, 38, 76, '2026-01-13 09:56:47', '2026-01-13 09:57:59'),
+(560, 2, 0, '2026-01-13 09:58:07', '2026-01-13 10:01:54'),
+(561, 38, 76, '2026-01-13 10:02:06', '2026-01-13 10:04:30'),
+(562, 2, 0, '2026-01-13 10:04:36', '2026-01-13 10:05:08'),
+(563, 38, 76, '2026-01-13 10:05:20', '2026-01-13 10:10:21'),
+(564, 2, 0, '2026-01-13 10:10:33', '2026-01-13 10:21:54'),
+(565, 61, 110, '2026-01-13 11:20:01', '2026-01-13 11:20:01'),
+(566, 2, 0, '2026-01-13 12:02:15', '2026-01-13 12:02:15'),
+(567, 3, 1, '2026-01-13 12:40:35', '2026-01-13 12:49:27'),
+(568, 2, 0, '2026-01-13 12:49:32', '2026-01-13 12:49:46'),
+(569, 3, 1, '2026-01-13 12:49:56', '2026-01-13 12:53:51'),
+(570, 3, 1, '2026-01-13 12:53:58', '2026-01-13 12:56:27'),
+(571, 2, 0, '2026-01-13 12:56:33', '2026-01-13 12:56:45'),
+(572, 3, 1, '2026-01-13 12:56:52', '2026-01-13 13:01:32'),
+(573, 3, 1, '2026-01-13 13:21:35', '2026-01-13 13:21:55'),
+(574, 2, 0, '2026-01-13 14:15:08', '2026-01-13 14:26:36'),
+(575, 2, 0, '2026-01-13 15:10:12', '2026-01-13 15:20:00'),
+(576, 2, 0, '2026-01-14 10:57:53', '2026-01-14 10:58:28'),
+(577, 12, 41, '2026-01-14 10:58:37', '2026-01-14 11:01:54'),
+(578, 2, 0, '2026-01-14 11:02:01', '2026-01-14 11:02:28'),
+(579, 12, 41, '2026-01-14 11:02:37', '2026-01-14 11:09:07'),
+(580, 2, 0, '2026-01-14 11:09:14', '2026-01-14 11:09:59'),
+(581, 12, 41, '2026-01-14 11:10:08', '2026-01-14 11:10:25'),
+(582, 12, 41, '2026-01-14 11:17:25', '2026-01-14 11:25:04'),
+(583, 12, 41, '2026-01-14 11:59:03', '2026-01-14 11:59:32'),
+(584, 2, 0, '2026-01-14 12:28:11', '2026-01-14 12:41:34'),
+(585, 9, 36, '2026-01-14 12:33:01', '2026-01-14 12:33:01'),
+(586, 17, 48, '2026-01-14 14:13:51', '2026-01-14 14:17:48'),
+(587, 3, 1, '2026-01-14 16:20:10', '2026-01-14 16:20:28'),
+(588, 12, 41, '2026-01-14 16:21:03', '2026-01-14 16:21:43'),
+(589, 2, 0, '2026-01-14 17:58:43', '2026-01-14 18:06:13'),
+(590, 3, 1, '2026-01-14 18:06:21', '2026-01-14 18:07:06'),
+(591, 2, 0, '2026-01-14 18:07:13', '2026-01-14 18:11:59'),
+(592, 3, 1, '2026-01-15 09:43:01', '2026-01-15 09:46:59'),
+(593, 2, 0, '2026-01-15 09:47:08', '2026-01-15 09:57:18'),
+(594, 3, 1, '2026-01-15 09:57:29', '2026-01-15 10:06:49'),
+(595, 2, 0, '2026-01-15 10:06:59', '2026-01-15 10:07:40'),
+(596, 25, 62, '2026-01-15 10:07:49', '2026-01-15 10:09:37'),
+(597, 2, 0, '2026-01-15 10:09:45', '2026-01-15 10:12:21'),
+(598, 20, 52, '2026-01-15 10:12:30', '2026-01-15 10:13:42'),
+(599, 2, 0, '2026-01-15 10:13:50', '2026-01-15 10:14:21'),
+(600, 39, 77, '2026-01-15 10:14:38', '2026-01-15 10:15:06'),
+(601, 2, 0, '2026-01-15 10:15:14', '2026-01-15 10:15:45'),
+(602, 34, 72, '2026-01-15 10:15:54', '2026-01-15 10:17:21'),
+(603, 3, 1, '2026-01-15 10:17:38', '2026-01-15 10:18:07'),
+(604, 9, 36, '2026-01-15 10:29:08', '2026-01-15 10:29:08'),
+(605, 3, 1, '2026-01-15 10:33:30', '2026-01-15 10:33:30'),
+(606, 49, 95, '2026-01-15 11:07:37', '2026-01-15 11:07:37'),
+(607, 2, 0, '2026-01-15 12:09:56', '2026-01-15 12:28:56'),
+(608, 9, 36, '2026-01-15 12:30:20', '2026-01-15 12:30:20'),
+(609, 58, 107, '2026-01-15 14:53:11', '2026-01-15 14:53:37'),
+(610, 2, 0, '2026-01-15 14:53:51', '2026-01-15 14:53:51'),
+(611, 3, 1, '2026-01-15 15:30:21', '2026-01-15 15:30:21'),
+(612, 2, 0, '2026-01-15 16:35:34', '2026-01-15 16:36:14'),
+(613, 9, 36, '2026-01-15 16:36:23', '2026-01-15 16:50:53'),
+(614, 2, 0, '2026-01-15 16:51:01', '2026-01-15 16:52:15'),
+(615, 2, 0, '2026-01-15 16:52:48', '2026-01-15 16:54:41'),
+(616, 12, 41, '2026-01-15 16:54:49', '2026-01-15 17:01:03'),
+(617, 20, 52, '2026-01-15 17:01:14', '2026-01-15 17:02:52'),
+(618, 2, 0, '2026-01-15 17:02:58', '2026-01-15 17:03:26'),
+(619, 34, 72, '2026-01-15 17:03:35', '2026-01-15 17:03:35'),
+(620, 3, 1, '2026-01-15 22:40:11', '2026-01-15 23:44:01'),
+(621, 2, 0, '2026-01-15 23:44:08', '2026-01-15 23:44:24'),
+(622, 34, 72, '2026-01-15 23:44:32', '2026-01-15 23:45:50'),
+(623, 2, 0, '2026-01-15 23:46:08', '2026-01-15 23:46:55'),
+(624, 25, 62, '2026-01-15 23:47:03', '2026-01-15 23:48:08'),
+(625, 2, 0, '2026-01-15 23:48:15', '2026-01-15 23:48:53'),
+(626, 25, 62, '2026-01-15 23:49:04', '2026-01-15 23:52:33'),
+(627, 20, 52, '2026-01-15 23:52:44', '2026-01-15 23:53:22'),
+(628, 34, 72, '2026-01-15 23:53:45', '2026-01-15 23:55:44'),
+(629, 2, 0, '2026-01-15 23:55:54', '2026-01-15 23:57:52'),
+(630, 12, 41, '2026-01-15 23:58:01', '2026-01-15 23:59:01'),
+(631, 61, 110, '2026-01-16 01:12:05', '2026-01-16 01:12:05'),
+(632, 59, 108, '2026-01-17 17:37:40', '2026-01-17 17:40:15'),
+(633, 10, 39, '2026-01-18 12:59:56', '2026-01-18 12:59:56'),
+(634, 2, 0, '2026-01-18 13:10:36', '2026-01-18 13:10:52'),
+(635, 3, 1, '2026-01-18 13:11:04', '2026-01-18 13:11:12'),
+(636, 2, 0, '2026-01-18 13:11:19', '2026-01-18 13:12:05'),
+(637, 17, 48, '2026-01-19 10:34:44', '2026-01-19 10:38:41'),
+(638, 2, 0, '2026-01-19 11:50:14', '2026-01-19 11:57:49'),
+(639, 17, 48, '2026-01-19 11:54:56', '2026-01-19 11:56:50'),
+(640, 2, 0, '2026-01-19 12:13:28', '2026-01-19 12:13:57'),
+(641, 26, 63, '2026-01-19 12:14:10', '2026-01-19 12:15:13'),
+(642, 2, 0, '2026-01-19 12:15:21', '2026-01-19 12:15:31'),
+(643, 26, 63, '2026-01-19 12:15:50', '2026-01-19 12:16:38'),
+(644, 3, 1, '2026-01-19 12:21:38', '2026-01-19 12:22:02'),
+(645, 17, 48, '2026-01-19 12:36:26', '2026-01-19 12:36:53'),
+(646, 3, 1, '2026-01-19 15:36:54', '2026-01-19 16:09:59'),
+(647, 3, 1, '2026-01-19 16:10:08', '2026-01-19 16:16:25'),
+(648, 2, 0, '2026-01-19 16:16:32', '2026-01-19 16:23:11'),
+(649, 2, 0, '2026-01-19 16:23:19', '2026-01-19 16:24:14'),
+(650, 3, 1, '2026-01-19 16:24:24', '2026-01-19 16:24:54'),
+(651, 2, 0, '2026-01-19 16:25:03', '2026-01-19 16:34:15'),
+(652, 2, 0, '2026-01-19 18:21:06', '2026-01-19 18:21:11'),
+(653, 3, 1, '2026-01-19 18:21:38', '2026-01-19 18:22:38'),
+(654, 2, 0, '2026-01-19 18:22:44', '2026-01-19 19:03:30'),
+(655, 2, 0, '2026-01-20 21:40:17', '2026-01-20 21:45:30'),
+(656, 2, 0, '2026-01-20 21:45:36', '2026-01-20 21:55:51'),
+(657, 3, 1, '2026-01-20 21:56:01', '2026-01-20 21:56:01'),
+(658, 2, 0, '2026-01-21 11:46:28', '2026-01-21 11:46:28'),
+(659, 2, 0, '2026-01-21 18:20:41', '2026-01-21 18:25:23'),
+(660, 26, 63, '2026-01-23 22:09:56', '2026-01-23 22:09:56'),
+(661, 2, 0, '2026-01-25 11:40:56', '2026-01-25 11:41:10'),
+(662, 2, 0, '2026-01-25 12:13:08', '2026-01-25 12:13:08'),
+(663, 38, 76, '2026-01-25 12:32:28', '2026-01-25 12:33:03'),
+(664, 59, 108, '2026-01-25 13:36:49', '2026-01-25 13:46:02'),
+(665, 40, 78, '2026-01-25 13:43:48', '2026-01-25 13:43:48'),
+(666, 2, 0, '2026-01-25 14:02:33', '2026-01-25 14:12:28'),
+(667, 59, 108, '2026-01-25 14:06:00', '2026-01-25 14:07:22'),
+(668, 40, 78, '2026-01-25 14:11:54', '2026-01-25 14:11:54'),
+(669, 2, 0, '2026-01-25 14:25:41', '2026-01-25 14:51:24'),
+(670, 59, 108, '2026-01-25 14:31:14', '2026-01-25 14:34:34'),
+(671, 59, 108, '2026-01-25 14:34:41', '2026-01-25 14:36:06'),
+(672, 59, 108, '2026-01-25 14:45:49', '2026-01-25 14:48:59'),
+(673, 35, 73, '2026-01-25 14:46:35', '2026-01-25 14:46:35'),
+(674, 56, 104, '2026-01-25 14:58:59', '2026-01-25 14:58:59'),
+(675, 2, 0, '2026-01-25 15:02:16', '2026-01-25 15:03:03'),
+(676, 2, 0, '2026-01-25 15:03:20', '2026-01-25 15:03:20'),
+(677, 36, 74, '2026-01-25 15:10:36', '2026-01-25 15:21:57'),
+(678, 56, 104, '2026-01-25 15:55:57', '2026-01-25 15:55:57'),
+(679, 2, 0, '2026-01-25 20:57:46', '2026-01-25 20:58:44'),
+(680, 28, 66, '2026-01-25 21:20:15', '2026-01-25 21:37:32'),
+(681, 28, 66, '2026-01-25 21:38:36', '2026-01-25 21:39:01'),
+(682, 24, 59, '2026-01-26 11:23:48', '2026-01-26 11:58:36'),
+(683, 14, 45, '2026-01-26 13:57:19', '2026-01-26 14:11:34'),
+(684, 14, 45, '2026-01-26 17:24:28', '2026-01-26 17:25:08'),
+(685, 2, 0, '2026-01-27 09:45:52', '2026-01-27 09:45:52'),
+(686, 47, 92, '2026-01-27 11:48:27', '2026-01-27 11:48:27'),
+(687, 2, 0, '2026-01-27 11:53:53', '2026-01-27 11:55:36'),
+(688, 2, 0, '2026-01-27 11:55:43', '2026-01-27 11:56:03'),
+(689, 61, 110, '2026-01-27 11:56:10', '2026-01-27 11:56:57'),
+(690, 2, 0, '2026-01-27 11:57:05', '2026-01-27 11:57:22'),
+(691, 60, 109, '2026-01-27 11:57:28', '2026-01-27 11:58:32'),
+(692, 2, 0, '2026-01-27 11:58:39', '2026-01-27 12:11:55'),
+(693, 58, 107, '2026-01-27 11:59:16', '2026-01-27 11:59:53'),
+(694, 57, 106, '2026-01-27 12:00:10', '2026-01-27 12:01:12'),
+(695, 52, 100, '2026-01-27 12:01:19', '2026-01-27 12:01:56'),
+(696, 54, 102, '2026-01-27 12:02:24', '2026-01-27 12:02:53'),
+(697, 53, 101, '2026-01-27 12:03:14', '2026-01-27 12:03:48'),
+(698, 49, 95, '2026-01-27 12:03:56', '2026-01-27 12:04:59'),
+(699, 55, 103, '2026-01-27 12:05:06', '2026-01-27 12:05:43'),
+(700, 50, 97, '2026-01-27 12:06:08', '2026-01-27 12:06:48'),
+(701, 43, 85, '2026-01-27 12:07:07', '2026-01-27 12:07:55'),
+(702, 46, 90, '2026-01-27 12:08:36', '2026-01-27 12:09:28'),
+(703, 48, 93, '2026-01-27 12:09:49', '2026-01-27 12:10:14'),
+(704, 49, 95, '2026-01-27 13:51:00', '2026-01-27 13:51:00'),
+(705, 56, 104, '2026-01-27 13:51:36', '2026-01-27 13:51:36'),
+(706, 16, 47, '2026-01-27 13:56:32', '2026-01-27 14:00:06'),
+(707, 2, 0, '2026-01-27 14:43:03', '2026-01-27 14:43:03'),
+(708, 47, 92, '2026-01-27 16:08:26', '2026-01-27 16:08:26'),
+(709, 4, 30, '2026-01-27 16:31:11', '2026-01-27 16:37:16'),
+(710, 13, 42, '2026-01-27 23:28:17', '2026-01-27 23:31:18'),
+(711, 2, 0, '2026-01-27 23:28:23', '2026-01-27 23:28:23'),
+(712, 47, 92, '2026-01-28 09:35:54', '2026-01-28 09:35:54'),
+(713, 2, 0, '2026-01-28 09:39:17', '2026-01-28 09:49:36'),
+(714, 11, 40, '2026-01-28 09:49:44', '2026-01-28 09:51:44'),
+(715, 2, 0, '2026-01-28 09:50:11', '2026-01-28 09:50:11'),
+(716, 2, 0, '2026-01-28 09:51:50', '2026-01-28 09:55:06'),
+(717, 46, 90, '2026-01-28 09:51:57', '2026-01-28 09:54:55'),
+(718, 11, 40, '2026-01-28 09:52:53', '2026-01-28 09:53:46'),
+(719, 35, 73, '2026-01-28 11:03:02', '2026-01-28 11:03:02'),
+(720, 9, 36, '2026-01-28 12:18:29', '2026-01-28 12:18:29'),
+(721, 2, 0, '2026-01-28 14:11:33', '2026-01-28 14:11:33'),
+(722, 2, 0, '2026-01-28 14:35:42', '2026-01-28 14:37:52'),
+(723, 2, 0, '2026-01-28 15:13:17', '2026-01-28 15:13:17'),
+(724, 2, 0, '2026-01-28 15:55:22', '2026-01-28 15:56:31'),
+(725, 58, 107, '2026-01-28 15:56:03', '2026-01-28 15:57:16'),
+(726, 57, 106, '2026-01-28 15:57:36', '2026-01-28 15:58:56'),
+(727, 51, 98, '2026-01-28 16:03:29', '2026-01-28 16:03:29'),
+(728, 2, 0, '2026-01-28 18:08:47', '2026-01-28 18:30:47'),
+(729, 58, 107, '2026-01-28 18:09:57', '2026-01-28 18:09:57'),
+(730, 58, 107, '2026-01-28 18:10:21', '2026-01-28 18:10:30'),
+(731, 60, 109, '2026-01-28 18:11:30', '2026-01-28 18:14:50'),
+(732, 53, 101, '2026-01-28 18:15:05', '2026-01-28 18:20:59'),
+(733, 50, 97, '2026-01-28 18:21:07', '2026-01-28 18:24:58'),
+(734, 61, 110, '2026-01-28 18:25:11', '2026-01-28 18:26:00'),
+(735, 2, 0, '2026-01-28 18:37:11', '2026-01-28 18:44:00'),
+(736, 11, 40, '2026-01-28 19:04:01', '2026-01-28 19:04:01'),
+(737, 65, 2, '2026-01-28 22:13:42', '2026-01-28 22:13:42'),
+(738, 2, 0, '2026-01-28 22:13:54', '2026-01-28 22:15:55'),
+(739, 65, 2, '2026-01-28 22:16:05', '2026-01-28 22:16:05'),
+(740, 2, 0, '2026-01-28 22:17:11', '2026-01-28 22:18:34'),
+(741, 65, 2, '2026-01-28 22:18:48', '2026-01-28 22:20:41'),
+(742, 65, 2, '2026-01-28 22:20:52', '2026-01-28 22:21:17'),
+(743, 65, 2, '2026-01-28 22:21:54', '2026-01-28 22:22:45'),
+(744, 2, 0, '2026-01-28 22:22:55', '2026-01-28 22:25:02'),
+(745, 65, 2, '2026-01-28 22:25:12', '2026-01-28 22:25:28'),
+(746, 65, 2, '2026-01-28 22:27:22', '2026-01-28 22:28:34'),
+(747, 65, 2, '2026-01-28 22:31:04', '2026-01-28 22:31:04'),
+(748, 65, 2, '2026-01-28 22:33:55', '2026-01-28 22:44:11'),
+(749, 65, 2, '2026-01-28 22:44:24', '2026-01-28 22:46:14'),
+(750, 2, 0, '2026-01-28 22:46:58', '2026-01-28 22:46:58'),
+(751, 49, 95, '2026-01-29 09:36:27', '2026-01-29 09:36:27'),
+(752, 47, 92, '2026-01-29 09:41:25', '2026-01-29 09:41:25'),
+(753, 46, 90, '2026-01-29 09:41:25', '2026-01-29 09:43:12'),
+(754, 58, 107, '2026-01-29 09:52:56', '2026-01-29 09:52:56'),
+(755, 56, 104, '2026-01-29 10:37:53', '2026-01-29 10:37:53'),
+(756, 2, 0, '2026-01-29 10:49:10', '2026-01-29 10:49:29'),
+(757, 56, 104, '2026-01-29 10:49:37', '2026-01-29 10:51:32'),
+(758, 65, 2, '2026-01-29 10:52:00', '2026-01-29 10:53:26'),
+(759, 34, 72, '2026-01-29 10:53:58', '2026-01-29 10:56:32'),
+(760, 23, 57, '2026-01-29 10:57:15', '2026-01-29 10:57:15'),
+(761, 65, 2, '2026-01-29 11:08:08', '2026-01-29 11:15:01'),
+(762, 2, 0, '2026-01-29 11:15:12', '2026-01-29 11:15:25'),
+(763, 65, 2, '2026-01-29 11:15:39', '2026-01-29 11:17:18'),
+(764, 56, 104, '2026-01-29 11:17:28', '2026-01-29 11:17:55'),
+(765, 49, 95, '2026-01-29 11:42:23', '2026-01-29 11:42:23'),
+(766, 49, 95, '2026-01-29 11:55:25', '2026-01-29 11:55:25'),
+(767, 23, 57, '2026-01-29 11:56:25', '2026-01-29 11:56:25'),
+(768, 2, 0, '2026-01-29 11:57:41', '2026-01-29 11:58:21'),
+(769, 65, 2, '2026-01-29 11:58:51', '2026-01-29 12:10:01'),
+(770, 38, 76, '2026-01-29 12:11:14', '2026-01-29 12:15:07'),
+(771, 2, 0, '2026-01-29 12:15:20', '2026-01-29 12:15:35'),
+(772, 38, 76, '2026-01-29 12:15:46', '2026-01-29 12:16:00'),
+(773, 65, 2, '2026-01-29 12:16:25', '2026-01-29 12:24:30'),
+(774, 63, 123, '2026-01-29 12:22:05', '2026-01-29 12:50:54'),
+(775, 38, 76, '2026-01-29 12:24:42', '2026-01-29 12:26:21'),
+(776, 34, 72, '2026-01-29 12:46:32', '2026-01-29 12:50:46'),
+(777, 58, 107, '2026-01-29 12:51:10', '2026-01-29 12:58:11'),
+(778, 2, 0, '2026-01-29 13:54:56', '2026-01-29 13:55:29'),
+(779, 65, 2, '2026-01-29 13:55:44', '2026-01-29 14:13:07'),
+(780, 2, 0, '2026-01-29 14:13:18', '2026-01-29 14:13:33'),
+(781, 63, 123, '2026-01-29 14:13:41', '2026-01-29 14:14:56'),
+(782, 65, 2, '2026-01-29 14:15:09', '2026-01-29 14:15:22'),
+(783, 63, 123, '2026-01-29 14:15:33', '2026-01-29 14:16:55'),
+(784, 2, 0, '2026-01-29 14:18:20', '2026-01-29 14:30:16'),
+(785, 2, 0, '2026-01-30 00:21:29', '2026-01-30 00:37:10'),
+(786, 2, 0, '2026-01-30 08:27:59', '2026-01-30 08:29:50'),
+(787, 65, 2, '2026-01-30 11:21:38', '2026-01-30 11:22:09'),
+(788, 2, 0, '2026-01-30 11:22:52', '2026-01-30 11:23:33'),
+(789, 4, 30, '2026-01-30 11:24:05', '2026-01-30 11:27:41'),
+(790, 5, 31, '2026-01-30 11:28:08', '2026-01-30 11:30:26'),
+(791, 2, 0, '2026-01-30 11:31:16', '2026-01-30 11:31:16'),
+(792, 22, 56, '2026-01-30 14:52:33', '2026-01-30 14:52:33'),
+(793, 59, 108, '2026-01-30 19:41:42', '2026-01-30 19:43:20'),
+(794, 59, 108, '2026-01-30 19:43:32', '2026-01-30 19:48:56'),
+(795, 7, 34, '2026-01-30 23:57:24', '2026-01-30 23:57:24'),
+(796, 2, 0, '2026-01-31 00:30:36', '2026-01-31 00:40:36'),
+(797, 2, 0, '2026-01-31 11:12:03', '2026-01-31 11:12:03'),
+(798, 30, 68, '2026-01-31 11:38:01', '2026-01-31 11:40:00'),
+(799, 30, 68, '2026-01-31 11:48:25', '2026-01-31 11:48:25'),
+(800, 30, 68, '2026-01-31 16:37:38', '2026-01-31 16:48:11'),
+(801, 30, 68, '2026-01-31 16:48:19', '2026-01-31 16:48:19'),
+(802, 7, 34, '2026-01-31 22:40:00', '2026-01-31 22:48:58'),
+(803, 7, 34, '2026-01-31 22:49:06', '2026-01-31 22:49:06'),
+(804, 24, 59, '2026-02-01 11:02:10', '2026-02-01 11:02:10'),
+(805, 65, 2, '2026-02-01 11:19:37', '2026-02-01 11:48:28'),
+(806, 2, 0, '2026-02-01 11:48:40', '2026-02-01 11:59:55'),
+(807, 45, 89, '2026-02-01 11:51:38', '2026-02-01 11:52:12'),
+(808, 33, 71, '2026-02-01 11:52:22', '2026-02-01 11:54:33'),
+(809, 30, 68, '2026-02-01 11:54:42', '2026-02-01 11:55:40'),
+(810, 24, 59, '2026-02-01 11:57:13', '2026-02-01 11:57:25'),
+(811, 19, 51, '2026-02-01 11:57:51', '2026-02-01 11:59:40'),
+(812, 65, 2, '2026-02-01 12:00:09', '2026-02-01 12:01:35'),
+(813, 30, 68, '2026-02-01 12:35:13', '2026-02-01 12:35:13'),
+(814, 2, 0, '2026-02-01 13:53:22', '2026-02-01 13:53:35'),
+(815, 41, 79, '2026-02-01 14:23:51', '2026-02-01 14:23:51'),
+(816, 30, 68, '2026-02-01 14:27:59', '2026-02-01 14:27:59'),
+(817, 65, 2, '2026-02-01 15:22:05', '2026-02-01 15:28:17'),
+(818, 41, 79, '2026-02-01 15:49:23', '2026-02-01 15:49:23'),
+(819, 51, 98, '2026-02-02 05:12:03', '2026-02-02 05:25:20'),
+(820, 11, 40, '2026-02-02 12:28:01', '2026-02-02 12:29:19'),
+(821, 3, 1, '2026-02-02 16:19:37', '2026-02-02 16:44:58'),
+(822, 2, 0, '2026-02-02 18:38:02', '2026-02-02 18:38:02'),
+(823, 2, 0, '2026-02-02 19:41:08', '2026-02-02 19:41:41'),
+(824, 9, 36, '2026-02-02 19:41:47', '2026-02-02 19:42:06'),
+(825, 2, 0, '2026-02-02 19:42:19', '2026-02-02 19:43:26'),
+(826, 65, 2, '2026-02-02 19:43:39', '2026-02-02 19:44:47'),
+(827, 7, 34, '2026-02-02 19:43:45', '2026-02-02 19:45:40'),
+(828, 2, 0, '2026-02-02 19:44:59', '2026-02-02 19:49:17'),
+(829, 63, 123, '2026-02-02 19:49:27', '2026-02-02 19:50:18'),
+(830, 2, 0, '2026-02-02 19:50:31', '2026-02-02 19:51:24'),
+(831, 63, 123, '2026-02-02 19:51:34', '2026-02-02 19:51:46'),
+(832, 63, 123, '2026-02-02 19:52:05', '2026-02-02 19:53:08'),
+(833, 2, 0, '2026-02-02 20:10:17', '2026-02-02 20:10:32'),
+(834, 66, 130, '2026-02-02 20:10:44', '2026-02-02 20:10:51'),
+(835, 65, 2, '2026-02-02 20:11:05', '2026-02-02 20:12:28'),
+(836, 66, 130, '2026-02-02 20:12:47', '2026-02-02 20:13:33'),
+(837, 65, 2, '2026-02-02 20:13:49', '2026-02-02 20:13:58'),
+(838, 2, 0, '2026-02-02 20:25:35', '2026-02-02 20:25:55'),
+(839, 2, 0, '2026-02-02 20:36:35', '2026-02-02 20:46:33'),
+(840, 19, 51, '2026-02-03 15:59:54', '2026-02-03 15:59:54'),
+(841, 3, 1, '2026-02-03 17:07:12', '2026-02-03 17:08:09'),
+(842, 63, 123, '2026-02-03 17:34:24', '2026-02-03 17:34:24'),
+(843, 2, 0, '2026-02-03 17:44:17', '2026-02-03 17:44:17'),
+(844, 2, 0, '2026-02-03 23:31:46', '2026-02-03 23:32:29'),
+(845, 63, 123, '2026-02-03 23:32:40', '2026-02-03 23:33:10'),
+(846, 65, 2, '2026-02-03 23:33:23', '2026-02-03 23:36:53'),
+(847, 63, 123, '2026-02-03 23:37:13', '2026-02-03 23:38:48'),
+(848, 65, 2, '2026-02-03 23:39:03', '2026-02-03 23:46:19'),
+(849, 9, 36, '2026-02-03 23:46:31', '2026-02-03 23:47:42'),
+(850, 9, 36, '2026-02-03 23:48:42', '2026-02-03 23:48:56');
 
 -- --------------------------------------------------------
 
@@ -1968,19 +2451,19 @@ CREATE TABLE `user_login` (
 --
 
 INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `password`, `re_password`, `role`, `status`, `created_at`) VALUES
-(2, 0, '', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '123456', 'Admin', 'A', '2025-08-15 19:33:39'),
+(2, 0, '', 'admin', '706f600bc94ff2aca61fa0f6ebde3fd0', 'admin#321!', 'Admin', 'A', '2025-08-15 19:33:39'),
 (3, 1, 'CPSS-00001', '505646', 'c04c747a06eadb597d44f0a28988f057', 'S#01540a', 'user', 'P', '2025-10-13 21:31:57'),
 (4, 30, 'CPSS-00002', 'coderap', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'P', '2025-10-13 22:28:41'),
 (5, 31, 'CPSS-00031', 'codermk', '1aea74bc195721a1d71234022d6721b5', 'Ap#123456', 'user', 'P', '2025-10-13 22:36:03'),
-(7, 34, 'CPSS-00032', 'Saiful1986', '7e45d41d3d93659f5d92a3f964502127', 'Saiful1986', 'user', 'I', '2025-10-14 16:04:29'),
+(7, 34, 'CPSS-00032', 'Saiful1986', '7e45d41d3d93659f5d92a3f964502127', 'Saiful1986', 'user', 'P', '2025-10-14 16:04:29'),
 (8, 35, 'CPSS-00035', 'iqbal@erainfotechbd.com', '374a4198e2f0f5797133c3d28e15d037', 'I*qbal123', 'user', 'P', '2025-10-14 16:51:59'),
 (9, 36, 'CPSS-00036', 'sadin_027', '9c23bdafebf6d7a14ff2e0a7b1bc7590', 'sadin_027', 'user', 'P', '2025-10-14 18:48:46'),
 (10, 39, 'CPSS-00037', 'ashiqur_ruhullah', '3b192651dafa9a384b45d15bdd551c3a', 'Abc@33688', 'user', 'P', '2025-10-16 16:35:26'),
-(11, 40, 'CPSS-00040', 'tariqul@erainfotechbd.com', 'd82f0f7bbb5e126328c20590e8bd8bee', 'Tariqul*sorse4', 'user', 'I', '2025-10-16 17:32:03'),
+(11, 40, 'CPSS-00040', 'tariqul@erainfotechbd.com', 'd82f0f7bbb5e126328c20590e8bd8bee', 'Tariqul*sorse4', 'user', 'P', '2025-10-16 17:32:03'),
 (12, 41, 'CPSS-00041', 'Samrat0026@', '6d4a2c2688cbf0b68a09db10bf21c4f0', '25800', 'user', 'P', '2025-10-19 11:12:10'),
 (13, 42, 'CPSS-00042', 'hera', 'cfed9928364182f874060d57295e305c', 'Her@1234', 'user', 'P', '2025-10-22 11:01:11'),
 (14, 45, 'CPSS-00043', 'sraihan68', '90973b6d611e8a9d3e9d6d4c18d99991', 'Pass@123#', 'user', 'P', '2025-10-23 15:21:30'),
-(15, 46, 'CPSS-00046', 'Md. Alauddin', '558d84d0650a49634714a42d46183114', 'Alauddin', 'user', 'I', '2025-10-23 16:19:51'),
+(15, 46, 'CPSS-00046', 'Md. Alauddin', '558d84d0650a49634714a42d46183114', 'Alauddin', 'user', 'R', '2025-10-23 16:19:51'),
 (16, 47, 'CPSS-00047', 'moshid', '13053ed9d25f40b415e709f3023c09b5', '19822006Cm', 'user', 'P', '2025-10-23 22:02:11'),
 (17, 48, 'CPSS-00048', 'mahdi', 'a80efaf2c72ee24985535815fc3f5380', 'Era_321', 'user', 'P', '2025-10-25 08:44:27'),
 (18, 50, 'CPSS-00049', 'aslamtmela', '1553a90b66d50da03d9b082f3880e3ad', 'Aslam@038297', 'user', 'I', '2025-10-25 23:00:21'),
@@ -1993,9 +2476,9 @@ INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `passwo
 (25, 62, 'CPSS-00060', 'Ashiq971', '817327651ecb7f95d02faedb062eeace', '543368166', 'user', 'P', '2025-10-31 22:39:47'),
 (26, 63, 'CPSS-00063', 'Sakif Abdullah', 'cd6d5b15c39e02a814e680ebb86b5c4b', 'Sakif@006', 'user', 'P', '2025-11-05 11:41:45'),
 (27, 65, 'CPSS-00064', 'masuma', '81ed54d1b3b9b349dbd4a53e0c1728a8', 'masuma', 'user', 'P', '2025-11-08 16:08:49'),
-(28, 66, 'CPSS-00066', 'ENAMUL', 'a7182c5422c2c1d5c193dd20c6051edf', 'ENAMUL', 'user', 'P', '2025-11-08 16:18:32'),
+(28, 66, 'CPSS-00066', 'ENAMUL', 'e69e89935e0fbcc2d0ff9862814dc425', 'Enamul95@', 'user', 'P', '2025-11-08 16:18:32'),
 (29, 67, 'CPSS-00067', 'IAMENAMUL', 'e7b0c94344dd8342fbeb011f922547aa', 'IAMENAMUL', 'user', 'P', '2025-11-08 16:27:48'),
-(30, 68, 'CPSS-00068', 'hakim', 'c96041081de85714712a79319cb2be5f', 'hakim', 'user', 'I', '2025-11-08 16:35:39'),
+(30, 68, 'CPSS-00068', 'hakim', 'c96041081de85714712a79319cb2be5f', 'hakim', 'user', 'P', '2025-11-08 16:35:39'),
 (31, 69, 'CPSS-00069', 'HASINA', '48418ffeb238206941cbb049516c313b', 'HASINA', 'user', 'P', '2025-11-08 16:47:57'),
 (32, 70, 'CPSS-00070', 'SULTAN', 'f7a5eecd9c08c7af83d946b194b7488a', 'SULTAN', 'user', 'P', '2025-11-08 16:59:16'),
 (33, 71, 'CPSS-00071', 'MAHAMUDA', '799d402acdd78f76a4bb9af7cff8ff74', 'MAHAMUDA', 'user', 'P', '2025-11-08 17:16:10'),
@@ -2026,7 +2509,11 @@ INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `passwo
 (59, 108, 'CPSS-00108', 'alhadi', '5c4d27f49d5664d9210fe712b4cb1e02', 'alhadi666', 'user', 'P', '2025-12-01 10:48:54'),
 (60, 109, 'CPSS-00109', 'Didar', '364a2111f8e12782adde750952cd789f', 'Did@r2016', 'user', 'P', '2025-12-01 15:37:38'),
 (61, 110, 'CPSS-00110', 'rishat', '32c01a8b9975b275e241b2ed96d5dbfb', 'Rishat@2025', 'user', 'P', '2025-12-01 22:59:47'),
-(62, 112, 'CPSS-00111', 'rano', '3ad7fdd561fbcb3cade725ff088f899f', 'rano@01810', 'user', 'P', '2025-12-04 09:40:18');
+(62, 112, 'CPSS-00111', 'rano', '3ad7fdd561fbcb3cade725ff088f899f', 'rano@01810', 'user', 'P', '2025-12-04 09:40:18'),
+(63, 123, 'CPSS-00113', 'ripon', '32bc1224fcea6153b13e61306d00ec5b', 'ripon123', 'user', 'P', '2026-01-04 15:55:37'),
+(65, 2, '', 'account', 'a8393be1dbac23e874d835cd688974c4', 'account#123!', 'Account', 'A', '2026-01-28 22:11:56'),
+(66, 130, 'CPSS-00124', 'shahrin', '409059d527d1f320a42e85c82d1ef509', 'shahrin', 'user', 'P', '2026-02-02 20:09:57'),
+(67, 131, 'CPSS-00131', 'atiq', '4089c6c194e9386d8e75cc9be4a2f951', 'atiq', 'user', 'P', '2026-02-02 20:24:49');
 
 -- --------------------------------------------------------
 
@@ -2036,8 +2523,7 @@ INSERT INTO `user_login` (`id`, `member_id`, `member_code`, `user_name`, `passwo
 
 CREATE TABLE `utils` (
   `id` int(11) NOT NULL,
-  `start_year` int(11) NOT NULL,
-  `end_year` int(11) NOT NULL,
+  `type_name_bn` varchar(255) NOT NULL,
   `fee` int(11) NOT NULL,
   `status` varchar(3) NOT NULL,
   `fee_type` varchar(100) NOT NULL
@@ -2047,11 +2533,12 @@ CREATE TABLE `utils` (
 -- Dumping data for table `utils`
 --
 
-INSERT INTO `utils` (`id`, `start_year`, `end_year`, `fee`, `status`, `fee_type`) VALUES
-(1, 2025, 2026, 1500, 'A', 'admission'),
-(2, 2025, 2026, 2000, 'A', 'monthly'),
-(3, 2025, 2026, 200, 'A', 'late'),
-(4, 2025, 2026, 5000, 'A', 'samity_share');
+INSERT INTO `utils` (`id`, `type_name_bn`, `fee`, `status`, `fee_type`) VALUES
+(1, 'এন্ট্রি ফি', 1500, 'A', 'admission'),
+(2, 'মাসিক কিস্তি', 2000, 'A', 'monthly'),
+(3, 'বিলম্ব ফি', 200, 'A', 'late'),
+(4, 'সমিতি শেয়ার', 5000, 'A', 'samity_share'),
+(5, 'প্রকল্প শেয়ার', 5000, 'A', 'project_share');
 
 --
 -- Indexes for dumped tables
@@ -2097,6 +2584,12 @@ ALTER TABLE `expense_category`
 -- Indexes for table `glac_mst`
 --
 ALTER TABLE `glac_mst`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `gl_mapping`
+--
+ALTER TABLE `gl_mapping`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2227,79 +2720,85 @@ ALTER TABLE `committee_role`
 -- AUTO_INCREMENT for table `company`
 --
 ALTER TABLE `company`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `expense_category`
 --
 ALTER TABLE `expense_category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `glac_mst`
 --
 ALTER TABLE `glac_mst`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `gl_mapping`
+--
+ALTER TABLE `gl_mapping`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `meeting`
 --
 ALTER TABLE `meeting`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `members_info`
 --
 ALTER TABLE `members_info`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT for table `member_bank`
 --
 ALTER TABLE `member_bank`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `member_documents`
 --
 ALTER TABLE `member_documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `member_nominee`
 --
 ALTER TABLE `member_nominee`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
 
 --
 -- AUTO_INCREMENT for table `member_office`
 --
 ALTER TABLE `member_office`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT for table `member_payments`
 --
 ALTER TABLE `member_payments`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=261;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=370;
 
 --
 -- AUTO_INCREMENT for table `member_project`
 --
 ALTER TABLE `member_project`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=137;
 
 --
 -- AUTO_INCREMENT for table `member_share`
 --
 ALTER TABLE `member_share`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `project`
@@ -2311,13 +2810,13 @@ ALTER TABLE `project`
 -- AUTO_INCREMENT for table `project_share`
 --
 ALTER TABLE `project_share`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=697;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=692;
 
 --
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `setup`
@@ -2329,25 +2828,25 @@ ALTER TABLE `setup`
 -- AUTO_INCREMENT for table `share`
 --
 ALTER TABLE `share`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `user_access`
 --
 ALTER TABLE `user_access`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=534;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=851;
 
 --
 -- AUTO_INCREMENT for table `user_login`
 --
 ALTER TABLE `user_login`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT for table `utils`
 --
 ALTER TABLE `utils`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

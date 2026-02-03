@@ -14,7 +14,7 @@ $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
 ?>
     <nav class="navbar navbar-expand-lg navbar-light border-bottom border-2 border-white">
         <div class="container-fluid">
-        <a href="/coder_group/index.php" class="navbar-brand">
+        <a href="/" class="navbar-brand">
             <span style="
                 display: inline-block;
                 font-family: 'Poppins', Arial, sans-serif;

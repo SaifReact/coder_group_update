@@ -62,7 +62,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <h3 class="mb-3 text-primary fw-bold">Project Shares <span class="text-secondary">(প্রকল্প শেয়ার)</span></h3>
                       </div>
                       <div class="col-12 col-md-6 text-md-end">
-                        <a href="share.php" class="btn btn-primary">
+                        <a href="add_share.php" class="btn btn-primary">
                             <i class="fas fa-plus"></i> নতুন শেয়ার যোগ করুন (Add New Share)
                         </a>
                       </div>

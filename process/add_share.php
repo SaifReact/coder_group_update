@@ -24,13 +24,11 @@ try {
     $stmtProject = $pdo->prepare("SELECT per_share_value FROM project WHERE id = ?");
     $stmtProject->execute([$project_id]);
     $projectRow = $stmtProject->fetch(PDO::FETCH_ASSOC);
-    print_r($projectRow);
     $per_share_value = $projectRow ? (float)$projectRow['per_share_value'] : 0;
 
     $stmtGetExtra = $pdo->prepare("SELECT no_share, samity_share, extra_share FROM member_share WHERE member_id = ? AND member_code = ? LIMIT 1");
     $stmtGetExtra->execute([$member_id, $member_code]);
     $rowExtra = $stmtGetExtra->fetch(PDO::FETCH_ASSOC);
-    print_r($rowExtra);
     $currentExtraShare = isset($rowExtra['extra_share']) ? (int)$rowExtra['extra_share'] : 0;
     $currentSamityShare = isset($rowExtra['samity_share']) ? (int)$rowExtra['samity_share'] : 0;
     $currentNoShare = isset($rowExtra['no_share']) ? (int)$rowExtra['no_share'] : 0;
@@ -38,8 +36,6 @@ try {
     $stmt = $pdo->prepare("SELECT * FROM member_project WHERE member_id = ? AND member_code = ? AND project_id = ?");
     $stmt->execute([$member_id, $member_code, $project_id]);
     $share = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    print_r($share);
 
     $startingNumber = 1;
 
@@ -96,7 +92,7 @@ try {
         header('Location: ../users/project_shares.php');
         exit;
 
-    } elseif ($project_id > 3 && $buyingShare > 0 && $previousShare > 0) {
+    } elseif ($project_id > 1 && $buyingShare > 0 && $previousShare > 0) {
 
         $original_project_id = (int)$project_id; // Preserve original project_id
 
@@ -107,9 +103,6 @@ try {
                 $stmt = $pdo->prepare("SELECT id, project_id FROM member_project WHERE member_id = ? AND project_id = 1 LIMIT 1");
                 $stmt->execute([$member_id]);
                 $samityProject = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                print_r($samityProject);
-                die();
 
                 if (!$samityProject) {
                     // No samity project for this member → create one
