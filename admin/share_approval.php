@@ -11,7 +11,7 @@ include_once __DIR__ . '/../config/config.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Fetch all users
-$stmt = $pdo->query("SELECT a.id, a.member_id, a.member_code, a.status, a.no_share, b.member_code, b.name_en, b.name_bn,
+$stmt = $pdo->query("SELECT a.id, a.member_id, a.member_code, a.status, a.project_id, a.no_share, b.member_code, b.name_en, b.name_bn,
 CASE 
     WHEN a.project_id > 1 THEN c.project_name_bn 
     ELSE 'সমিতি শেয়ার (CPSSL)'
@@ -22,8 +22,20 @@ LEFT JOIN project c ON a.project_id = c.id
 ORDER BY a.id DESC");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Note: do not assume a single $member_id from the result set here.
-// We'll determine the member_id from the submitted share id when processing POST.
+// Load utils fees for samity and project shares
+$stmtUtils = $pdo->query("SELECT fee_type, fee FROM utils WHERE fee_type IN ('samity_share','project_share') AND status = 'A' ORDER BY id ASC");
+$utilsRows = $stmtUtils->fetchAll(PDO::FETCH_ASSOC);
+$samity_share_value_utils = 0.0;
+$project_share_value_utils = 0.0;
+foreach ($utilsRows as $u) {
+    if (isset($u['fee_type']) && isset($u['fee'])) {
+        if ($u['fee_type'] === 'samity_share') {
+            $samity_share_value_utils = (float)$u['fee'];
+        } elseif ($u['fee_type'] === 'project_share') {
+            $project_share_value_utils = (float)$u['fee'];
+        }
+    }
+}
 
 // Handle status update
 if ($method === 'POST' && isset($_POST['status'])) {
@@ -44,6 +56,12 @@ if ($method === 'POST' && isset($_POST['status'])) {
         }
     }
 
+    // If the requested status is not approval, just update that single share row and skip approval processing.
+    if ($submitted_share_id > 0 && $status !== 'A') {
+        $stmtSimpleMark = $pdo->prepare("UPDATE share SET status = ? WHERE id = ?");
+        $stmtSimpleMark->execute([$status, $submitted_share_id]);
+    }
+
         // If approving, generate project_share rows and update member_share when project_id = 1
         if ($status === 'A') {
             // determine member_code (prefer value from share row if present)
@@ -56,8 +74,9 @@ if ($method === 'POST' && isset($_POST['status'])) {
             }
 
             // find pending share entries for this member (status = 'I' or pending)
-            $stmtShares = $pdo->prepare("SELECT * FROM share WHERE member_id = ? AND status = 'I'");
+            $stmtShares = $pdo->prepare("SELECT * FROM share WHERE member_id = ? AND status != 'A'");
             $stmtShares->execute([$member_id]);
+
             while ($shareRow = $stmtShares->fetch(PDO::FETCH_ASSOC)) {
                 $project_id = (int)($shareRow['project_id'] ?? 0);
                 $addCount = (int)($shareRow['no_share'] ?? 0);
@@ -75,8 +94,8 @@ if ($method === 'POST' && isset($_POST['status'])) {
                     }
 
                     // get last share sequence for project_id = 1
-                    $stmtLast = $pdo->prepare("SELECT share_id FROM project_share WHERE member_id = ? ORDER BY id DESC LIMIT 1");
-                    $stmtLast->execute([$member_id]);
+                    $stmtLast = $pdo->prepare("SELECT share_id FROM project_share WHERE member_id = ? AND project_id = ? ORDER BY id DESC LIMIT 1");
+                    $stmtLast->execute([$member_id, $project_id]);
                     $last = $stmtLast->fetch(PDO::FETCH_ASSOC);
                     $startingNumber = 1;
                     if ($last && !empty($last['share_id'])) {
@@ -96,26 +115,73 @@ if ($method === 'POST' && isset($_POST['status'])) {
                         $stmtInsert->execute([$member_project_id, $member_id, $member_code_val, 1, $share_id]);
                     }
 
-                    // update member_share totals
-                    $stmtUpdateMS = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, samity_share = samity_share + ? WHERE member_id = ? AND member_code = ?");
-                    $stmtUpdateMS->execute([$addCount, $addCount, $member_id, $member_code_val]);
+                    $sundrySamityAmt = $addCount * $samity_share_value_utils;
 
+                    // update member_share totals
+                    $stmtUpdateMS = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, samity_share = samity_share + ?, sundry_samity_share = sundry_samity_share + ? WHERE member_id = ? AND member_code = ?");
+                    $stmtUpdateMS->execute([$addCount, $addCount, $sundrySamityAmt, $member_id, $member_code_val]);
                     // mark this share row as approved
                     $stmtMark = $pdo->prepare("UPDATE share SET status = 'A' WHERE id = ?");
                     $stmtMark->execute([$shareRow['id']]);
                 } elseif ($project_id > 1 && $addCount > 0) {
-                    // For other projects, just mark as approved
+                    // Find or create member_project for this project, then find last share sequence
+                    $stmtMP = $pdo->prepare("SELECT id FROM member_project WHERE member_id = ? AND project_id = ? LIMIT 1");
+                    $stmtMP->execute([$member_id, $project_id]);
+                    $mp = $stmtMP->fetch(PDO::FETCH_ASSOC);
+
+                    if ($mp && !empty($mp['id'])) {
+                        $member_project_id = (int)$mp['id'];
+                    } else {
+                        $stmtCreateMP = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, ?, 0, 0, NOW())");
+                        $stmtCreateMP->execute([$member_id, $member_code_val, $project_id]);
+                        $member_project_id = (int)$pdo->lastInsertId();
+                    }
+
+                    // get last share sequence for this project
+                    $stmtLast = $pdo->prepare("SELECT share_id FROM project_share WHERE member_id = ? AND project_id = ? ORDER BY id DESC LIMIT 1");
+                    $stmtLast->execute([$member_id, $project_id]);
+                    $last = $stmtLast->fetch(PDO::FETCH_ASSOC);
+
+                    $startingNumber = 1;
+                    if ($last && !empty($last['share_id'])) {
+                        $lastThree = substr($last['share_id'], -3);
+                        if (is_numeric($lastThree)) {
+                            $startingNumber = intval($lastThree) + 1;
+                        }
+                    }
+
+                    // insert project_share rows
+                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+                    for ($i = 0; $i < $addCount; $i++) {
+                        $num = $startingNumber + $i;
+                        $n = str_pad($num, 3, '0', STR_PAD_LEFT);
+                        $share_id = "share" . $member_id . $member_project_id . $project_id . $n;
+                        $stmtInsert->execute([$member_project_id, $member_id, $member_code_val, $project_id, $share_id]);
+                    }
+
+                    $shareAmt = $addCount * $project_share_value_utils;
+
+                    // update member_project share count
+                    $stmtUpdateMP = $pdo->prepare("UPDATE member_project SET share_amount = share_amount + ?, project_share = project_share + ?, sundry_amount = sundry_amount + ? WHERE id = ? AND member_id = ?");
+                    $stmtUpdateMP->execute([$shareAmt, $addCount, $shareAmt, $member_project_id, $member_id]);    
+
+
+                    // update member_share totals
+                    $stmtUpdateMS = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, extra_share = extra_share + ? WHERE member_id = ? AND member_code = ?");
+                    $stmtUpdateMS->execute([$addCount, $addCount, $member_id, $member_code_val]);
+
+                    // mark this share row as approved
                     $stmtMark = $pdo->prepare("UPDATE share SET status = 'A' WHERE id = ?");
                     $stmtMark->execute([$shareRow['id']]);
                 }   
             }
         }
     if ($status === 'A') {
-        $_SESSION['success_msg'] = "✅ ডকুমেন্টস ও শেয়ার ফি জমা দেয়ায় আপনাকে ধন্যবাদ, আপনে আমাদের সক্রিয় সদস্য!";
+        $_SESSION['success_msg'] = "✅ শেয়ারের অনুমোদন দেয়া হলো !";
     } elseif ($status === 'I') {
-        $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় আপনাকে নিষ্ক্রিয় করে রাখা হইলো !";
+        $_SESSION['success_msg'] = "⚠️ সমিতিতে আপনার কার্যক্রম সন্দেহাতীত হওয়ায় শেয়ার নিষ্ক্রিয় করে রাখা হইলো !";
     } elseif ($status === 'R') {
-        $_SESSION['success_msg'] = "❌ সমিতির নীতিমালা ভঙ্গ করায় আপনার সদস্যপদ বাতিল করা হইলো !";
+        $_SESSION['success_msg'] = "❌ সমিতির নীতিমালা ভঙ্গ করায় শেয়ার বাতিল করা হইলো !";
     }
 
     // Stay on the same page with success message
@@ -138,12 +204,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <table class="table table-bordered table-striped align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>সদস্য নং </th>
+                                        <th>নং </th>
                                         <th>সদস্য কোড </th>
                                         <th>সদস্যের নাম</th>
                                         <th>প্রকল্পের নাম</th>
                                         <th>শেয়ার সংখ্যা</th>
-                                        <th colspan="2">অবস্থা</th>
+                                        <th colspan="1">অবস্থা</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -167,13 +233,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                                 <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
                                             </form>
                                         </td>
-                                        <td>
-                                            <button type="button" class="btn btn-info btn-sm view-member-btn" 
-                                                data-user-id="<?= htmlspecialchars($user['id']) ?>" 
-                                                title="View Details">
-                                                <i class="fa fa-eye"></i>
-                                            </button>
-                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                                 </tbody>
@@ -181,33 +240,11 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         </div>
                     </div>
                 </div>
-                <!-- View Member Modal and other includes remain unchanged -->
-            <?php include 'view_member.php'; ?>
         </div>
     </main>
   </div>
 </div>
 <!-- Hero End -->
-
-<script>
-// Handle view icon click
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.view-member-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var userId = this.getAttribute('data-user-id');
-            var modalBody = document.getElementById('viewMemberModalBody');
-            modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
-            var modal = new bootstrap.Modal(document.getElementById('viewMemberModal'));
-            modal.show();
-            // Fetch details via AJAX
-            fetch('member_details.php?id=' + encodeURIComponent(userId))
-                .then(resp => resp.text())
-                .then(html => { modalBody.innerHTML = html; })
-                .catch(() => { modalBody.innerHTML = '<div class="alert alert-danger">Could not load details.</div>'; });
-        });
-    });
-});
-</script>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>
 
