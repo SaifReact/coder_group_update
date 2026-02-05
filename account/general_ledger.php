@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Account') {
     header('Location: ../login.php');
     exit;
@@ -305,9 +306,9 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <div class="col-md-6">
                             <label class="form-label">প্যারেন্ট লেজার</label>
                             <select class="form-select" name="parent_id" id="parent_id">
-                                <option value="0">কোনটি নয় (Root Level 1)</option>
+                                <option value="0" data-type="">কোনটি নয় (Root Level 1)</option>
                                 <?php foreach ($ledgers as $ledger): ?>
-                                    <option value="<?= $ledger['id'] ?>"><?= htmlspecialchars($ledger['glac_name']) ?> (<?= htmlspecialchars($ledger['glac_code']) ?>)</option>
+                                    <option value="<?= $ledger['id'] ?>" data-type="<?= htmlspecialchars($ledger['glac_type']) ?>"><?= htmlspecialchars($ledger['glac_name']) ?> (<?= htmlspecialchars($ledger['glac_code']) ?>)</option>
                                 <?php endforeach; ?>
                             </select>
                             <small class="text-muted">Level 2/3/4 এর জন্য প্যারেন্ট নির্বাচন করুন</small>
@@ -492,6 +493,47 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
         document.getElementById('delete_ledger_name').textContent = this.dataset.name;
         new bootstrap.Modal(document.getElementById('deleteLedgerModal')).show();
     });
+});
+</script>
+
+<script>
+// Filter parent list based on selected glac_type when adding new ledger
+document.addEventListener('DOMContentLoaded', function() {
+    var glacType = document.getElementById('glac_type');
+    var parentSelect = document.getElementById('parent_id');
+    if (!glacType || !parentSelect) return;
+
+    // Capture original options
+    var original = Array.from(parentSelect.options).map(function(opt) {
+        return { value: opt.value, text: opt.text, type: opt.dataset.type || '' };
+    });
+
+    function renderFiltered() {
+        var sel = glacType.value;
+        parentSelect.innerHTML = '';
+        // Always include root
+        var root = document.createElement('option');
+        root.value = '0';
+        root.dataset.type = '';
+        root.text = 'কোনটি নয় (Root Level 1)';
+        parentSelect.appendChild(root);
+
+        original.forEach(function(o) {
+            if (o.value === '0') return; // skip root duplicate
+            if (sel === '' || o.type === sel) {
+                var opt = document.createElement('option');
+                opt.value = o.value;
+                opt.text = o.text;
+                opt.dataset.type = o.type;
+                parentSelect.appendChild(opt);
+            }
+        });
+    }
+
+    // Filter on change
+    glacType.addEventListener('change', renderFiltered);
+    // Initial render (in case form preserved state)
+    renderFiltered();
 });
 </script>
 

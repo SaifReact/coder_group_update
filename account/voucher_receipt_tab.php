@@ -1,14 +1,45 @@
+<?php
+// Prepare GL lists for Credit and Debit dropdowns
+$creditGLs = [];
+$debitGLs = [];
+try {
+    if (!isset($pdo)) {
+        include __DIR__ . '/../config/config.php';
+    }
+
+    $stmt = $pdo->prepare("SELECT id, glac_name FROM glac_mst WHERE parent_child = 'C' AND gl_nature = 'C' ORDER BY glac_name ASC");
+    $stmt->execute();
+    $creditGLs = $stmt->fetchAll();
+
+    $stmt = $pdo->prepare("SELECT id, glac_name FROM glac_mst WHERE parent_child = 'C' AND gl_nature = 'D' ORDER BY glac_name ASC");
+    $stmt->execute();
+    $debitGLs = $stmt->fetchAll();
+} catch (Exception $e) {
+    // Fail silently — leave lists empty
+}
+
+?>
 <form id="receiptVoucherForm">
     <div id="receiptVoucherRows">
         <div class="row g-2 mb-3 receipt-row">
             <div class="col-md-3">
                 <select class="form-select" name="debit_gl[]">
-                    <option>ডেবিট জি.এল</option>
+                    <option value="">ডেবিট জি.এল</option>
+                    <?php if (!empty($debitGLs)) : ?>
+                        <?php foreach ($debitGLs as $g) : ?>
+                            <option value="<?= htmlspecialchars($g['id']) ?>"><?= htmlspecialchars($g['glac_name']) ?></option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
             <div class="col-md-3">
                 <select class="form-select" name="credit_gl[]">
-                    <option>ক্রেডিট জি.এল</option>
+                    <option value="">ক্রেডিট জি.এল</option>
+                    <?php if (!empty($creditGLs)) : ?>
+                        <?php foreach ($creditGLs as $g) : ?>
+                            <option value="<?= htmlspecialchars($g['id']) ?>"><?= htmlspecialchars($g['glac_name']) ?></option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
             <div class="col-md-2">
