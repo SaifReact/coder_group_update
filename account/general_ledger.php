@@ -92,14 +92,15 @@ if ($_POST['action'] === 'add') {
             $allow_manual_dr = $_POST['allow_manual_dr'] ?? 'Y';
             $allow_manual_cr = $_POST['allow_manual_cr'] ?? 'Y';
             $parent_child = $_POST['parent_child'] ?? 'P';
+            $status = $_POST['status'] ?? 'A';
             $created_by = $_SESSION['user_id'];
             $inserted_id = null;
             if ($parent_id == 0) {
                 // Level 1
                 $inserted_id = insertLevel1($pdo, $glac_name);
                 // Update other fields for this row
-                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, parent_child=?, created_by=? WHERE id=?");
-                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $parent_child, $created_by, $inserted_id]);
+                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, parent_child=?, status=?, created_by=? WHERE id=?");
+                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $parent_child, $status, $created_by, $inserted_id]);
             } else {
                 // Get parent level
                 $stmt = $pdo->prepare("SELECT level_code FROM glac_mst WHERE id = ?");
@@ -113,8 +114,8 @@ if ($_POST['action'] === 'add') {
                     $inserted_id = insertLevel4($pdo, $parent_id, $glac_name);
                 }
                 // Update other fields for this row
-                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, parent_child=?, created_by=? WHERE id=?");
-                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $parent_child, $created_by, $inserted_id]);
+                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, parent_child=?, status=?, created_by=? WHERE id=?");
+                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $parent_child, $status, $created_by, $inserted_id]);
             }
             $pdo->commit();
             $_SESSION['success_msg'] = '✅ সফলভাবে জেনারেল লেজার এন্ট্রি যোগ করা হয়েছে!';
@@ -346,20 +347,29 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">ধরণ <span class="text-danger">*</span></label>
-                        <div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="parent_child" id="typeParent" value="P" checked required>
-                                <label class="form-check-label" for="typeParent">প্যারেন্ট (P)</label>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" name="status" required>
+                                    <option value="A" selected>Active (A)</option>
+                                    <option value="I">Inactive (I)</option>
+                                </select>
                             </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="parent_child" id="typeChild" value="C" required>
-                                <label class="form-check-label" for="typeChild">চাইল্ড (C)</label>
+                            <div class="col-md-6">
+                                <label class="form-label">ধরণ <span class="text-danger">*</span></label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="parent_child" id="typeParent" value="P" checked required>
+                                        <label class="form-check-label" for="typeParent">প্যারেন্ট (P)</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="parent_child" id="typeChild" value="C" required>
+                                        <label class="form-check-label" for="typeChild">চাইল্ড (C)</label>
+                                    </div>
+                                </div>
+                                <small class="text-muted">প্যারেন্ট/চাইল্ড টাইপ নির্বাচন করুন</small>
                             </div>
                         </div>
-                        <small class="text-muted">প্যারেন্ট/চাইল্ড টাইপ নির্বাচন করুন</small>
-                    </div>
 
                     <div class="alert alert-info">
                         <strong>📝 নোট:</strong>
