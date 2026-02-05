@@ -1,3 +1,24 @@
+<?php
+// Prepare GL lists for Credit and Debit dropdowns
+$creditGLs = [];
+$debitGLs = [];
+try {
+    if (!isset($pdo)) {
+        include __DIR__ . '/../config/config.php';
+    }
+
+    $stmt = $pdo->prepare("SELECT id, glac_name FROM glac_mst WHERE parent_child = 'C' AND gl_nature = 'C' ORDER BY glac_name ASC");
+    $stmt->execute();
+    $creditGLs = $stmt->fetchAll();
+
+    $stmt = $pdo->prepare("SELECT id, glac_name FROM glac_mst WHERE parent_child = 'C' AND gl_nature = 'D' ORDER BY glac_name ASC");
+    $stmt->execute();
+    $debitGLs = $stmt->fetchAll();
+} catch (Exception $e) {
+    // Fail silently — leave lists empty
+}
+
+?>
 <form id="journalVoucherForm">
     <div class="border rounded p-3 mb-3 bg-light">
         <div class="fw-bold mb-2">ডেবিট অংশ</div>
@@ -6,6 +27,9 @@
                 <div class="col-md-4">
                     <select class="form-select" name="debit_gl[]">
                         <option>ডেবিট জি.এল</option>
+                        <?php foreach ($debitGLs as $gl): ?>
+                            <option value="<?= htmlspecialchars($gl['id']) ?>"><?= htmlspecialchars($gl['glac_name']) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -28,6 +52,9 @@
                 <div class="col-md-4">
                     <select class="form-select" name="credit_gl[]">
                         <option>ক্রেডিট জি.এল</option>
+                        <?php foreach ($creditGLs as $gl): ?>
+                            <option value="<?= htmlspecialchars($gl['id']) ?>"><?= htmlspecialchars($gl['glac_name']) ?></option>       
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -45,18 +72,18 @@
     </div>
     <div class="row mb-3">
         <div class="col-md-6">
-            <span>মোট ডেবিট টাকা : <span id="total_debit">0.00</span></span>
+            <span>মোট ডেবিট টাকা : <span id="journal_total_debit">0.00</span></span>
         </div>
         <div class="col-md-6">
-            <span>মোট ক্রেডিট টাকা : <span id="total_credit">0.00</span></span>
+            <span>মোট ক্রেডিট টাকা : <span id="journal_total_credit">0.00</span></span>
         </div>
     </div>
     <div class="mb-3">
         <label class="form-label">ব্যালেন্স</label>
-        <div id="balance"></div>
+        <div id="journal_balance"></div>
     </div>
     <div class="mt-4 text-end">
-        <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>ভাউচার জমা দিন</button>
+        <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>জার্নাল ভাউচার জমা দিন</button>
     </div>
 </form>
 <script>
@@ -68,12 +95,14 @@ function addJournalDebitRow(btn) {
     newRow.querySelector('.remove-debit-row').style.display = '';
     document.getElementById('journalDebitRows').appendChild(newRow);
     row.querySelector('.remove-debit-row').style.display = '';
+    recalcJournalTotals();
 }
 function removeJournalDebitRow(btn) {
     var row = btn.closest('.journal-debit-row');
     var container = document.getElementById('journalDebitRows');
     if (container.children.length > 1) {
         row.remove();
+        recalcJournalTotals();
     }
 }
 function addJournalCreditRow(btn) {
@@ -84,12 +113,68 @@ function addJournalCreditRow(btn) {
     newRow.querySelector('.remove-credit-row').style.display = '';
     document.getElementById('journalCreditRows').appendChild(newRow);
     row.querySelector('.remove-credit-row').style.display = '';
+    recalcJournalTotals();
 }
 function removeJournalCreditRow(btn) {
     var row = btn.closest('.journal-credit-row');
     var container = document.getElementById('journalCreditRows');
     if (container.children.length > 1) {
         row.remove();
+        recalcJournalTotals();
     }
 }
+</script>
+
+<script>
+function parseJournalAmount(str) {
+    if (!str) return 0;
+    str = String(str).replace(/,/g, '').replace(/[^0-9.\-]/g, '');
+    var v = parseFloat(str);
+    return isNaN(v) ? 0 : v;
+}
+
+function recalcJournalTotals() {
+    var totalDebit = 0;
+    var totalCredit = 0;
+    document.querySelectorAll('#journalDebitRows input[name="debit_amount[]"]').forEach(function(input) {
+        totalDebit += parseJournalAmount(input.value || 0);
+    });
+    document.querySelectorAll('#journalCreditRows input[name="credit_amount[]"]').forEach(function(input) {
+        totalCredit += parseJournalAmount(input.value || 0);
+    });
+
+    var td = document.getElementById('journal_total_debit');
+    var tc = document.getElementById('journal_total_credit');
+    if (td) td.textContent = totalDebit.toFixed(2);
+    if (tc) tc.textContent = totalCredit.toFixed(2);
+
+    var balanceEl = document.getElementById('journal_balance');
+    if (balanceEl) balanceEl.textContent = (totalDebit - totalCredit).toFixed(2);
+
+    var submitBtn = document.querySelector('#journalVoucherForm button[type="submit"]');
+    if (submitBtn) {
+        var diff = Math.abs(totalDebit - totalCredit);
+        if (diff < 0.005 && totalDebit > 0) {
+            submitBtn.removeAttribute('disabled');
+        } else {
+            submitBtn.setAttribute('disabled', 'disabled');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var dContainer = document.getElementById('journalDebitRows');
+    var cContainer = document.getElementById('journalCreditRows');
+    if (dContainer) {
+        dContainer.addEventListener('input', function(e) {
+            if (e.target && e.target.matches('input[name="debit_amount[]"]')) recalcJournalTotals();
+        });
+    }
+    if (cContainer) {
+        cContainer.addEventListener('input', function(e) {
+            if (e.target && e.target.matches('input[name="credit_amount[]"]')) recalcJournalTotals();
+        });
+    }
+    recalcJournalTotals();
+});
 </script>

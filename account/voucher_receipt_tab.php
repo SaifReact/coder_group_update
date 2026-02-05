@@ -56,18 +56,18 @@ try {
     </div>
     <div class="row mb-3">
         <div class="col-md-6">
-            <span>মোট ডেবিট টাকা : <span id="total_debit">0.00</span></span>
+            <span>মোট ডেবিট টাকা : <span id="receipt_total_debit">0.00</span></span>
         </div>
         <div class="col-md-6">
-            <span>মোট ক্রেডিট টাকা : <span id="total_credit">0.00</span></span>
+            <span>মোট ক্রেডিট টাকা : <span id="receipt_total_credit">0.00</span></span>
         </div>
     </div>
     <div class="mb-3">
         <label class="form-label">ব্যালেন্স</label>
-        <div id="balance"></div>
+        <div id="receipt_balance"></div>
     </div>
     <div class="mt-4 text-end">
-        <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>ভাউচার জমা দিন</button>
+        <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>রিসিভ ভাউচার জমা দিন</button>
     </div>
 </form>
 <script>
@@ -82,12 +82,72 @@ function addReceiptRow(btn) {
     document.getElementById('receiptVoucherRows').appendChild(newRow);
     // Show remove button for this row too (if not first)
     row.querySelector('.remove-row').style.display = '';
+    recalcReceiptTotals();
 }
 function removeReceiptRow(btn) {
     var row = btn.closest('.receipt-row');
     var container = document.getElementById('receiptVoucherRows');
     if (container.children.length > 1) {
         row.remove();
+        recalcReceiptTotals();
     }
 }
+</script>
+
+<script>
+// Calculate totals for receipt form (debit first, credit second)
+function parseAmountReceipt(str) {
+    if (!str) return 0;
+    str = String(str).replace(/,/g, '').replace(/[^0-9.\-]/g, '');
+    var v = parseFloat(str);
+    return isNaN(v) ? 0 : v;
+}
+
+function recalcReceiptTotals() {
+    var totalDebit = 0;
+    var totalCredit = 0;
+    document.querySelectorAll('#receiptVoucherRows .receipt-row').forEach(function(row) {
+        var amtInput = row.querySelector('input[name="amount[]"]');
+        var amount = parseAmountReceipt(amtInput ? amtInput.value : 0);
+        var debitSel = row.querySelector('select[name="debit_gl[]"]');
+        var creditSel = row.querySelector('select[name="credit_gl[]"]');
+        if (debitSel && debitSel.value) totalDebit += amount;
+        if (creditSel && creditSel.value) totalCredit += amount;
+    });
+
+    var td = document.getElementById('receipt_total_debit');
+    var tc = document.getElementById('receipt_total_credit');
+    if (td) td.textContent = totalDebit.toFixed(2);
+    if (tc) tc.textContent = totalCredit.toFixed(2);
+
+    var balanceEl = document.getElementById('receipt_balance');
+    if (balanceEl) balanceEl.textContent = (totalDebit - totalCredit).toFixed(2);
+
+    var submitBtn = document.querySelector('#receiptVoucherForm button[type="submit"]');
+    if (submitBtn) {
+        var diff = Math.abs(totalDebit - totalCredit);
+        if (diff < 0.005 && totalDebit > 0) {
+            submitBtn.removeAttribute('disabled');
+        } else {
+            submitBtn.setAttribute('disabled', 'disabled');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var container = document.getElementById('receiptVoucherRows');
+    if (!container) return;
+    container.addEventListener('input', function(e) {
+        if (e.target && e.target.matches('input[name="amount[]"]')) {
+            recalcReceiptTotals();
+        }
+    });
+    container.addEventListener('change', function(e) {
+        if (e.target && (e.target.matches('select[name="debit_gl[]"]') || e.target.matches('select[name="credit_gl[]"]'))) {
+            recalcReceiptTotals();
+        }
+    });
+    // initial
+    recalcReceiptTotals();
+});
 </script>
