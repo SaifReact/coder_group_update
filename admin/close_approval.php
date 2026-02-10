@@ -147,7 +147,8 @@ if ($method === 'POST' && isset($_POST['status'])) {
         </div>
     </div>
 </main>
-
+</div>
+    </div>
 <!-- Close Details Modal -->
 <div class="modal fade" id="closeDetailsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
