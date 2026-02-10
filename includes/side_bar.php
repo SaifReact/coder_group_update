@@ -33,6 +33,10 @@ $role = $_SESSION['role'] ?? '';
                             <span class="icon"><i class="bi bi-cash-coin"></i></span> 
                             <span class="description"> Late Assign </span>
                         </a>
+                        <a class="nav-link" href="close_approval.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Close </span>
+                        </a>
                     </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#setupMenu" aria-expanded="false" aria-controls="setupMenu">
@@ -142,7 +146,11 @@ $role = $_SESSION['role'] ?? '';
                     <span class="icon"><i class="bi bi-award"></i></span> 
                     <span class="description">Certificate</span>
                 </a>
-                
+                <a class="nav-link"
+                   href="account_close.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-award"></i></span> 
+                    <span class="description">Account Close</span>
+                </a>
                 <a class="nav-link"
                    href="password.php" style="font-size:.8rem;">
                     <span class="icon"><i class="bi bi-key"></i></span> 
