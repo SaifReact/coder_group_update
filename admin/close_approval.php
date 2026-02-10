@@ -42,7 +42,7 @@ if ($method === 'POST' && isset($_POST['status'])) {
 
         // set user_login status = 'C'
         $stmtUL = $pdo->prepare("UPDATE user_login SET status = 'C' WHERE member_id = ?");
-        $stmtUL->execute([$member_id]);        
+        $stmtUL->execute([$member_id]);
 
         // Find member_project rows for this member and update each row's status to 'C'
         $stmtFindMP = $pdo->prepare("SELECT id FROM member_project WHERE member_id = ? OR member_code = ?");
@@ -67,6 +67,8 @@ if ($method === 'POST' && isset($_POST['status'])) {
         }
 
         $_SESSION['success_msg'] = '✅ Account close approved and related records updated.';
+        // mark this id so the modal can be auto-shown after redirect
+        $_SESSION['last_closed_id'] = $request_id;
     } else {
         // mark request status accordingly
         $stmtUpd = $pdo->prepare("UPDATE account_close SET status = ?, updated_at = NOW(), updated_by = ? WHERE id = ?");
@@ -119,15 +121,22 @@ if ($method === 'POST' && isset($_POST['status'])) {
                                 <td><?= htmlspecialchars(number_format((float)$r['refund_amt'],2)) ?></td>
                                 <td><?= $r['agreed'] ? 'স্বজ্ঞানে সম্মতি' : 'ভুলক্রমে' ?></td>
                                 <td>
-                                    <form method="post" class="d-flex align-items-center">
-                                        <input type="hidden" name="user_id" value="<?= $r['id'] ?>">
-                                        <select name="status" class="form-select form-select-sm me-2">
-                                            <option value="A" <?= ($r['status'] === 'A') ? 'selected' : '' ?>>✅ Approve</option>
-                                            <option value="I" <?= ($r['status'] === 'I') ? 'selected' : '' ?>>⏸️ Inactive</option>
-                                            <option value="R" <?= ($r['status'] === 'R') ? 'selected' : '' ?>>❌ Reject</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
-                                    </form>
+                                    <div class="d-flex align-items-center">
+                                        <?php if ($r['status'] === 'A'): ?>
+                                            <button type="button" class="btn btn-secondary btn-sm me-2 view-close-btn" data-id="<?= htmlspecialchars($r['id']) ?>" title="Print Letter">
+                                                <i class="fa fa-file-alt"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                        <form method="post" class="d-flex align-items-center">
+                                            <input type="hidden" name="user_id" value="<?= $r['id'] ?>">
+                                            <select name="status" class="form-select form-select-sm me-2">
+                                                <option value="A" <?= ($r['status'] === 'A') ? 'selected' : '' ?>>✅ Approve</option>
+                                                <option value="I" <?= ($r['status'] === 'I') ? 'selected' : '' ?>>⏸️ Inactive</option>
+                                                <option value="R" <?= ($r['status'] === 'R') ? 'selected' : '' ?>>❌ Reject</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -138,7 +147,75 @@ if ($method === 'POST' && isset($_POST['status'])) {
         </div>
     </div>
 </main>
-</div>
+
+<!-- Close Details Modal -->
+<div class="modal fade" id="closeDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Account Close Letter</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="closeDetailsModalBody">
+        <div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="printCloseLetter">Print</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.view-close-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.getAttribute('data-id');
+            var modalBody = document.getElementById('closeDetailsModalBody');
+            modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+            var modalEl = document.getElementById('closeDetailsModal');
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            fetch('close_details.php?id=' + encodeURIComponent(id))
+                .then(resp => resp.text())
+                .then(html => { modalBody.innerHTML = html; })
+                .catch(() => { modalBody.innerHTML = '<div class="alert alert-danger">Could not load details.</div>'; });
+        });
+    });
+
+    // auto-open recently approved close details (if server marked one)
+    var lastClosedId = <?php echo json_encode($_SESSION['last_closed_id'] ?? null); ?>;
+    if (lastClosedId) {
+        var modalBody = document.getElementById('closeDetailsModalBody');
+        modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+        var modalEl = document.getElementById('closeDetailsModal');
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+        fetch('close_details.php?id=' + encodeURIComponent(lastClosedId))
+            .then(resp => resp.text())
+            .then(html => { modalBody.innerHTML = html; })
+            .catch(() => { modalBody.innerHTML = '<div class="alert alert-danger">Could not load details.</div>'; });
+    }
+    <?php if(isset($_SESSION['last_closed_id'])){ unset($_SESSION['last_closed_id']); } ?>
+
+    // Print button
+    var printBtn = document.getElementById('printCloseLetter');
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            var modalBody = document.getElementById('closeDetailsModalBody');
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Close Letter</title>');
+            printWindow.document.write('<link rel="stylesheet" href="../assets/css/bootstrap.min.css">');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(modalBody.innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(function(){ printWindow.print(); printWindow.close(); }, 500);
+        });
+    }
+});
+</script>
