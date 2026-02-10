@@ -84,13 +84,15 @@ if ($pdo->inTransaction() === false) {
     $pdo->beginTransaction();
 }
 
-if ($_POST['action'] === 'add') {
+        if ($_POST['action'] === 'add') {
             $glac_name = $_POST['glac_name'] ?? '';
             $glac_type = $_POST['glac_type'] ?? '';
             $parent_id = intval($_POST['parent_id'] ?? 0);
             $gl_nature = $_POST['gl_nature'] ?? 'D';
             $allow_manual_dr = $_POST['allow_manual_dr'] ?? 'Y';
             $allow_manual_cr = $_POST['allow_manual_cr'] ?? 'Y';
+            $is_bank_balance = isset($_POST['is_bank_balance']) ? 1 : 0;
+            $is_cash_in_hand = isset($_POST['is_cash_in_hand']) ? 1 : 0;
             $parent_child = $_POST['parent_child'] ?? 'P';
             $status = $_POST['status'] ?? 'A';
             $created_by = $_SESSION['user_id'];
@@ -99,8 +101,8 @@ if ($_POST['action'] === 'add') {
                 // Level 1
                 $inserted_id = insertLevel1($pdo, $glac_name);
                 // Update other fields for this row
-                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, parent_child=?, status=?, created_by=? WHERE id=?");
-                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $parent_child, $status, $created_by, $inserted_id]);
+                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, is_bank_balance=?, is_cash_in_hand=?, parent_child=?, status=?, created_by=? WHERE id=?");
+                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $is_bank_balance, $is_cash_in_hand, $parent_child, $status, $created_by, $inserted_id]);
             } else {
                 // Get parent level
                 $stmt = $pdo->prepare("SELECT level_code FROM glac_mst WHERE id = ?");
@@ -114,8 +116,8 @@ if ($_POST['action'] === 'add') {
                     $inserted_id = insertLevel4($pdo, $parent_id, $glac_name);
                 }
                 // Update other fields for this row
-                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, parent_child=?, status=?, created_by=? WHERE id=?");
-                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $parent_child, $status, $created_by, $inserted_id]);
+                $stmt = $pdo->prepare("UPDATE glac_mst SET glac_type=?, gl_nature=?, allow_manual_dr=?, allow_manual_cr=?, is_bank_balance=?, is_cash_in_hand=?, parent_child=?, status=?, created_by=? WHERE id=?");
+                $stmt->execute([$glac_type, $gl_nature, $allow_manual_dr, $allow_manual_cr, $is_bank_balance, $is_cash_in_hand, $parent_child, $status, $created_by, $inserted_id]);
             }
             $pdo->commit();
             $_SESSION['success_msg'] = '✅ সফলভাবে জেনারেল লেজার এন্ট্রি যোগ করা হয়েছে!';
@@ -129,11 +131,13 @@ if ($_POST['action'] === 'add') {
             $gl_nature = $_POST['gl_nature'] ?? 'D';
             $allow_manual_dr = $_POST['allow_manual_dr'] ?? 'Y';
             $allow_manual_cr = $_POST['allow_manual_cr'] ?? 'Y';
+            $is_bank_balance = isset($_POST['is_bank_balance']) ? 1 : 0;
+            $is_cash_in_hand = isset($_POST['is_cash_in_hand']) ? 1 : 0;
             $status = $_POST['status'] ?? 'A';
             $updated_by = $_SESSION['user_id'];
             
-            $stmt = $pdo->prepare("UPDATE glac_mst SET glac_name = ?, gl_nature = ?, allow_manual_dr = ?, allow_manual_cr = ?, status = ?, updated_by = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->execute([$glac_name, $gl_nature, $allow_manual_dr, $allow_manual_cr, $status, $updated_by, $id]);
+            $stmt = $pdo->prepare("UPDATE glac_mst SET glac_name = ?, gl_nature = ?, allow_manual_dr = ?, allow_manual_cr = ?, is_bank_balance = ?, is_cash_in_hand = ?, status = ?, updated_by = ?, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$glac_name, $gl_nature, $allow_manual_dr, $allow_manual_cr, $is_bank_balance, $is_cash_in_hand, $status, $updated_by, $id]);
             
             $pdo->commit();
             
@@ -261,6 +265,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                                 data-dr="<?= htmlspecialchars($ledger['allow_manual_dr']) ?>"
                                                 data-cr="<?= htmlspecialchars($ledger['allow_manual_cr']) ?>"
                                                 data-status="<?= htmlspecialchars($ledger['status']) ?>"
+                                                data-bank="<?= htmlspecialchars($ledger['is_bank_balance'] ?? 0) ?>"
+                                                data-cash="<?= htmlspecialchars($ledger['is_cash_in_hand'] ?? 0) ?>"
                                                 data-bs-toggle="modal" data-bs-target="#editLedgerModal">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
@@ -371,6 +377,21 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             </div>
                         </div>
 
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_bank_balance" id="is_bank_balance" value="1">
+                                    <label class="form-check-label" for="is_bank_balance">Bank Balance হিসেবে চিহ্নিত</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_cash_in_hand" id="is_cash_in_hand" value="1">
+                                    <label class="form-check-label" for="is_cash_in_hand">Cash In Hand হিসেবে চিহ্নিত</label>
+                                </div>
+                            </div>
+                        </div>
+
                     <div class="alert alert-info">
                         <strong>📝 নোট:</strong>
                         <ul class="mb-0">
@@ -444,6 +465,21 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         </div>
                     </div>
 
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_bank_balance" id="edit_is_bank_balance" value="1">
+                                    <label class="form-check-label" for="edit_is_bank_balance">Bank Balance হিসেবে চিহ্নিত</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_cash_in_hand" id="edit_is_cash_in_hand" value="1">
+                                    <label class="form-check-label" for="edit_is_cash_in_hand">Cash In Hand হিসেবে চিহ্নিত</label>
+                                </div>
+                            </div>
+                        </div>
+
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary px-4">
                             <i class="bi bi-save"></i> আপডেট করুন
@@ -493,6 +529,11 @@ document.querySelectorAll('.edit-btn').forEach(btn => {
         document.getElementById('edit_allow_manual_dr').value = this.dataset.dr;
         document.getElementById('edit_allow_manual_cr').value = this.dataset.cr;
         document.getElementById('edit_status').value = this.dataset.status;
+        // set bank/cash checkboxes
+        var bankCheckbox = document.getElementById('edit_is_bank_balance');
+        var cashCheckbox = document.getElementById('edit_is_cash_in_hand');
+        if (bankCheckbox) bankCheckbox.checked = (this.dataset.bank == '1');
+        if (cashCheckbox) cashCheckbox.checked = (this.dataset.cash == '1');
     });
 });
 
