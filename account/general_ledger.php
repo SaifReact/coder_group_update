@@ -301,17 +301,17 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">লেজার টাইপ <span class="text-danger">*</span></label>
+                            <label class="form-label">লেজার স্তর <span class="text-danger">(Ledger Level)*</span></label>
                             <select class="form-select" name="glac_type" id="glac_type" required>
                                 <option value="">নির্বাচন করুন</option>
                                 <?php foreach ($allAccountType as $accountType): ?>
                                     <option value="<?= $accountType['id'] ?>"><?= htmlspecialchars($accountType['name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <small class="text-muted">Level 1 এর জন্য প্রথমে টাইপ নির্বাচন করুন</small>
+                            <small class="text-muted">Level 1 এর জন্য প্রথমে স্তর নির্বাচন করুন</small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">প্যারেন্ট লেজার</label>
+                            <label class="form-label">প্যারেন্ট লেজার <span class="text-danger">(Parent Ledger)*</span></label>
                             <select class="form-select" name="parent_id" id="parent_id">
                                 <option value="0" data-type="">কোনটি নয় (Root Level 1)</option>
                                 <?php foreach ($ledgers as $ledger): ?>
@@ -324,45 +324,28 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">লেজারের নাম <span class="text-danger">*</span></label>
+                            <label class="form-label">লেজারের নাম <span class="text-danger">(Ledger Name)*</span></label>
                             <input type="text" class="form-control" name="glac_name" placeholder="লেজারের নাম লিখুন" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">GL Nature <span class="text-danger">*</span></label>
+                            <label class="form-label">জিএল প্রকৃতি <span class="text-danger">(GL Nature)*</span></label>
                             <select class="form-select" name="gl_nature" required>
-                                <option value="D">Debit (D)</option>
-                                <option value="C">Credit (C)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Allow Manual DR <span class="text-danger">*</span></label>
-                            <select class="form-select" name="allow_manual_dr" required>
-                                <option value="Y">হ্যাঁ (Y)</option>
-                                <option value="N">না (N)</option>
-                            </select>
-                        </div>
-                       <div class="col-md-6">
-                            <label class="form-label">Allow Manual CR <span class="text-danger">*</span></label>
-                            <select class="form-select" name="allow_manual_cr" required>
-                                <option value="Y">হ্যাঁ (Y)</option>
-                                <option value="N">না (N)</option>
+                                <option value="D">ডেবিট (Debit)</option>
+                                <option value="C">ক্রেডিট (Credit)</option>
                             </select>
                         </div>
                     </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <label class="form-label">অবস্থা <span class="text-danger">(Status)*</span></label>
                                 <select class="form-select" name="status" required>
-                                    <option value="A" selected>Active (A)</option>
-                                    <option value="I">Inactive (I)</option>
+                                    <option value="A" selected>সক্রিয় (Active)</option>
+                                    <option value="I">নিষ্ক্রিয় (Inactive)</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">ধরণ <span class="text-danger">*</span></label>
+                                <label class="form-label">ধরণ <span class="text-danger">(Type)*</span></label>
                                 <div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="parent_child" id="typeParent" value="P" checked required>
@@ -391,6 +374,22 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 </div>
                             </div>
                         </div>
+                        <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">ম্যানুয়াল ডেবিট অনুমতি <span class="text-danger">(Allow Manual DR)*</span></label>
+                            <select class="form-select" name="allow_manual_dr" required>
+                                <option value="Y">হ্যাঁ (Y)</option>
+                                <option value="N">না (N)</option>
+                            </select>
+                        </div>
+                       <div class="col-md-6">
+                            <label class="form-label">ম্যানুয়াল ক্রেডিট অনুমতি <span class="text-danger">(Allow Manual CR)*</span></label>
+                            <select class="form-select" name="allow_manual_cr" required>
+                                <option value="Y">হ্যাঁ (Y)</option>
+                                <option value="N">না (N)</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="alert alert-info">
                         <strong>📝 নোট:</strong>
@@ -427,45 +426,28 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <input type="hidden" name="id" id="edit_id">
                     
                     <div class="mb-3">
-                        <label class="form-label">লেজারের নাম <span class="text-danger">*</span></label>
+                        <label class="form-label">লেজারের নাম <span class="text-danger">(Ledger Name)*</span></label>
                         <input type="text" class="form-control" name="glac_name" id="edit_glac_name" required>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">লেজার প্রকৃতি <span class="text-danger">*</span></label>
+                            <label class="form-label">জিএল প্রকৃতি <span class="text-danger">(GL Nature)*</span></label>
                             <select class="form-select" name="gl_nature" id="edit_gl_nature" required>
-                                <option value="D">Debit (D)</option>
-                                <option value="C">Credit (C)</option>
+                                <option value="D">ডেবিট (Debit)</option>
+                                <option value="C">ক্রেডিট (Credit)</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Status <span class="text-danger">*</span></label>
+                            <label class="form-label">অবস্থা <span class="text-danger">(Status)*</span></label>
                             <select class="form-select" name="status" id="edit_status" required>
-                                <option value="A">Active (A)</option>
-                                <option value="N">Inactive (N)</option>
+                                <option value="A">সক্রিয় (Active)</option>
+                                <option value="N">নিষ্ক্রিয় (Inactive)</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Allow Manual DR <span class="text-danger">*</span></label>
-                            <select class="form-select" name="allow_manual_dr" id="edit_allow_manual_dr" required>
-                                <option value="Y">হ্যাঁ (Y)</option>
-                                <option value="N">না (N)</option>
-                            </select>
-                        </div>
-                       <div class="col-md-6">
-                            <label class="form-label">Allow Manual CR <span class="text-danger">*</span></label>
-                            <select class="form-select" name="allow_manual_cr" id="edit_allow_manual_cr" required>
-                                <option value="Y">হ্যাঁ (Y)</option>
-                                <option value="N">না (N)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="is_bank_balance" id="edit_is_bank_balance" value="1">
@@ -479,6 +461,23 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 </div>
                             </div>
                         </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">ম্যানুয়াল ডেবিট অনুমতি <span class="text-danger">(Allow Manual DR)*</span></label>
+                            <select class="form-select" name="allow_manual_dr" id="edit_allow_manual_dr" required>
+                                <option value="Y">হ্যাঁ (Y)</option>
+                                <option value="N">না (N)</option>
+                            </select>
+                        </div>
+                       <div class="col-md-6">
+                            <label class="form-label">ম্যানুয়াল ক্রেডিট অনুমতি <span class="text-danger">(Allow Manual CR)*</span></label>
+                            <select class="form-select" name="allow_manual_cr" id="edit_allow_manual_cr" required>
+                                <option value="Y">হ্যাঁ (Y)</option>
+                                <option value="N">না (N)</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary px-4">
@@ -585,6 +584,36 @@ document.addEventListener('DOMContentLoaded', function() {
     glacType.addEventListener('change', renderFiltered);
     // Initial render (in case form preserved state)
     renderFiltered();
+
+    // Sync Allow Manual DR/CR based on Parent/Child selection in Add modal
+    (function(){
+        var addModal = document.getElementById('addLedgerModal');
+        if (!addModal) return;
+
+        function syncAllowManual(val){
+            var dr = addModal.querySelector('select[name="allow_manual_dr"]');
+            var cr = addModal.querySelector('select[name="allow_manual_cr"]');
+            if (!dr || !cr) return;
+            if (val === 'P'){
+                dr.value = 'N';
+                cr.value = 'N';
+            } else if (val === 'C'){
+                dr.value = 'Y';
+                cr.value = 'Y';
+            }
+        }
+
+        var radios = addModal.querySelectorAll('input[name="parent_child"]');
+        radios.forEach(function(r){
+            r.addEventListener('change', function(){
+                syncAllowManual(this.value);
+            });
+        });
+
+        // Initial sync based on currently checked radio
+        var checked = addModal.querySelector('input[name="parent_child"]:checked');
+        if (checked) syncAllowManual(checked.value);
+    })();
 });
 </script>
 
