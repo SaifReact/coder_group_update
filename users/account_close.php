@@ -42,6 +42,7 @@ $stmtMp = $pdo->prepare("SELECT COALESCE(SUM(paid_amount),0) AS paid_amount_sum 
 $stmtMp->execute([$member_id, $member_code]);
 $mp = $stmtMp->fetch(PDO::FETCH_ASSOC);
 $paid_amount_sum = $mp['paid_amount_sum'] ?? 0;
+$total_deposited = $admission_fee + $samity_share_amt + $paid_amount_sum;
 $total_amt = $samity_share_amt + $paid_amount_sum;
 // Determine deduction and refund based on account age
 if ($account_age_days !== '' && $account_age_days < 730) {
@@ -98,6 +99,7 @@ if ($account_age_days !== '' && $account_age_days < 730) {
                         </div>
                         <input type="hidden" name="none_refund" value="<?php echo htmlspecialchars($admission_fee); ?>">
                         <input type="hidden" name="total_amt" value="<?php echo htmlspecialchars($total_amt); ?>">
+                        <input type="hidden" name="total_deposited" value="<?php echo htmlspecialchars($total_deposited); ?>">
                         <input type="hidden" name="deduction" value="<?php echo htmlspecialchars($deduction); ?>">
                         <input type="hidden" name="refund_amt" value="<?php echo htmlspecialchars($refund_amt); ?>">
                         <input type="hidden" name="agreed" value="0">
@@ -126,8 +128,9 @@ if ($account_age_days !== '' && $account_age_days < 730) {
                                 <tr>
                                     <th>#</th>
                                     <th>Reason</th>
-                                    <th>Total Amount</th>
+                                    <th>Total Deposited</th>
                                     <th>None Refund</th>
+                                    <th>Total Amount</th>
                                     <th>Deduction</th>
                                     <th>Refund Amt</th>
                                     <th>Status</th>
@@ -139,8 +142,9 @@ if ($account_age_days !== '' && $account_age_days < 730) {
                                 <tr>
                                     <td><?php echo $r['id']; ?></td>
                                     <td><?php echo nl2br(htmlspecialchars($r['reasons'])); ?></td>
-                                    <td><?php echo htmlspecialchars($r['total_amt']); ?></td>
+                                    <td><?php echo htmlspecialchars($r['total_deposited']); ?></td>
                                     <td><?php echo htmlspecialchars($r['none_refund']); ?></td>
+                                    <td><?php echo htmlspecialchars($r['total_amt']); ?></td>
                                     <td><?php echo htmlspecialchars($r['deduction']); ?></td>
                                     <td><?php echo htmlspecialchars($r['refund_amt']); ?></td>
                                     <td>

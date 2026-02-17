@@ -38,8 +38,8 @@ if ($method === 'POST' && isset($_POST['status'])) {
     // If approving, update related tables
     if ($status === 'A') {
         // update account_close status and waiver
-        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = 'A', waiver = ?, updated_at = NOW(), updated_by = ? WHERE id = ?");
-        $stmtUpd->execute([$waiver, $_SESSION['user_id'], $request_id]);
+        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = 'A', waiver = ? WHERE id = ?");
+        $stmtUpd->execute([$waiver, $request_id]);
 
         // set user_login status = 'C'
         $stmtUL = $pdo->prepare("UPDATE user_login SET status = 'C' WHERE member_id = ?");
@@ -72,8 +72,8 @@ if ($method === 'POST' && isset($_POST['status'])) {
         $_SESSION['last_closed_id'] = $request_id;
     } else {
         // mark request status accordingly and update waiver
-        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = ?, waiver = ?, updated_at = NOW(), updated_by = ? WHERE id = ?");
-        $stmtUpd->execute([$status, $waiver, $_SESSION['user_id'], $request_id]);
+        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = ?, waiver = ? WHERE id = ?");
+        $stmtUpd->execute([$status, $waiver, $request_id]);
 
         if ($status === 'I') {
             $_SESSION['success_msg'] = '⚠️ Account close request marked inactive.';
@@ -103,11 +103,12 @@ if ($method === 'POST' && isset($_POST['status'])) {
                             <tr>
                                 <th width="5%">#</th>
                                 <th width="15%">Member Info</th>
-                                <th width="20%">Reason</th>
+                                <th width="10%">Reason</th>
+                                <th width="10%">Deposited</th>
                                 <th width="10%">Total Amt</th>
                                 <th width="10%">Refund Amt</th>
                                 <th width="5%">Agreed</th>
-                                <th width="50%">Action</th>
+                                <th width="35%">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -117,6 +118,7 @@ if ($method === 'POST' && isset($_POST['status'])) {
                                 <td><?= htmlspecialchars($r['member_code']) ?>
                                 <br/><?= htmlspecialchars($r['name_bn']) ?><br/><?= htmlspecialchars($r['name_en']) ?></td>
                                 <td><?= nl2br(htmlspecialchars($r['reasons'])) ?></td>
+                                <td><?= htmlspecialchars(number_format((float)$r['total_deposited'],2)) ?></td>
                                 <td><?= htmlspecialchars(number_format((float)$r['total_amt'],2)) ?></td>
                                 <td><?= htmlspecialchars(number_format((float)$r['refund_amt'],2)) ?></td>
                                 <td><?= $r['agreed'] ? 'স্বজ্ঞানে সম্মতি' : 'ভুলক্রমে' ?></td>

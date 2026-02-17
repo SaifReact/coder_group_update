@@ -14,14 +14,15 @@ try {
         if (empty($reasons)) throw new Exception('Reason is required.');
 
         // Read computed amounts from POST (ensure numeric)
+        $total_deposited = isset($_POST['total_deposited']) ? (float)str_replace(',', '', $_POST['total_deposited']) : 0.0;
         $total_amt = isset($_POST['total_amt']) ? (float)str_replace(',', '', $_POST['total_amt']) : 0.0;
         $none_refund = isset($_POST['none_refund']) ? (float)str_replace(',', '', $_POST['none_refund']) : 0.0;
         $deduction = isset($_POST['deduction']) ? (float)str_replace(',', '', $_POST['deduction']) : 0.0;
         $refund_amt = isset($_POST['refund_amt']) ? (float)str_replace(',', '', $_POST['refund_amt']) : 0.0;
         $agreed = isset($_POST['agreed']) && $_POST['agreed'] ? 1 : 0;
 
-        $stmt = $pdo->prepare("INSERT INTO account_close (member_id, member_code, reasons, total_amt, none_refund, deduction, refund_amt, status, agreed, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)");
-        $stmt->execute([$member_id, $member_code, $reasons, $total_amt, $none_refund, $deduction, $refund_amt, 'I', $agreed, $user_id]);
+        $stmt = $pdo->prepare("INSERT INTO account_close (member_id, member_code, reasons, total_deposited, total_amt, none_refund, deduction, refund_amt, status, agreed, created_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)");
+        $stmt->execute([$member_id, $member_code, $reasons, $total_deposited, $total_amt, $none_refund, $deduction, $refund_amt, 'I', $agreed, $user_id]);
 
         $_SESSION['success_msg'] = '✅ হিসাব বন্ধের অনুরোধ জমা দেওয়া হয়েছে (Account close request submitted)..!';
         header('Location: ../users/account_close.php');

@@ -37,23 +37,25 @@ $mobile = $r['mobile'] ?? '';
         কোডার পেশাজীবী সমবায় সমিতি লিঃ
         </p>
 
-        <p>বিষয়: হিসাব বন্ধ করার আবেদন।</p>
+        <p>বিষয়: সদস্যপদ ও হিসাব বন্ধ করার আবেদন।</p>
 
         <p>জনাব/জনাবা,</p>
 
-        <p>বিনীত নিবেদন এই যে, আমার নিম্নোক্ত হিসাবটি বন্ধ করার জন্য আপনার সদয় অনুমতি প্রার্থনা করছি।</p>
+        <p>বিনীত নিবেদন এই যে, আমার নিম্নোক্ত সদস্যপদ ও হিসাবটি বন্ধ করার জন্য আপনার সদয় অনুমতি প্রার্থনা করছি।</p>
 
         <p><strong>হিসাবের নাম:</strong> <?php echo htmlspecialchars($member_name); ?><br/>
         <strong>হিসাব নম্বর:</strong> <?php echo htmlspecialchars($account_no); ?></p>
         <p><strong>কারণ:</strong>
         <?php echo nl2br(htmlspecialchars($r['reasons'])); ?></p>
-        <p><strong>অর্থের বিবরণ:</strong></p>
-        <p><strong>মোট পরিমাণ:</strong> <?php echo htmlspecialchars(number_format((float)$r['total_amt'],2)); ?> টাকা<br/>
+        <p><strong>অর্থের বিবরণ:</strong><br/><br/>
+        <strong>মোট জমা:</strong> <?php echo htmlspecialchars(number_format((float)$r['total_deposited'],2)); ?> টাকা<br/>
         <strong>অফেরৎযোগ্য ফি:</strong> <?php echo htmlspecialchars(number_format((float)$r['none_refund'],2)); ?> টাকা<br/>
+        <strong>মোট পরিমাণ:</strong> <?php echo htmlspecialchars(number_format((float)$r['total_amt'],2)); ?> টাকা<br/>
         <strong>কর্তনযোগ্য ফি (১০%):</strong> <?php echo htmlspecialchars(number_format((float)$r['deduction'],2)); ?> টাকা<br/>
-        <strong>ফেরতযোগ্য পরিমাণ:</strong> <?php echo htmlspecialchars(number_format((float)$r['refund_amt'],2)); ?> টাকা</p>
-
-        <p>অতএব, প্রয়োজনীয় ব্যবস্থা গ্রহণ করে আমার হিসাবটি বন্ধ করার জন্য বিশেষভাবে অনুরোধ জানাচ্ছি।</p>
+        <strong>ফেরতযোগ্য পরিমাণ:</strong> <?php echo htmlspecialchars(number_format((float)$r['refund_amt'],2)); ?> টাকা<br/>
+        <strong>মওকুফযোগ্য ফি:</strong> <?php echo htmlspecialchars(number_format((float)$r['waiver'],2)); ?> টাকা<br/></p>
+        <strong>মোট ফেরৎযোগ্য ফি:</strong> <?php echo htmlspecialchars(number_format((float)$r['refund_amt'] + (float)$r['waiver'],2)); ?> টাকা<br/><br/><br/>
+        <p>অতএব, প্রয়োজনীয় ব্যবস্থা গ্রহণ করে আমার সদস্যপদ ও হিসাবটি বন্ধ করার জন্য বিশেষভাবে অনুরোধ জানাচ্ছি।</p>
 
         <p>ধন্যবাদান্তে,</p>
 
