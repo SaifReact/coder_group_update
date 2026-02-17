@@ -178,8 +178,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <div class="col-md-4 text-end"><a href="../account/payment.php"><button type="button" class="btn btn-sm btn-success">
                                 Payment ( পেমেন্ট )      </button></a></div>
                         </div>
-                      <hr class="mb-4" /> 
-                      
+                        <hr class="mb-4" /> 
+
+                        <div class="mb-3">
+                            <input type="search" id="tableSearch" class="form-control form-control-sm" placeholder="Search table... (যেকোনো তথ্য খুঁজুন)" aria-label="Search table">
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped align-middle">
                                 <thead class="table-light">
@@ -251,6 +255,27 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 </tbody>
                             </table>
                         </div>
+                            <script>
+                            document.addEventListener('DOMContentLoaded', function(){
+                                const input = document.getElementById('tableSearch');
+                                const table = document.querySelector('.table.table-bordered');
+                                const tbody = table ? table.querySelector('tbody') : null;
+                                if (!input || !tbody) return;
+
+                                input.addEventListener('input', function(){
+                                    const q = input.value.trim().toLowerCase();
+                                    const rows = tbody.querySelectorAll('tr');
+                                    if (q === ''){
+                                        rows.forEach(r => r.style.display = '');
+                                        return;
+                                    }
+                                    rows.forEach(r => {
+                                        const text = r.textContent.toLowerCase();
+                                        r.style.display = text.indexOf(q) !== -1 ? '' : 'none';
+                                    });
+                                });
+                            });
+                            </script>
                     </div>
                 </div>
             </div>
