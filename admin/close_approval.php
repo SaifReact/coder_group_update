@@ -20,6 +20,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 if ($method === 'POST' && isset($_POST['status'])) {
     $status = in_array($_POST['status'], ['A','I','R']) ? $_POST['status'] : 'I';
     $request_id = (int)($_POST['user_id'] ?? 0);
+    $waiver = isset($_POST['waiver']) ? (float)$_POST['waiver'] : 0;
 
     // fetch request row
     $stmtR = $pdo->prepare("SELECT * FROM account_close WHERE id = ? LIMIT 1");
@@ -36,9 +37,9 @@ if ($method === 'POST' && isset($_POST['status'])) {
 
     // If approving, update related tables
     if ($status === 'A') {
-        // update account_close status
-        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = 'A', updated_at = NOW(), updated_by = ? WHERE id = ?");
-        $stmtUpd->execute([$_SESSION['user_id'], $request_id]);
+        // update account_close status and waiver
+        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = 'A', waiver = ?, updated_at = NOW(), updated_by = ? WHERE id = ?");
+        $stmtUpd->execute([$waiver, $_SESSION['user_id'], $request_id]);
 
         // set user_login status = 'C'
         $stmtUL = $pdo->prepare("UPDATE user_login SET status = 'C' WHERE member_id = ?");
@@ -70,9 +71,9 @@ if ($method === 'POST' && isset($_POST['status'])) {
         // mark this id so the modal can be auto-shown after redirect
         $_SESSION['last_closed_id'] = $request_id;
     } else {
-        // mark request status accordingly
-        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = ?, updated_at = NOW(), updated_by = ? WHERE id = ?");
-        $stmtUpd->execute([$status, $_SESSION['user_id'], $request_id]);
+        // mark request status accordingly and update waiver
+        $stmtUpd = $pdo->prepare("UPDATE account_close SET status = ?, waiver = ?, updated_at = NOW(), updated_by = ? WHERE id = ?");
+        $stmtUpd->execute([$status, $waiver, $_SESSION['user_id'], $request_id]);
 
         if ($status === 'I') {
             $_SESSION['success_msg'] = '⚠️ Account close request marked inactive.';
@@ -100,22 +101,21 @@ if ($method === 'POST' && isset($_POST['status'])) {
                     <table class="table table-bordered table-striped align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>#</th>
-                                <th>Member Code</th>
-                                <th>Member Name</th>
-                                <th>Reason</th>
-                                <th>Total Amt</th>
-                                <th>Refund Amt</th>
-                                <th>Agreed</th>
-                                <th>Action</th>
+                                <th width="5%">#</th>
+                                <th width="15%">Member Info</th>
+                                <th width="20%">Reason</th>
+                                <th width="10%">Total Amt</th>
+                                <th width="10%">Refund Amt</th>
+                                <th width="5%">Agreed</th>
+                                <th width="50%">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($requests as $r): ?>
                             <tr>
                                 <td><?= htmlspecialchars($r['id']) ?></td>
-                                <td><?= htmlspecialchars($r['member_code']) ?></td>
-                                <td><?= htmlspecialchars($r['name_bn']) ?><br/><?= htmlspecialchars($r['name_en']) ?></td>
+                                <td><?= htmlspecialchars($r['member_code']) ?>
+                                <br/><?= htmlspecialchars($r['name_bn']) ?><br/><?= htmlspecialchars($r['name_en']) ?></td>
                                 <td><?= nl2br(htmlspecialchars($r['reasons'])) ?></td>
                                 <td><?= htmlspecialchars(number_format((float)$r['total_amt'],2)) ?></td>
                                 <td><?= htmlspecialchars(number_format((float)$r['refund_amt'],2)) ?></td>
@@ -129,11 +129,14 @@ if ($method === 'POST' && isset($_POST['status'])) {
                                         <?php endif; ?>
                                         <form method="post" class="d-flex align-items-center">
                                             <input type="hidden" name="user_id" value="<?= $r['id'] ?>">
-                                            <select name="status" class="form-select form-select-sm me-2">
+                                            <select name="status" class="form-select form-select-sm me-2" style="width:130px;">
                                                 <option value="A" <?= ($r['status'] === 'A') ? 'selected' : '' ?>>✅ Approve</option>
                                                 <option value="I" <?= ($r['status'] === 'I') ? 'selected' : '' ?>>⏸️ Inactive</option>
                                                 <option value="R" <?= ($r['status'] === 'R') ? 'selected' : '' ?>>❌ Reject</option>
                                             </select>
+                                            <div class="flex-grow-1 me-2">
+                                                <input type="number" name="waiver" class="form-control form-control-sm" step="0.01" placeholder="Waiver Amount" value="<?= htmlspecialchars($r['waiver'] ?? 'Waiver Amount') ?>">
+                                            </div>
                                             <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
                                         </form>
                                     </div>
