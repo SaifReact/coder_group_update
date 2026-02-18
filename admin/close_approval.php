@@ -50,9 +50,9 @@ if ($method === 'POST' && isset($_POST['status'])) {
         $stmtFindMP->execute([$member_id, $member_code]);
         $mpRows = $stmtFindMP->fetchAll(PDO::FETCH_ASSOC);
         if ($mpRows) {
-            $stmtUpdateSingle = $pdo->prepare("UPDATE member_project SET status = 'C', updated_at = NOW(), updated_by = ? WHERE id = ?");
+            $stmtUpdateSingle = $pdo->prepare("UPDATE member_project SET status = 'C' WHERE id = ?");
             foreach ($mpRows as $mpRow) {
-                $stmtUpdateSingle->execute([$_SESSION['user_id'], $mpRow['id']]);
+                $stmtUpdateSingle->execute([$mpRow['id']]);
             }
         }
 
@@ -61,9 +61,9 @@ if ($method === 'POST' && isset($_POST['status'])) {
         $stmtFindPay->execute([$member_id, $member_code]);
         $payRows = $stmtFindPay->fetchAll(PDO::FETCH_ASSOC);
         if ($payRows) {
-            $stmtUpdatePaySingle = $pdo->prepare("UPDATE member_payments SET status = 'C', updated_at = NOW(), updated_by = ? WHERE id = ?");
+            $stmtUpdatePaySingle = $pdo->prepare("UPDATE member_payments SET status = 'C' WHERE id = ?");
             foreach ($payRows as $payRow) {
-                $stmtUpdatePaySingle->execute([$_SESSION['user_id'], $payRow['id']]);
+                $stmtUpdatePaySingle->execute([$payRow['id']]);
             }
         }
 
@@ -103,10 +103,12 @@ if ($method === 'POST' && isset($_POST['status'])) {
                             <tr>
                                 <th width="5%">#</th>
                                 <th width="15%">Member Info</th>
-                                <th width="10%">Reason</th>
-                                <th width="10%">Deposited</th>
-                                <th width="10%">Total Amt</th>
-                                <th width="10%">Refund Amt</th>
+                                <th width="15%">Reason</th>
+                                <th width="5%">Deposited</th>
+                                <th width="5%">None Refund</th>
+                                <th width="5%">Total Amt</th>
+                                <th width="5%">Deduction</th>
+                                <th width="5%">Refund Amt</th>
                                 <th width="5%">Agreed</th>
                                 <th width="35%">Action</th>
                             </tr>
@@ -119,7 +121,9 @@ if ($method === 'POST' && isset($_POST['status'])) {
                                 <br/><?= htmlspecialchars($r['name_bn']) ?><br/><?= htmlspecialchars($r['name_en']) ?></td>
                                 <td><?= nl2br(htmlspecialchars($r['reasons'])) ?></td>
                                 <td><?= htmlspecialchars(number_format((float)$r['total_deposited'],2)) ?></td>
+                                <td><?= htmlspecialchars(number_format((float)$r['none_refund'],2)) ?></td>
                                 <td><?= htmlspecialchars(number_format((float)$r['total_amt'],2)) ?></td>
+                                <td><?= htmlspecialchars(number_format((float)$r['deduction'],2)) ?></td>
                                 <td><?= htmlspecialchars(number_format((float)$r['refund_amt'],2)) ?></td>
                                 <td><?= $r['agreed'] ? 'স্বজ্ঞানে সম্মতি' : 'ভুলক্রমে' ?></td>
                                 <td>
@@ -131,7 +135,7 @@ if ($method === 'POST' && isset($_POST['status'])) {
                                         <?php endif; ?>
                                         <form method="post" class="d-flex align-items-center">
                                             <input type="hidden" name="user_id" value="<?= $r['id'] ?>">
-                                            <select name="status" class="form-select form-select-sm me-2" style="width:130px;">
+                                            <select name="status" class="form-select form-select-sm me-2" style="width:120px;">
                                                 <option value="A" <?= ($r['status'] === 'A') ? 'selected' : '' ?>>✅ Approve</option>
                                                 <option value="I" <?= ($r['status'] === 'I') ? 'selected' : '' ?>>⏸️ Inactive</option>
                                                 <option value="R" <?= ($r['status'] === 'R') ? 'selected' : '' ?>>❌ Reject</option>
