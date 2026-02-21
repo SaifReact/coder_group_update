@@ -8,6 +8,8 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Account') {
 
 include_once __DIR__ . '/../config/config.php';
 
+$user_id = $_SESSION['user_id'];
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Helper function to send SMS
@@ -54,6 +56,7 @@ $stmt = $pdo->query("SELECT
     a.member_code,
     a.payment_year,
     a.payment_method,
+    a.tran_type,
     a.payment_slip,
     a.remarks,
     CASE 
@@ -72,6 +75,7 @@ $stmt = $pdo->query("SELECT
     COALESCE(b.id, 0) AS member_project_id,
     CASE 
         WHEN a.project_id = 0 && a.payment_method = 'Monthly' THEN ' (মাসিক ফি)'
+        WHEN a.project_id = 0 && a.payment_method = 'Late' THEN ' (বিলম্ব ফি)'
         WHEN a.project_id = 0 THEN 'ভর্তি ফি'
         WHEN a.project_id = 1 THEN 'সমিতি শেয়ার ফি'
         ELSE p.project_name_bn
@@ -96,6 +100,7 @@ INNER JOIN members_info c
    AND a.member_code = c.member_code
 LEFT JOIN project p 
     ON a.project_id = p.id
+    WHERE a.status IN ('R', 'I')
 ORDER BY a.id DESC");
 $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -111,6 +116,7 @@ if ($method === 'POST' && isset($_POST['member_id'], $_POST['member_code'], $_PO
     $stmt = $pdo->prepare("SELECT * FROM member_payments WHERE id = ?");
     $stmt->execute([$pay_id]);
     $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+    $tran_type = $payment['tran_type'] ?? '';
 
     if (!$payment) {
         // Payment not found, set error message and stay on the same page
@@ -119,15 +125,76 @@ if ($method === 'POST' && isset($_POST['member_id'], $_POST['member_code'], $_PO
         exit;
     }
 
+    $for_install = round($payment['amount'] * 0.95, 2);
+    $other_fee = round($payment['amount'] * 0.05, 2);
+    $late_fee = round($payment['amount'], 2); // Assuming late fee is calculated elsewhere or is zero for this context
+
     // Update payment status
     $stmt = $pdo->prepare("UPDATE member_payments SET status = ? WHERE id = ? AND member_id = ? AND member_code = ?");
     $stmt->execute([$status, $pay_id, $member_id, $member_code]);
     
     $stmtProject = $pdo->prepare("UPDATE member_project SET status = ? WHERE id = ? AND member_id = ? AND member_code = ?");
     $stmtProject->execute([$status, $member_project_id, $member_id, $member_code]);
-    
-    $stmtShare = $pdo->prepare("UPDATE member_share SET extra_share = 0 WHERE member_id = ? AND member_code = ?");
-    $stmtShare->execute([$member_id, $member_code]);
+
+    if ($tran_type == 2) {
+        $stmt = $pdo->prepare("UPDATE member_share SET extra_share = 0, for_install = for_install + ?, other_fee = other_fee + ? WHERE member_id = ? AND member_code = ?");
+        $stmt->execute([$for_install, $other_fee,  $member_id, $member_code]);
+    } elseif ($tran_type == 3) {
+        $stmt = $pdo->prepare("UPDATE member_share SET late_fee = late_fee + ? WHERE member_id = ? AND member_code = ?");
+        $stmt->execute([$late_fee,  $member_id, $member_code]);
+    }   
+
+    // get gl_maaping for glac_id and contra_glac_id  where is_active = 1 from tran_type = $tran_type
+    $stmtGl = $pdo->prepare("SELECT credit_glac_id, debit_glac_id FROM gl_mapping WHERE tran_type = ? AND is_active = 1");
+    $stmtGl->execute([$payment['tran_type']]);
+    $gl_mapping = $stmtGl->fetch(PDO::FETCH_ASSOC);
+
+    if ($gl_mapping) {
+        $credit_glac_id = $gl_mapping['credit_glac_id'];
+        $debit_glac_id = $gl_mapping['debit_glac_id'];
+        $cr_code = 'C';
+        $dr_code = 'D';
+
+        // Insert into gl_transaction and gl_summary based on status of member_payment
+        if ($status === 'A') {
+
+        // Insert credit transaction
+            $stmtGlTrans = $pdo->prepare("INSERT INTO gl_transaction (member_id, glac_id, tran_date, tran_amount, drcr_code, remarks, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmtGlTrans->execute([$member_id, $credit_glac_id, date('Y-m-d'), $payment['amount'], $cr_code, $member_code. ' - ' .$payment['remarks'], $user_id]);
+            
+            // Insert debit transaction
+            $stmtGlTrans = $pdo->prepare("INSERT INTO gl_transaction (member_id, glac_id, tran_date, tran_amount, drcr_code, remarks, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmtGlTrans->execute([$member_id, $debit_glac_id, date('Y-m-d'), $payment['amount'], $dr_code, $member_code. ' - ' .$payment['remarks'], $user_id]);
+
+            // gl_summary te glac_id te credit_glac_id and debit_glac_id jodi na thak tahole insert korte hobe, thakle update korte hobe
+            
+            // Check and update/insert for credit_glac_id
+            $stmtGlSumCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
+            $stmtGlSumCheck->execute([$credit_glac_id]);
+            if ($stmtGlSumCheck->fetch()) {
+                // Update existing credit summary
+                $stmtGlSumUpdate = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, credit_amount = credit_amount + ?, created_by = ? WHERE glac_id = ?");
+                $stmtGlSumUpdate->execute([date('Y-m-d'), $payment['amount'], $user_id, $credit_glac_id]);
+            } else {
+                // Insert new credit summary
+                $stmtGlSumInsert = $pdo->prepare("INSERT INTO gl_summary (tran_date, glac_id, credit_amount, debit_amount, created_by) VALUES (?, ?, ?, ?, ?)");
+                $stmtGlSumInsert->execute([date('Y-m-d'), $credit_glac_id, $payment['amount'], 0, $user_id]);
+            }
+            
+            // Check and update/insert for debit_glac_id
+            $stmtGlSumCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
+            $stmtGlSumCheck->execute([$debit_glac_id]);
+            if ($stmtGlSumCheck->fetch()) {
+                // Update existing debit summary
+                $stmtGlSumUpdate = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = debit_amount + ?, created_by = ? WHERE glac_id = ?");
+                $stmtGlSumUpdate->execute([date('Y-m-d'), $payment['amount'], $user_id, $debit_glac_id]);
+            } else {
+                // Insert new debit summary
+                $stmtGlSumInsert = $pdo->prepare("INSERT INTO gl_summary (tran_date, glac_id, credit_amount, debit_amount, created_by) VALUES (?, ?, ?, ?, ?)");
+                $stmtGlSumInsert->execute([date('Y-m-d'), $debit_glac_id, 0, $payment['amount'], $user_id]);
+            }
+        } 
+    }
 
     // Set dynamic success message based on status
     if ($status === 'A') {
@@ -207,7 +274,10 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                         </td>
                                         <td><?= htmlspecialchars(ucfirst($payment['payment_method'])) ?> 
                                         - <?= htmlspecialchars($payment['for_fees']) ?> 
-                                        <br/> <?= htmlspecialchars($payment['project_title']) ?> ,  <?= htmlspecialchars($payment['payment_year']) ?>
+                                        <br/> <?= htmlspecialchars($payment['project_title']) ?> ,  
+                                        <?= htmlspecialchars($payment['payment_year']) ?>, 
+                                        <?= htmlspecialchars($payment['tran_type']) ?>
+
                                         </td>
                                         <td><?= htmlspecialchars($payment['bank_pay_date']) ?><br/>
                                             <?= htmlspecialchars($payment['bank_trans_no']) ?></td>

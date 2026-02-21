@@ -84,6 +84,10 @@ $role = $_SESSION['role'] ?? '';
                             <span class="icon"><i class="bi bi-cash-coin"></i></span> 
                             <span class="description"> Payments </span>
                         </a>
+                        <a class="nav-link" href="payment_approved.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Approved </span>
+                        </a>
                     </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#accountsMenu" aria-expanded="false" aria-controls="accountsMenu">

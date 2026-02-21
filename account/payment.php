@@ -28,8 +28,6 @@ if ($row = $stmt->fetch()) {
 
 // Fetch all data from utils table and extract fee types
 $admissionfee = 0; // Default value
-$monthly = 0; // Default value
-$late = 0; // Default value
 $samityShare = 0;
 
 $stmt_utils = $pdo->prepare("SELECT * FROM utils where status = 'A'");
@@ -38,14 +36,14 @@ while ($row_utils = $stmt_utils->fetch()) {
     if (isset($row_utils['fee_type'])) {
         if ($row_utils['fee_type'] === 'admission') {
             $admissionfee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 1500;
-        } elseif ($row_utils['fee_type'] === 'monthly') {
-            $monthly = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
-        } elseif ($row_utils['fee_type'] === 'late') {
-            $late = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 200;
+            $admissionId = $row_utils['id'];
         } elseif ($row_utils['fee_type'] === 'samity_share') {
             $samityShare = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 5000;
+            $samityShareId = $row_utils['id'];
+        } elseif ($row_utils['fee_type'] === 'project_share') {
+            $projectShareId = $row_utils['id'];
+        }
     }
-  }
 }
 ?>
 
@@ -75,22 +73,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 'Samity Share' => 'সমিতি শেয়ার ফি (Samity Share Fee)',
                 'Project Share' => 'প্রকল্প শেয়ার ফি (Project Share Fee)'
             ];
-          } else {
-            $months = [
-                'january' => 'January (জানুয়ারি)',
-                'february' => 'February (ফেব্রুয়ারি)',
-                'march' => 'March (মার্চ)',
-                'april' => 'April (এপ্রিল)',
-                'may' => 'May (মে)',
-                'june' => 'June (জুন)',
-                'july' => 'July (জুলাই)',
-                'august' => 'August (আগস্ট)',
-                'september' => 'September (সেপ্টেম্বর)',
-                'october' => 'October (অক্টোবর)',
-                'november' => 'November (নভেম্বর)',
-                'december' => 'December (ডিসেম্বর)'
-            ];
-          }
+          } 
           foreach ($months as $key => $val): ?>
             <option value="<?= $key ?>" <?= (!empty($payment_type) && $payment_type == $key) ? 'selected' : '' ?>>
               <?= $val ?>
@@ -129,6 +112,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                   <input type="hidden" id="member_code" name="member_code" value="">
                   <input type="hidden" id="memberProjects" name="memberProjects" value="">
                   <input type="hidden" id="sundry_amt" name="sundry_amt" value="">
+                  <input type="hidden" id="tran_type" name="tran_type" value="">   
                 </div>
 
     <!-- Year Selection -->
@@ -216,6 +200,9 @@ include_once __DIR__ . '/../includes/side_bar.php';
 <script>
   // Global variables
   var admissionFee = <?php echo json_encode($admissionfee); ?>;
+  var admissionId = <?php echo json_encode(isset($admissionId) ? $admissionId : null); ?>;
+  var samityShareId = <?php echo json_encode(isset($samityShareId) ? $samityShareId : null); ?>;
+  var projectShareId = <?php echo json_encode(isset($projectShareId) ? $projectShareId : null); ?>;
   var sundrySamityShare = 0;
   var memberProjects = [];
   var memberProjectsData = []; // Store member's project payment data
@@ -315,8 +302,10 @@ include_once __DIR__ . '/../includes/side_bar.php';
     var paymentModeDiv = document.getElementById('paymentModeDiv');
     var admissionPaidMsg = document.getElementById('admissionPaidMsg');
     var submitButton = document.getElementById('submit');
+    var tranTypeInput = document.getElementById('tran_type');
 
     if (type === 'admission') {
+      tranTypeInput.value = admissionId;
       amountInput.value = admissionFee;
       totalShareDiv.style.display = 'none';
       projectSelect.style.display = 'none';
@@ -335,6 +324,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
         paymentModeDiv.style.display = '';
       }
     } else if (type === 'Samity Share') {
+      tranTypeInput.value = samityShareId;
       totalShareDiv.style.display = '';
       totalShareValue.value = sundrySamityShare;
       projectSelect.style.display = 'none';
@@ -355,6 +345,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
         paymentModeDiv.style.display = '';
       }
     } else if (type === 'Project Share') {
+      tranTypeInput.value = projectShareId;
       // Populate project select
       projectSelect.innerHTML = '<option value="">প্রকল্প নির্বাচন করুন (Select Project)</option>';
       memberProjects.forEach(function(p) {
@@ -378,6 +369,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
       amountInput.disabled = false;
       submitButton.style.display = '';
     } else {
+      tranTypeInput.value = '';
       totalShareDiv.style.display = 'none';
       projectSelect.style.display = 'none';
       totalShareValue.value = totalProjectShareValue;

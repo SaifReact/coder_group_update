@@ -22,11 +22,11 @@ $pdo->exec("DELETE FROM gl_mapping");
 // Insert all submitted rows
 foreach ($tran_types as $i => $tran_type) {
     $tran_type_name = $tran_type_names[$i] ?? '';
-    $glac_id = $gls[$i] ?? null;
-    $contra_glac_id = $contras[$i] ?? null;
+    $credit_glac_id = $gls[$i] ?? null;
+    $debit_glac_id = $contras[$i] ?? null;
     $is_active = (isset($types[$i]) && $types[$i] == 'সক্রিয়') ? 1 : 0;
-    $stmt = $pdo->prepare("INSERT INTO gl_mapping (tran_type, tran_type_name, glac_id, contra_glac_id, is_active, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$tran_type, $tran_type_name, $glac_id, $contra_glac_id, $is_active, $created_by, $now]);
+    $stmt = $pdo->prepare("INSERT INTO gl_mapping (tran_type, tran_type_name, credit_glac_id, debit_glac_id, is_active, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$tran_type, $tran_type_name, $credit_glac_id, $debit_glac_id, $is_active, $created_by, $now]);
 }
 
 $_SESSION['success_msg'] = 'GL Mapping saved successfully!';

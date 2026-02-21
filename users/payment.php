@@ -4,8 +4,8 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: ../login.php');
     exit;
 }
+
 include_once __DIR__ . '/../config/config.php';
-include_once __DIR__ . '/../includes/function.php';
 
 function englishToBanglaNumber($number) {
     $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ','];
@@ -19,27 +19,29 @@ $member_id = $_SESSION['member_id'];
 $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
 $admission_paid = false;
 
-$monthly = 0; // Default value
-$late = 0; // Default value
+$monthly_fee = 0; // Default value
+$late_fee = 0; // Default value
 $samityShare = 0;
-
-$stmt_utils = $pdo->prepare("SELECT * FROM utils where status = 'A'");
-$stmt_utils->execute();
-while ($row_utils = $stmt_utils->fetch()) {
-    if (isset($row_utils['fee_type'])) {
-        if ($row_utils['fee_type'] === 'monthly') {
-            $monthly = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
-        } elseif ($row_utils['fee_type'] === 'late') {
-            $late = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 200;
-        } 
-  }
-}
+    
+    $stmt_utils = $pdo->prepare("SELECT * FROM utils where status = 'A'");
+    $stmt_utils->execute();
+    while ($row_utils = $stmt_utils->fetch()) {
+        if (isset($row_utils['fee_type'])) {
+            if ($row_utils['fee_type'] === 'monthly') {
+                $monthly_fee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
+                $monthlyFeeId = $row_utils['id'];
+            } elseif ($row_utils['fee_type'] === 'late') {
+                $late_fee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 200;
+                $lateFeeId = $row_utils['id'];
+            } 
+        }
+    }
 
 $stmt1 = $pdo->prepare("SELECT * FROM member_share a JOIN member_project b ON a.member_id = b.member_id WHERE a.member_id = ? AND a.member_code = ? LIMIT 1");
 $stmt1->execute([$member_id, $_SESSION['member_code']]);
 if ($row1 = $stmt1->fetch()) {
-    $late_assign = isset($row1['late_assign']) ? $row1['late_assign'] : '';
-    $late_fee = isset($row1['late_fee']) ? (float)$row1['late_fee'] : 0;
+    $late_fee_assign = isset($row1['late_assign']) ? $row1['late_assign'] : '';
+    $late_fee_fee = isset($row1['late_fee']) ? (float)$row1['late_fee'] : 0;
     $install_advance = isset($row1['install_advance']) ? (float)$row1['install_advance'] : 0;
 }
 
@@ -108,6 +110,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
           }
         ?>
         </select>
+        <input type="hidden" id="tran_type" name="tran_type" value="">
+        <input type="hidden" id="late_tran_type" name="late_tran_type" value="0">
     </div>    
 
     <!-- Amount Input -->
@@ -195,8 +199,11 @@ include_once __DIR__ . '/../includes/side_bar.php';
     var depositAmountInput = document.getElementById('deposit_amount');
     var admissionPaidMsg = document.getElementById('admissionPaidMsg');
     var submitButton = document.getElementById('submit');
-    var monthlyFee = <?php echo json_encode($monthly); ?>;
-    var lateFee = <?php echo json_encode($late); ?>;
+    var monthlyFee = <?php echo json_encode($monthly_fee); ?>;
+    var lateFee = <?php echo json_encode($late_fee); ?>;
+    var monthlyFeeId = <?php echo json_encode(isset($monthlyFeeId) ? $monthlyFeeId : null); ?>;
+    var lateFeeId = <?php echo json_encode(isset($lateFeeId) ? $lateFeeId : null); ?>;
+    var lateAssign = <?php echo json_encode(isset($late_fee_assign) ? $late_fee_assign : ''); ?>;
     var payments = <?php echo json_encode($payments); ?>;
     var paymentYear = document.getElementById('payment_year').value;
     var months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
@@ -230,6 +237,10 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
     var paymentType = document.getElementById('payment_type').value;
     if (paymentType === 'advance') {
+      // For advance, set tran_type to monthlyFeeId
+      document.getElementById('tran_type').value = monthlyFeeId;
+      document.getElementById('late_tran_type').value = 0;
+      
       // For advance, show inputted amount and months message only
       var val = parseFloat(amountInput.value) || 0;
       depositAmountInput.value = val;
@@ -252,6 +263,10 @@ include_once __DIR__ . '/../includes/side_bar.php';
     var paymentDateInput = document.getElementById('payment_date');
     var paymentDate = paymentDateInput ? paymentDateInput.value : '';
     var lateApplied = false;
+    
+    // Set tran_type to monthlyFeeId
+    document.getElementById('tran_type').value = monthlyFeeId;
+    
     if (paymentDate) {
       var payDate = new Date(paymentDate);
       var payMonth = payDate.getMonth();
@@ -261,10 +276,24 @@ include_once __DIR__ . '/../includes/side_bar.php';
         if (day < 1 || day > 30) {
           depositAmt += lateFee;
           lateApplied = true;
+          // Check if late_assign is 'A' and set late_tran_type
+          if (lateAssign === 'A') {
+            document.getElementById('late_tran_type').value = lateFeeId;
+          } else {
+            document.getElementById('late_tran_type').value = 0;
+          }
+        } else {
+          document.getElementById('late_tran_type').value = 0;
         }
       } else {
         depositAmt += lateFee;
         lateApplied = true;
+        // Check if late_assign is 'A' and set late_tran_type
+        if (lateAssign === 'A') {
+          document.getElementById('late_tran_type').value = lateFeeId;
+        } else {
+          document.getElementById('late_tran_type').value = 0;
+        }
       }
     }
     depositAmountInput.value = depositAmt;
@@ -286,7 +315,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
     var depositAmountInput = document.getElementById('deposit_amount');
     var admissionPaidMsg = document.getElementById('admissionPaidMsg');
     var advanceMsg = document.getElementById('advanceMsg');
-    var monthlyFee = <?php echo json_encode($monthly); ?>;
+    var monthlyFee = <?php echo json_encode($monthly_fee); ?>;
     var val = parseFloat(amountInput.value) || 0;
     var paymentType = document.getElementById('payment_type').value;
     if (paymentType === 'advance') {

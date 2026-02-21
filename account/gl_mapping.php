@@ -26,8 +26,8 @@ $glac_data = $stmt_glac->fetchAll(PDO::FETCH_ASSOC);
 
 // Check if gl_mapping has data
 $query_gl_mapping = "SELECT gm.*, g1.glac_name AS glac_name, g1.glac_code AS glac_code, g2.glac_name AS contra_name, g2.glac_code AS contra_code FROM gl_mapping gm
-    LEFT JOIN glac_mst g1 ON gm.glac_id = g1.id
-    LEFT JOIN glac_mst g2 ON gm.contra_glac_id = g2.id";
+    LEFT JOIN glac_mst g1 ON gm.credit_glac_id = g1.id
+    LEFT JOIN glac_mst g2 ON gm.debit_glac_id = g2.id";
 $stmt_map = $pdo->prepare($query_gl_mapping);
 $stmt_map->execute();
 $gl_mapping_data = $stmt_map->fetchAll(PDO::FETCH_ASSOC);
@@ -52,8 +52,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <tr>
                                     <th>ক্রম</th>
                                     <th>লেনদেনের ধরন</th>
-                                    <th>জি.এল নির্ধারণ করুন</th>
-                                    <th>কন্ট্রা জি.এল নির্ধারণ করুন</th>
+                                    <th>ক্রেডিট জি.এল</th>
+                                    <th>ডেবিট জি.এল</th>
                                     <th>অবস্থা</th>
                                 </tr>
                             </thead>
@@ -63,8 +63,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                     foreach ($gl_mapping_data as $row) {
                                         $selected_type = $row['tran_type'] ?? '';
                                         $selected_type_name = $row['tran_type_name'] ?? '';
-                                        $selected_gl = $row['glac_id'] ?? '';
-                                        $selected_contra = $row['contra_glac_id'] ?? '';
+                                        $selected_gl = $row['credit_glac_id'] ?? '';
+                                        $selected_contra = $row['debit_glac_id'] ?? '';
                                         $is_active = isset($row['is_active']) ? ($row['is_active'] ? 'সক্রিয়' : 'নিষ্ক্রিয়') : 'সক্রিয়';
                                 ?>
                                     <tr>

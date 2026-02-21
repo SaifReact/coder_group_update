@@ -7,6 +7,8 @@ if (!isset($_SESSION['user_id'])) {
 
 include_once __DIR__ . '/../config/config.php';
 
+$user_id = $_SESSION['user_id'];
+
 $member_id = isset($_SESSION['member_id'])? $_SESSION['member_id'] : 0;
 $member_code = isset($_SESSION['member_code'])? $_SESSION['member_code'] : '';
 
@@ -36,6 +38,7 @@ function uploadPaymentSlip($file) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_method = $_POST['payment_type'] ?? '';
+    $tran_type = $_POST['tran_type'] ?? '';
     $payment_year = $_POST['payment_year'] ?? '';
     $project_id = $_POST['project_id'] ?? 0;
     $member_id = $_POST['member_id'] ?? 0;
@@ -47,8 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bank_trans_no = $_POST['bank_trans'] ?? '';
     $pay_mode = $_POST['pay_mode'] ?? '';
     $remarks = $_POST['remarks'] ?? '';
-    $created_by = $_SESSION['user_id'];
-    $created_at = date('Y-m-d H:i:s');
     $total_share_value = floatval($_POST['total_share_value'] ?? 0);
     $memberProjectDate = $_POST['memberProjects'] ?? '0';
     $sundry_amt = floatval($_POST['sundry_amt'] ?? 0);
@@ -109,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
 
             // Insert into member_payments table
-            $stmtInsertPayments = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)");
-            $stmtInsertPayments->execute([$member_id, $member_code, $payment_method, 0, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'admission', $_SESSION['user_id'], $pay_slip, 'A', $pay_mode, $remarks]);
+            $stmtInsertPayments = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtInsertPayments->execute([$member_id, $member_code, $payment_method, $tran_type, 0, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'admission', date('Y-m-d'), $user_id, $pay_slip, 'I', $pay_mode, $remarks]);
 
             // Check if record exists in member_share table
             $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM member_share WHERE member_id = ? AND member_code = ?");
@@ -159,8 +160,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sundry_samity_share = $total_share_value;
 
             // Insert into member_payments table
-            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$member_id, $member_code, $payment_method, 1, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Samity Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, $payment_method, $tran_type, 1, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Samity Share', date('Y-m-d'), $user_id, $pay_slip, 'I', $pay_mode, $remarks]);
             // Update member_share table - SET sundry_share to the remaining balance
             $stmt = $pdo->prepare("UPDATE member_share SET samity_share_amt = samity_share_amt + ?, sundry_samity_share = ? WHERE member_id = ? AND member_code = ?");
             $stmt->execute([$amount, $sundry_samity_share, $member_id, $member_code]);
@@ -204,8 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
 
             // Insert into member_payments table
-            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$member_id, $member_code, $payment_method, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, $payment_method, $tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', date('Y-m-d'), $user_id, $pay_slip, 'I', $pay_mode, $remarks]);
 
             // Get Current Status of member_project for this member_id and project_id
             $stmtCheck = $pdo->prepare("SELECT id, paid_amount, share_amount, sundry_amount FROM member_project WHERE member_id = ? AND member_code = ? AND project_id = ? LIMIT 1");
@@ -217,8 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($memberProjectDate == 0) {
                 if ($extra_share > 0 && $amount > 0) {
-                    $stmtInsertProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, paid_amount, sundry_amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-                    $stmtInsertProject->execute([$member_id, $member_code, $project_id, $extra_share, $share_amount, $amount, $sundry_amt]);
+                    $stmtInsertProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, paid_amount, sundry_amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmtInsertProject->execute([$member_id, $member_code, $project_id, $extra_share, $share_amount, $amount, $sundry_amt, date('Y-m-d')]);
                     $member_project_id = $pdo->lastInsertId();
 
                     // Insert into project_share table for each extra share
@@ -273,12 +274,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
         // Fees to insert
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, $payment_method, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$member_id, $member_code, $payment_method, $tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, date('Y-m-d'), $user_id, $pay_slip, 'I', $pay_mode, $remarks]);
 
         // Update member_share table
-        $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
+        $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ? WHERE member_id = ? AND member_code = ?");
+        $stmt->execute([$for_install, $other_fee, $late_fee, $member_id, $member_code]);
 
             $pdo->commit();
 

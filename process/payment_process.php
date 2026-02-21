@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../login.php');
@@ -39,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $member_id = $_SESSION['member_id'] ?? 0;
     $member_code = $_SESSION['member_code'] ?? '';
     $payment_method = $_POST['payment_type'] ?? '';
+    $tran_type = $_POST['tran_type'] ?? '';
+    $late_tran_type = $_POST['late_tran_type'] ?? '0';
     $amount = floatval($_POST['amount'] ?? 0);
     $months_advance = $_POST['monthsAdvance'] ?? 0;
     $bank_pay_date = $_POST['payment_date'] ?? '';
@@ -51,20 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $created_at = date('Y-m-d H:i:s');
     $total_share_value = floatval($_POST['total_share_value'] ?? 0);
 
-    // Fetch monthly fee from utils table
-    $monthly_fee = 0; // Default value
-    $stmt_utils = $pdo->prepare("SELECT * FROM utils WHERE fee_type = 'monthly' AND status = 'A' LIMIT 1");
-    $stmt_utils->execute();
-    if ($row_utils = $stmt_utils->fetch()) {
-        $monthly_fee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
-    }
-
     // Get no_share and extra_share from member_share table
     $stmt = $pdo->prepare("SELECT no_share, extra_share, admission_fee FROM member_share WHERE member_id = ? LIMIT 1");
     $stmt->execute([$member_id]);
     $share_data = $stmt->fetch();
     $no_share = $share_data ? (float)$share_data['no_share'] : 1;
     $extra_share = $share_data ? (float)$share_data['extra_share'] : 0;
+    $monthly_fee = 2000; // Default monthly fee
 
     // Check if payment already exists for this month and year
     if ($payment_method !== 'admission' && $payment_method !== 'Samity Share' && $payment_method !== 'Project Share') {
@@ -117,6 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         $inserted = 0;
+        
         // Calculate per month amount
         $per_month_amount = $monthly_fee;
         $for_install = round($amount * 0.95, 2);
@@ -133,34 +129,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $serial_no = intval($row['max_serial']) + 1;
             }
             $trans_no = 'TR' . strtoupper($cur_month) . $y . $serial_no;
-            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$member_id, $member_code, 'Monthly', $project_id, $y, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $per_month_amount, $cur_month, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type,project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, 'Monthly', $tran_type, $project_id, $y, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $per_month_amount, $cur_month, $created_at, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
             $inserted++;
         }
-        // Update member_share ONCE for all months
-        $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$for_install, $other_fee, $created_at, $member_id, $member_code]);
+
         if ($inserted > 0) {
-            $_SESSION['success_msg'] = '✅ সফলভাবে ' . $inserted . ' মাসের পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful for ' . $inserted . ' months, please wait for approval)';
+            $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে ' . $inserted . ' মাসের জন্য, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful for ' . $inserted . ' months, please wait for approval)';
         } else {
             $_SESSION['error_msg'] = 'Already paid for selected months or invalid amount.';
         }
         header('Location: ../users/payment.php');
         exit;
     } elseif ($amount > 0 && $payment_method !== 'advance') {
-        $late_fee = 0;
-        if ($amount > $monthly_fee) {
-            $late_fee = round($amount - $monthly_fee, 2);
-        }
+       
         $for_install = round($amount * 0.95, 2);
         $other_fee = round($amount * 0.05, 2);
-        // Fees to insert
-        $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$member_id, $member_code, 'Monthly', $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
-        // Update member_share table and add previous_amount + late_fee
-        $stmt = $pdo->prepare("UPDATE member_share SET for_install = for_install + ?, other_fee = other_fee + ?, late_fee = late_fee + ?, created_at = ? WHERE member_id = ? AND member_code = ?");
-        $stmt->execute([$for_install, $other_fee, $late_fee, $created_at, $member_id, $member_code]);
-        $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful, please wait for approval)';
+        
+        // Case 1: tran_type = 2 -> Insert one Monthly transaction
+        if ($tran_type == 2 && $late_tran_type == 0) {
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, 'Monthly', $tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, $payment_method, $created_at, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+            $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful, please wait for approval)';
+        }
+        // Case 2: late_tran_type = 3 -> Insert two transactions (Monthly and Late)
+        elseif ($tran_type == 2 && $late_tran_type == 3) {
+            $late_fee = 0;
+            if ($amount > $monthly_fee) {
+                $late_fee = round($amount - $monthly_fee, 2);
+            }
+            // Insert Monthly transaction
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, 'Monthly', $tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $monthly_fee, $payment_method, $created_at, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+            
+            // Generate serial_no for Late transaction
+            $serial_no_late = 1;
+            $stmt = $pdo->prepare("SELECT MAX(serial_no) as max_serial FROM member_payments WHERE payment_method = 'Late' AND payment_year = ?");
+            $stmt->execute([$payment_year]);
+            if ($row = $stmt->fetch()) {
+                $serial_no_late = intval($row['max_serial']) + 1;
+            }
+            $trans_no_late = 'TRLATE' . $payment_year . $serial_no_late;
+            
+            // Insert Late transaction
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, 'Late', $late_tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no_late, $serial_no_late, $late_fee, $payment_method, $created_at, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
+            
+            $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে (মাসিক এবং বিলম্ব ফি), অনুমোদনের জন্য অপেক্ষা করুন (Payment successful for Monthly and Late Fee, please wait for approval)';
+        }
+
         header('Location: ../users/payment.php');
         exit;
     } else {
@@ -170,3 +187,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
