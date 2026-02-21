@@ -89,6 +89,16 @@ $role = $_SESSION['role'] ?? '';
                             <span class="description"> Approved </span>
                         </a>
                     </div>
+                    
+                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#reportsMenu" aria-expanded="false" aria-controls="reportsMenu">
+                    <span class="icon"><i class="bi bi-check-circle"></i></span> 
+                    <span class="description"> Reports <i class="bi bi-caret-down-fill"></i></span></a>
+                    <div class="sub-menu collapse" id="reportsMenu">
+                        <a class="nav-link" href="trans_summary.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Trans Summary </span>
+                        </a>
+                    </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#accountsMenu" aria-expanded="false" aria-controls="accountsMenu">
                     <span class="icon"><i class="bi bi-currency-dollar"></i></span> 

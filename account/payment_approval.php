@@ -353,7 +353,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
   </div> 
 </div>
 
-
 <?php include_once __DIR__ . '/../includes/end.php'; ?>
 
 
