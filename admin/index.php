@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
     header('Location: ../login.php');
     exit;
@@ -63,7 +62,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
     <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
             <div>
-                <h3 class="mb-3 text-primary fw-bold">এডমিন ড্যাশবোর্ড <span class="text-secondary">(Admin Dashboard)</span></h3> 
+                <h3 class="mb-3 text-primary fw-bold">একাউন্টস ড্যাশবোর্ড <span class="text-secondary">(Accounts Dashboard)</span></h3> 
                 <hr class="mb-4" />
 
                 <!-- Member Status Cards -->
@@ -427,50 +426,129 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
-                        <div class="table-responsive">
+                        <div class="d-flex justify-content-end mb-2">
+                          <button class="btn btn-danger btn-sm" onclick="downloadPDF()">Download PDF</button>
+                        </div>
+                        <div class="table-responsive" id="payment-done-table">
                           <table class="table table-bordered table-hover align-middle">
                             <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                               <tr>
-                                <th>Srl No</th>
-                                <th>Id</th>
-                                <th>Member Code</th>
-                                <th>Name (Bangla)</th>
-                                <th>Admission</th>
-                                <th>Samity Share</th>
-                                <th>Project Share</th>
-                                <th>Monthly</th>
+                                <th>No#</th>
+                                <th>Member Info</th>
+                                <th>No Samity Share</th>
+                                <th>No Project Share</th>
+                                <th>Admission Fee</th>
+                                <th>Samity Share Amt</th>
+                                <th>Project Share Amt</th>
+                                <th>Monthly Fee</th>
+                                <th>সর্বমোট</th>
                               </tr>
                             </thead>
                             <tbody>
                               <?php
-                              $stmt = $pdo->query("SELECT 
-                                  ROW_NUMBER() OVER (ORDER BY a.id) AS serial_no,
-                                  a.id,
-                                  a.member_code,
-                                  a.name_bn,
-                                  COALESCE(SUM(CASE WHEN b.payment_method = 'admission' THEN b.amount ELSE 0 END), 0) AS admission,
-                                  COALESCE(SUM(CASE WHEN b.payment_method = 'Samity Share' THEN b.amount ELSE 0 END), 0) AS Samity_Share,
-                                  COALESCE(SUM(CASE WHEN b.payment_method = 'Project Share' THEN b.amount ELSE 0 END), 0) AS project_share,
-                                  COALESCE(SUM(CASE WHEN b.payment_method NOT IN ('Samity Share', 'Project Share', 'admission') THEN b.amount ELSE 0 END), 0) AS monthly
-                              FROM 
-                                  members_info a
-                              LEFT JOIN 
-                                  member_payments b 
-                                  ON a.id = b.member_id AND b.status = 'A'
-                              GROUP BY 
-                                  a.id, a.member_code, a.name_bn;
-                              ");
+                              $stmt = $pdo->query("WITH share_data AS (
+                                    SELECT 
+                                        ms.member_id,
+                                        SUM(ms.samity_share) AS samity_share,
+                                        SUM(ms.no_share - ms.samity_share) AS projects
+                                    FROM member_share ms
+                                    GROUP BY ms.member_id
+                                ),
+                                
+                                payment_data AS (
+                                    SELECT 
+                                        mp.member_id,
+                                        SUM(CASE WHEN mp.payment_method = 'admission' THEN mp.amount ELSE 0 END) AS admission,
+                                        SUM(CASE WHEN mp.payment_method = 'Samity Share' THEN mp.amount ELSE 0 END) AS Samity_Share,
+                                        SUM(CASE WHEN mp.payment_method = 'Project Share' THEN mp.amount ELSE 0 END) AS project_share,
+                                        SUM(CASE WHEN mp.payment_method NOT IN ('Samity Share','Project Share','admission') THEN mp.amount ELSE 0 END) AS monthly
+                                    FROM member_payments mp
+                                    WHERE mp.status = 'A'
+                                    GROUP BY mp.member_id
+                                )
+                                
+                                SELECT 
+                                    ROW_NUMBER() OVER (ORDER BY a.id) AS serial_no,
+                                    a.id,
+                                    a.member_code,
+                                    a.name_bn,
+                                    COALESCE(s.samity_share,0) AS samity_share,
+                                    COALESCE(s.projects,0) AS projects,
+                                    COALESCE(p.admission,0) AS admission,
+                                    COALESCE(p.Samity_Share,0) AS Samity_Share,
+                                    COALESCE(p.project_share,0) AS project_share,
+                                    COALESCE(p.monthly,0) AS monthly
+                                
+                                FROM members_info a
+                                LEFT JOIN share_data s ON a.id = s.member_id
+                                LEFT JOIN payment_data p ON a.id = p.member_id
+                                
+                                WHERE EXISTS (
+                                    SELECT 1 
+                                    FROM user_login c 
+                                    WHERE c.member_id = a.id 
+                                    AND c.status IN ('A','P')
+                                )
+                                
+                                UNION ALL
+                                
+                                SELECT 
+                                    NULL,
+                                    NULL,
+                                    'সর্বমোট',
+                                    '',
+                                    SUM(COALESCE(s.samity_share,0)),
+                                    SUM(COALESCE(s.projects,0)),
+                                    SUM(COALESCE(p.admission,0)),
+                                    SUM(COALESCE(p.Samity_Share,0)),
+                                    SUM(COALESCE(p.project_share,0)),
+                                    SUM(COALESCE(p.monthly,0))
+                                
+                                FROM members_info a
+                                LEFT JOIN share_data s ON a.id = s.member_id
+                                LEFT JOIN payment_data p ON a.id = p.member_id
+                                
+                                WHERE EXISTS (
+                                    SELECT 1 
+                                    FROM user_login c 
+                                    WHERE c.member_id = a.id 
+                                    AND c.status IN ('A','P')
+                                )");
                               while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                 echo '<tr>';
-                                echo '<td>'.htmlspecialchars($row['serial_no']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['id']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['member_code']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_bn']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['admission']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['Samity_Share']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['project_share']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['monthly']).'</td>';
+                                // ...existing code...
+                                // Column-wise totals initialization
+                                static $total_admission = 0;
+                                static $total_samity_share = 0;
+                                static $total_project_share = 0;
+                                static $total_monthly = 0;
+
+                                // Add to totals if not 'সর্বমোট' row
+                                if ($row['serial_no'] !== null) {
+                                  $total_admission += floatval($row['admission']);
+                                  $total_samity_share += floatval($row['Samity_Share']);
+                                  $total_project_share += floatval($row['project_share']);
+                                  $total_monthly += floatval($row['monthly']);
+                                }
+
+                                echo '<td>'.englishToBanglaNumber(htmlspecialchars($row['serial_no'])).'</td>';
+                                echo '<td>'
+                                  . englishToBanglaNumber(htmlspecialchars($row['id'])) . '<br>' 
+                                  . htmlspecialchars($row['member_code']) . '<br>' 
+                                  . htmlspecialchars($row['name_bn']) . 
+                                '</td>';
+                                echo '<td>'.englishToBanglaNumber(htmlspecialchars($row['samity_share'])).'</td>';
+                                echo '<td>'.englishToBanglaNumber(htmlspecialchars($row['projects'])).'</td>';
+                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['admission']), 2)).'</td>';
+                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['Samity_Share']), 2)).'</td>';
+                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['project_share']), 2)).'</td>';
+                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['monthly']), 2)).'</td>';
+                                // Calculate row total for relevant columns
+                                $row_total = floatval($row['admission']) + floatval($row['Samity_Share']) + floatval($row['project_share']) + floatval($row['monthly']);
+                                echo '<td>'.englishToBanglaNumber(number_format($row_total, 2)).'</td>';
                                 echo '</tr>';
+
+                                
                               }
                               ?>
                             </tbody>
@@ -487,5 +565,47 @@ include_once __DIR__ . '/../includes/side_bar.php';
   
 </div>
 <!-- Hero End -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+function downloadPDF() {
+    const element = document.getElementById('payment-done-table');
+    
+    // Create a wrapper for proper sizing
+    const wrapper = document.createElement('div');
+    wrapper.style.width = '290mm'; // A4 width
+    wrapper.style.padding = '15mm';
+    wrapper.style.boxSizing = 'border-box';
+    wrapper.style.backgroundColor = 'white';
+    wrapper.innerHTML = element.innerHTML;
+    
+    // Temporarily add to body
+    document.body.appendChild(wrapper);
+    
+    const opt = {
+        margin: 0,
+        filename: `payment-done-table.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            scrollY: -window.scrollY,
+            scrollX: 0
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'landscape'
+        }
+    };
+    
+    html2pdf().set(opt).from(wrapper).save().then(() => {
+        // Remove temporary wrapper
+        document.body.removeChild(wrapper);
+    });
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/end.php'; ?>
