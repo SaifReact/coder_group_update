@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 include_once __DIR__ . '/../config/config.php';
+include_once __DIR__ . '/js.php';
 
 $site_name_en = $_SESSION['setup']['site_name_en'] ?? '';
 $site_name_bn = $_SESSION['setup']['site_name_bn'] ?? '';
@@ -51,43 +52,39 @@ $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
                     <a href="members.php" class="nav-item nav-link active">সদস্য (Members)</a>
                     <a href="docs.php" class="nav-item nav-link active">ডকুমেন্টস (Documents)</a>
                     <a href="projects.php" class="nav-item nav-link active">প্রকল্পসমূহ (Projects)</a>
-                    <!-- <a href="form.php" class="nav-item nav-link">নিবন্ধন (Registration)</a> -->
-                        <button type="button" class="btn btn-warning nav-item ms-2" id="offerRegBtn">নিবন্ধন অফার</button>
-                                                <!-- Modal HTML -->
-                                                <div class="modal fade" id="offerRegModal" tabindex="-1" aria-labelledby="offerRegModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="offerRegModalLabel">নিবন্ধন অফার</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <p>এই অফারটি শুধুমাত্র নতুন নিবন্ধনের জন্য প্রযোজ্য।<br>অনুগ্রহ করে বিস্তারিত জানতে অফিসে যোগাযোগ করুন।</p>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">বন্ধ করুন</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                var btn = document.getElementById('offerRegBtn');
-                                                                var modal = new bootstrap.Modal(document.getElementById('offerRegModal'));
-                                if (btn) {
-                                    btn.addEventListener('click', function() {
-                                                                                modal.show();
-                                    });
-                                }
-                            });
-                        </script>
+                    <a href="#" class="nav-item nav-link" data-bs-toggle="modal" data-bs-target="#registrationOfferModal" style="color:#b85c38;font-weight:bold;">নিবন্ধন অফার (Registration)</a>
                     <a href="login.php" class="nav-item nav-link">লগইন (Login)</a>
                 <?php endif; ?>
             </div>
         </div>
     </div>
     </nav>
-    <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
-        <?= htmlspecialchars($slogan); ?>
-    </marquee>
-
+        <!-- Registration Offer Modal -->
+        <div class="modal fade" id="registrationOfferModal" tabindex="-1" aria-labelledby="registrationOfferModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="registrationOfferModalLabel">নিবন্ধন অফার (Registration Offer)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            <b>নিবন্ধন অফার:</b><br>
+                            এখন নিবন্ধন করলে পাচ্ছেন বিশেষ সুবিধা!<br>
+                            <ul>
+                                <li>সদস্য ফি-তে ছাড়</li>
+                                <li>প্রথম মাসে অতিরিক্ত বোনাস</li>
+                                <li>নতুন সদস্যদের জন্য বিশেষ উপহার</li>
+                            </ul>
+                            <span style="color: #b85c38; font-weight: bold;">অফারটি সীমিত সময়ের জন্য!</span>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="try{var modalEl=document.getElementById('registrationOfferModal');if(window.bootstrap){var modal=bootstrap.Modal.getInstance(modalEl)||new bootstrap.Modal(modalEl);modal.hide();}}catch(e){}">বন্ধ করুন</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
+            <?= htmlspecialchars($slogan); ?>
+        </marquee>
