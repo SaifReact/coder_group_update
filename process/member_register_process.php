@@ -73,7 +73,7 @@ if ($method === 'POST') {
         $member_code = generateMemberCode($pdo);
         $fields = [
             'name_bn', 'name_en', 'father_name', 'mother_name', 'nid', 'dob', 'religion', 'marital_status', 'spouse_name',
-            'mobile', 'gender', 'education', 'agreed_rules', 'ref_no', 'email', 'memberType'
+            'mobile', 'gender', 'education', 'agreed_rules', 'agreed_offer', 'ref_no', 'email', 'memberType'
         ];
         
         $data = [];
@@ -115,9 +115,10 @@ if ($method === 'POST') {
         
         $ref_no = !empty($data['ref_no']) ? $data['ref_no'] : $member_code;
         $agreeValue = !empty($data['agreed_rules']) ? $data['agreed_rules'] : 1;
+        $agreeOfferValue = !empty($data['agree_offer']) ? $data['agree_offer'] : 1;
 
         // Insert into members_info
-        $sql = "INSERT INTO members_info (member_code, name_bn, name_en, father_name, mother_name, nid, dob, religion, marital_status, spouse_name, mobile, gender, education, agreed_rules, profile_image, created_at, ref_no, email, member_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,?,?)";
+        $sql = "INSERT INTO members_info (member_code, name_bn, name_en, father_name, mother_name, nid, dob, religion, marital_status, spouse_name, mobile, gender, education, agreed_rules, agreed_offer, profile_image, created_at, ref_no, email, member_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,?,?)";
         $stmt = $pdo->prepare($sql);
         $ok = $stmt->execute([
             $member_code,
@@ -134,6 +135,7 @@ if ($method === 'POST') {
             $data['gender'],
             $data['education'],
             $agreeValue,
+            $agreeOfferValue,
             $profile_image_path,
             $ref_no,
             $data['email'],

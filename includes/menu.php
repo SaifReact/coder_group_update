@@ -52,39 +52,13 @@ $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
                     <a href="members.php" class="nav-item nav-link active">সদস্য (Members)</a>
                     <a href="docs.php" class="nav-item nav-link active">ডকুমেন্টস (Documents)</a>
                     <a href="projects.php" class="nav-item nav-link active">প্রকল্পসমূহ (Projects)</a>
-                    <a href="#" class="nav-item nav-link" data-bs-toggle="modal" data-bs-target="#registrationOfferModal" style="color:#b85c38;font-weight:bold;">নিবন্ধন অফার (Registration)</a>
+                    <a href="form.php" class="nav-item nav-link active" style="color:#b85c38;font-weight:bold;">নিবন্ধন অফার (Registration)</a>
                     <a href="login.php" class="nav-item nav-link">লগইন (Login)</a>
                 <?php endif; ?>
             </div>
         </div>
     </div>
     </nav>
-        <!-- Registration Offer Modal -->
-        <div class="modal fade" id="registrationOfferModal" tabindex="-1" aria-labelledby="registrationOfferModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="registrationOfferModalLabel">নিবন্ধন অফার (Registration Offer)</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>
-                            <b>নিবন্ধন অফার:</b><br>
-                            এখন নিবন্ধন করলে পাচ্ছেন বিশেষ সুবিধা!<br>
-                            <ul>
-                                <li>সদস্য ফি-তে ছাড়</li>
-                                <li>প্রথম মাসে অতিরিক্ত বোনাস</li>
-                                <li>নতুন সদস্যদের জন্য বিশেষ উপহার</li>
-                            </ul>
-                            <span style="color: #b85c38; font-weight: bold;">অফারটি সীমিত সময়ের জন্য!</span>
-                        </p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="try{var modalEl=document.getElementById('registrationOfferModal');if(window.bootstrap){var modal=bootstrap.Modal.getInstance(modalEl)||new bootstrap.Modal(modalEl);modal.hide();}}catch(e){}">বন্ধ করুন</button>
-                    </div>
-                </div>
-            </div>
-        </div>
         <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
             <?= htmlspecialchars($slogan); ?>
         </marquee>

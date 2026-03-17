@@ -19,7 +19,8 @@ try {
 }
 
 ?>
-<form id="receiptVoucherForm">
+
+<form id="receiptVoucherForm" method="post" action="../process/receipt_voucher_process.php">
     <div id="receiptVoucherRows">
         <div class="row g-2 mb-3 receipt-row">
             <div class="col-md-3">
@@ -83,7 +84,7 @@ try {
         <div id="receipt_balance"></div>
     </div>
     <div class="mt-4 text-end">
-        <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>রিসিভ ভাউচার জমা দিন</button>
+        <button type="submit" name="receipt_submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>রিসিভ ভাউচার জমা দিন</button>
     </div>
 </form>
 <script>

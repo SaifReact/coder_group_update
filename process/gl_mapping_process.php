@@ -4,6 +4,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Account') {
     header('Location: ../login.php');
     exit;
 }
+
 include_once __DIR__ . '/../config/config.php';
 
 $tran_types = $_POST['fee_type'] ?? [];

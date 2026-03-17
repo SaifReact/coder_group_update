@@ -23,6 +23,7 @@ $paymentDoneData = $pdo->query("SELECT COUNT(DISTINCT member_id) as total_paymen
 // Fetch financial data from member_share table
 $shareStmt = $pdo->query("
     SELECT 
+        COALESCE(SUM(admission_fee), 0) as admission_fee,
         COALESCE(SUM(idcard_fee), 0) as total_idcard_fee,
         COALESCE(SUM(passbook_fee), 0) as total_passbook_fee,
         COALESCE(SUM(softuses_fee), 0) as total_softuses_fee,
@@ -46,10 +47,7 @@ $paymentStmt = $pdo->query("
 $paymentData = $paymentStmt->fetch(PDO::FETCH_ASSOC);
 
 // Calculate totals
-$total_member_admission_fees = $shareData['total_idcard_fee'] + $shareData['total_passbook_fee'] + 
-                           $shareData['total_softuses_fee'] + $shareData['total_sms_fee'] + 
-                           $shareData['total_office_rent'] + $shareData['total_office_staff'] + 
-                           $shareData['total_other_fee'];
+$total_member_admission_fees = $shareData['admission_fee'];
 
 $total_all_deposits = $paymentData['total_samity_share'] + $paymentData['total_project_share'] + 
                       $paymentData['total_monthly'] + $total_member_admission_fees + $shareData['total_late_fee'];

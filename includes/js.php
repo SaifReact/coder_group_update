@@ -2,6 +2,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var agree = document.getElementById('agreeRules');
+        var agreeOfr = document.getElementById('agreeOffer');
         var goBtn = document.getElementById('goToFormBtn');
         agree.addEventListener('change', function() {
             goBtn.style.display = this.checked ? 'inline-block' : 'none';
@@ -10,8 +11,10 @@
             e.preventDefault();
             // Pass checkbox value to member_form.php as query param
             var agreeVal = agree.checked ? 1 : 0;
+            var offerVal = agreeOfr.checked ? 1 : 0;
             var agreeValB64 = btoa(agreeVal.toString());
-            window.location.href = 'forms.php?agreed=' + agreeValB64;
+            var offerValB64 = btoa(offerVal.toString());
+            window.location.href = 'forms.php?agreed=' + agreeValB64 + '&offer=' + offerValB64;
         });
     });
 

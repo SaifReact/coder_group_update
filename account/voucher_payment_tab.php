@@ -7,19 +7,19 @@ try {
         include __DIR__ . '/../config/config.php';
     }
 
-    $stmt = $pdo->prepare("SELECT g.id, g.glac_name, g.glac_code, g.level_code, p.glac_name AS parent_name FROM glac_mst g LEFT JOIN glac_mst p ON g.parent_id = p.id WHERE g.parent_child = 'C' AND g.gl_nature in ('D','C') AND g.status = 'A' ORDER BY g.id ASC");
+    $stmt = $pdo->prepare("SELECT g.id, g.glac_name, g.glac_code, g.level_code, p.glac_name AS parent_name FROM glac_mst g LEFT JOIN glac_mst p ON g.parent_id = p.id WHERE g.parent_child = 'C' AND g.gl_nature = 'C' AND g.status = 'A' ORDER BY g.id ASC");
+    $stmt->execute();
+    $debitGLs  = $stmt->fetchAll();
+
+    $stmt = $pdo->prepare("SELECT g.id, g.glac_name, g.glac_code, g.level_code, p.glac_name AS parent_name FROM glac_mst g LEFT JOIN glac_mst p ON g.parent_id = p.id WHERE g.parent_child = 'C' AND g.gl_nature = 'D' AND g.status = 'A' AND ( COALESCE(g.is_bank_balance, FALSE) = TRUE OR COALESCE(g.is_cash_in_hand, FALSE) = TRUE ) ORDER BY g.id ASC");
     $stmt->execute();
     $creditGLs = $stmt->fetchAll();
-
-    $stmt = $pdo->prepare("SELECT g.id, g.glac_name, g.glac_code, g.level_code, p.glac_name AS parent_name FROM glac_mst g LEFT JOIN glac_mst p ON g.parent_id = p.id WHERE g.parent_child = 'C' AND g.gl_nature = 'D' AND g.status = 'A'  ORDER BY g.id ASC");
-    $stmt->execute();
-    $debitGLs = $stmt->fetchAll();
 } catch (Exception $e) {
     // Fail silently — leave lists empty
 }
-
 ?>
-<form id="paymentVoucherForm">
+
+<form id="paymentVoucherForm" method="post" action="../process/payment_voucher_process.php">
     <div id="paymentVoucherRows">
         <div class="row g-2 mb-3 payment-row">
             <div class="col-md-3">
@@ -83,7 +83,7 @@ try {
         <div id="payment_balance"></div>
     </div>
     <div class="mt-4 text-end">
-        <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>পেমেন্ট ভাউচার জমা দিন</button>
+        <button type="submit" name="payment_submit" class="btn btn-primary btn-lg px-4 shadow-sm" disabled>পেমেন্ট ভাউচার জমা দিন</button>
     </div>
 </form>
 <script>
