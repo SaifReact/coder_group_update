@@ -30,8 +30,12 @@ $role = $_SESSION['role'] ?? '';
                             <span class="description"> Shares </span>
                         </a>
                         <a class="nav-link" href="late_assign.php">
-                            <span class="icon"><i class="bi bi-clock-history"></i></span> 
+                            <span class="icon"><i class="bi bi-alarm"></i></span> 
                             <span class="description"> Late Assign </span>
+                        </a>
+                        <a class="nav-link" href="voucher_approval.php">
+                            <span class="icon"><i class="bi bi-receipt"></i></span> 
+                            <span class="description"> Vouchers </span>
                         </a>
                         <a class="nav-link" href="close_approval.php">
                             <span class="icon"><i class="bi bi-door-closed"></i></span> 
