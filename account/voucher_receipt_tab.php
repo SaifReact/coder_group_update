@@ -17,7 +17,6 @@ try {
 } catch (Exception $e) {
     // Fail silently — leave lists empty
 }
-
 ?>
 
 <form id="receiptVoucherForm" method="post" action="../process/receipt_voucher_process.php">
