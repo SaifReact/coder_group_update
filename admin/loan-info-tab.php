@@ -5,8 +5,9 @@
             <select class="form-select" name="product_type" required>
                 <option value="">- নির্বাচন করুন -</option>
                 <option value="Nano">Nano</option>
-                <option value="Micro">Micro</option>
                 <option value="SME">SME</option>
+                <option value="Home">Home</option>
+                <option value="Car">Car</option>
             </select>
         </div>
         <div class="col-md-4 mb-3">
