@@ -67,6 +67,81 @@ if ($method === 'POST' && isset($_POST['status'])) {
             }
         }
 
+            // === Custom Logic for GL summary on Account Close ===
+            // Set your GL IDs here (update as needed)
+            $samity_share_issued_gl = 32; // <-- set correct glac_id for samity_share_issued
+            $project_share_issued_gl = 34; // <-- set correct glac_id for project_share_issued
+            $cash_at_bank_gl = 11; // <-- set correct glac_id for cash_at_bank
+
+            $income_gl = 50; // <-- set correct glac_id for Income (None Refund)
+
+            $deduction = isset($row['deduction']) ? (float)$row['deduction'] : 0;
+            $refund_amt = isset($row['refund_amt']) ? (float)$row['refund_amt'] : 0;
+            $none_refund = isset($row['none_refund']) ? (float)$row['none_refund'] : 0;
+            $total_amt = $deduction + $refund_amt;
+            $share_count = $total_amt / 5000;
+
+            $user_id = $_SESSION['user_id'] ?? 1;
+            $tran_date = date('Y-m-d');
+
+            // Debit samity_share_issued for up to 2 shares
+            $samity_shares = min(2, $share_count);
+            if ($samity_shares > 0) {
+                // Update or insert debit for samity_share_issued
+                $stmtCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
+                $stmtCheck->execute([$samity_share_issued_gl]);
+                $amt = $samity_shares * 5000;
+                if ($stmtCheck->fetch()) {
+                    $stmtUpd = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = debit_amount + ?, created_by = ? WHERE glac_id = ?");
+                    $stmtUpd->execute([$tran_date, $amt, $user_id, $samity_share_issued_gl]);
+                } else {
+                    $stmtIns = $pdo->prepare("INSERT INTO gl_summary (tran_date, glac_id, credit_amount, debit_amount, created_by) VALUES (?, ?, 0, ?, ?)");
+                    $stmtIns->execute([$tran_date, $samity_share_issued_gl, $amt, $user_id]);
+                }
+            }
+
+            // Debit project_share_issued for remaining shares (if any)
+            $project_shares = $share_count - $samity_shares;
+            if ($project_shares > 0) {
+                $stmtCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
+                $stmtCheck->execute([$project_share_issued_gl]);
+                $amt = $project_shares * 5000;
+                if ($stmtCheck->fetch()) {
+                    $stmtUpd = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = debit_amount + ?, created_by = ? WHERE glac_id = ?");
+                    $stmtUpd->execute([$tran_date, $amt, $user_id, $project_share_issued_gl]);
+                } else {
+                    $stmtIns = $pdo->prepare("INSERT INTO gl_summary (tran_date, glac_id, credit_amount, debit_amount, created_by) VALUES (?, ?, 0, ?, ?)");
+                    $stmtIns->execute([$tran_date, $project_share_issued_gl, $amt, $user_id]);
+                }
+            }
+
+            // Credit total amount from cash_at_bank
+            if ($total_amt > 0) {
+                $stmtCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
+                $stmtCheck->execute([$cash_at_bank_gl]);
+                if ($stmtCheck->fetch()) {
+                    $stmtUpd = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, credit_amount = credit_amount + ?, created_by = ? WHERE glac_id = ?");
+                    $stmtUpd->execute([$tran_date, $total_amt, $user_id, $cash_at_bank_gl]);
+                } else {
+                    $stmtIns = $pdo->prepare("INSERT INTO gl_summary (tran_date, glac_id, credit_amount, debit_amount, created_by) VALUES (?, ?, ?, 0, ?)");
+                    $stmtIns->execute([$tran_date, $cash_at_bank_gl, $total_amt, $user_id]);
+                }
+            }
+
+            // Credit None Refund amount to Income GL
+            if ($none_refund > 0) {
+                $stmtCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
+                $stmtCheck->execute([$income_gl]);
+                if ($stmtCheck->fetch()) {
+                    $stmtUpd = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, credit_amount = credit_amount + ?, created_by = ? WHERE glac_id = ?");
+                    $stmtUpd->execute([$tran_date, $none_refund, $user_id, $income_gl]);
+                } else {
+                    $stmtIns = $pdo->prepare("INSERT INTO gl_summary (tran_date, glac_id, credit_amount, debit_amount, created_by) VALUES (?, ?, ?, 0, ?)");
+                    $stmtIns->execute([$tran_date, $income_gl, $none_refund, $user_id]);
+                }
+            }
+            // === End Custom GL summary logic ===
+
         $_SESSION['success_msg'] = '✅ Account close approved and related records updated.';
         // mark this id so the modal can be auto-shown after redirect
         $_SESSION['last_closed_id'] = $request_id;
