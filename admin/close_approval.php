@@ -69,28 +69,31 @@ if ($method === 'POST' && isset($_POST['status'])) {
 
             // === Custom Logic for GL summary on Account Close ===
             // Set your GL IDs here (update as needed)
+            $cash_at_bank_gl = 11; // <-- set correct glac_id for cash_at_bank
             $samity_share_issued_gl = 32; // <-- set correct glac_id for samity_share_issued
             $project_share_issued_gl = 34; // <-- set correct glac_id for project_share_issued
-            $cash_at_bank_gl = 11; // <-- set correct glac_id for cash_at_bank
-
+            $admission_fee_gl = 43;
             $income_gl = 50; // <-- set correct glac_id for Income (None Refund)
+            
 
-            $deduction = isset($row['deduction']) ? (float)$row['deduction'] : 0;
+            $waiver = isset($row['waiver']) ? (float)$row['waiver'] : 0;
+
             $refund_amt = isset($row['refund_amt']) ? (float)$row['refund_amt'] : 0;
             $none_refund = isset($row['none_refund']) ? (float)$row['none_refund'] : 0;
-            $total_amt = $deduction + $refund_amt;
+            $admission_fee = $none_refund;
+            $total_amt = $waiver + $refund_amt;
             $share_count = $total_amt / 5000;
 
             $user_id = $_SESSION['user_id'] ?? 1;
             $tran_date = date('Y-m-d');
 
+
             // Debit samity_share_issued for up to 2 shares
             $samity_shares = min(2, $share_count);
             if ($samity_shares > 0) {
-                // Update or insert debit for samity_share_issued
+                $amt = $samity_shares * 5000;
                 $stmtCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
                 $stmtCheck->execute([$samity_share_issued_gl]);
-                $amt = $samity_shares * 5000;
                 if ($stmtCheck->fetch()) {
                     $stmtUpd = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = debit_amount + ?, created_by = ? WHERE glac_id = ?");
                     $stmtUpd->execute([$tran_date, $amt, $user_id, $samity_share_issued_gl]);
@@ -103,9 +106,9 @@ if ($method === 'POST' && isset($_POST['status'])) {
             // Debit project_share_issued for remaining shares (if any)
             $project_shares = $share_count - $samity_shares;
             if ($project_shares > 0) {
+                $amt = $project_shares * 5000;
                 $stmtCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
                 $stmtCheck->execute([$project_share_issued_gl]);
-                $amt = $project_shares * 5000;
                 if ($stmtCheck->fetch()) {
                     $stmtUpd = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = debit_amount + ?, created_by = ? WHERE glac_id = ?");
                     $stmtUpd->execute([$tran_date, $amt, $user_id, $project_share_issued_gl]);
@@ -140,7 +143,19 @@ if ($method === 'POST' && isset($_POST['status'])) {
                     $stmtIns->execute([$tran_date, $income_gl, $none_refund, $user_id]);
                 }
             }
-            // === End Custom GL summary logic ===
+
+            // Debit admission_fee to GLac_id 43
+            if ($admission_fee > 0) {
+                $stmtCheck = $pdo->prepare("SELECT glac_id FROM gl_summary WHERE glac_id = ?");
+                $stmtCheck->execute([$admission_fee_gl]);
+                if ($stmtCheck->fetch()) {
+                    $stmtUpd = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = debit_amount + ?, created_by = ? WHERE glac_id = ?");
+                    $stmtUpd->execute([$tran_date, $admission_fee, $user_id, $admission_fee_gl]);
+                } else {
+                    $stmtIns = $pdo->prepare("INSERT INTO gl_summary (tran_date, glac_id, credit_amount, debit_amount, created_by) VALUES (?, ?, 0, ?, ?)");
+                    $stmtIns->execute([$tran_date, $admission_fee_gl, $admission_fee, $user_id]);
+                }
+            }
 
         $_SESSION['success_msg'] = '✅ Account close approved and related records updated.';
         // mark this id so the modal can be auto-shown after redirect
