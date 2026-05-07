@@ -42,8 +42,16 @@ $stmtMp = $pdo->prepare("SELECT COALESCE(SUM(paid_amount),0) AS paid_amount_sum 
 $stmtMp->execute([$member_id, $member_code]);
 $mp = $stmtMp->fetch(PDO::FETCH_ASSOC);
 $paid_amount_sum = $mp['paid_amount_sum'] ?? 0;
-$total_deposited = $admission_fee + $samity_share_amt + $paid_amount_sum;
-$total_amt = $samity_share_amt + $paid_amount_sum;
+
+
+// Fetch monthly deposit sum from member_deposit
+$stmtMd = $pdo->prepare("SELECT COALESCE(SUM(amount),0) AS monthly_deposit FROM member_payments WHERE member_id = ? AND member_code = ? AND status = 'A' AND payment_method = 'Monthly'");
+$stmtMd->execute([$member_id, $member_code]);
+$md = $stmtMd->fetch(PDO::FETCH_ASSOC);
+$monthly_deposit = $md['monthly_deposit'] ?? 0; 
+
+$total_deposited = $admission_fee + $samity_share_amt + $paid_amount_sum + $monthly_deposit;
+$total_amt = $samity_share_amt + $paid_amount_sum + $monthly_deposit;
 // Determine deduction and refund based on account age
 if ($account_age_days !== '' && $account_age_days < 730) {
     $deduction = ($total_amt * 10 / 100); // 10% deduction
@@ -53,6 +61,7 @@ if ($account_age_days !== '' && $account_age_days < 730) {
     $deduction = $total_amt;
     $refund_amt = $total_amt;
 }
+
 ?>
 
 <?php include_once __DIR__ . '/../includes/open.php'; ?>
@@ -86,6 +95,10 @@ if ($account_age_days !== '' && $account_age_days < 730) {
                             <input type="text" readonly class="form-control" value="<?php echo htmlspecialchars(number_format((float)$paid_amount_sum,2)); ?>">
                         </div>
                         <div class="col-12 col-md-4">
+                            <label class="form-label">Monthly Deposit (মাসিক জমা)</label>
+                            <input type="text" readonly class="form-control" value="<?php echo htmlspecialchars(number_format((float)$monthly_deposit,2)); ?>">
+                        </div>
+                        <div class="col-12 col-md-4">
                             <label class="form-label">Deposited Fee (জমাকৃত ফি)</label>
                             <input type="text" readonly class="form-control" value="<?php echo htmlspecialchars(number_format((float)$total_amt,2)); ?>">
                         </div>
@@ -94,14 +107,18 @@ if ($account_age_days !== '' && $account_age_days < 730) {
                             <input type="text" readonly class="form-control" value="<?php echo htmlspecialchars(number_format((float)$deduction,2)); ?>">
                         </div>
                         <div class="col-12 col-md-4">
-                            <label class="form-label">Refund Fee (ফেরতযোগ্য ফি)</label>
+                            <label class="form-label">Refund Amount (ফেরতযোগ্য টাকার পরিমাণ)</label>
                             <input type="text" readonly class="form-control" value="<?php echo htmlspecialchars(number_format((float)$refund_amt,2)); ?>">
                         </div>
                         <input type="hidden" name="none_refund" value="<?php echo htmlspecialchars($admission_fee); ?>">
-                        <input type="hidden" name="total_amt" value="<?php echo htmlspecialchars($total_amt); ?>">
                         <input type="hidden" name="total_deposited" value="<?php echo htmlspecialchars($total_deposited); ?>">
+                        <input type="hidden" name="samity_share" value="<?php echo htmlspecialchars($samity_share_amt); ?>">
+                        <input type="hidden" name="project_share" value="<?php echo htmlspecialchars($paid_amount_sum); ?>">
+                        <input type="hidden" name="monthly_deposit" value="<?php echo htmlspecialchars($monthly_deposit); ?>">
+                        <input type="hidden" name="total_amt" value="<?php echo htmlspecialchars($total_amt); ?>">
                         <input type="hidden" name="deduction" value="<?php echo htmlspecialchars($deduction); ?>">
                         <input type="hidden" name="refund_amt" value="<?php echo htmlspecialchars($refund_amt); ?>">
+                        <input type="hidden" name="member_age" value="<?php echo htmlspecialchars($account_age_days); ?>">
                         <input type="hidden" name="agreed" value="0">
                     </div>
                     <div class="mb-3">
@@ -144,8 +161,8 @@ if ($account_age_days !== '' && $account_age_days < 730) {
                                     <td><?php echo nl2br(htmlspecialchars($r['reasons'])); ?></td>
                                     <td><?php echo htmlspecialchars($r['total_deposited']); ?></td>
                                     <td><?php echo htmlspecialchars($r['none_refund']); ?></td>
-                                    <td><?php echo htmlspecialchars($r['total_amt']); ?></td>
-                                    <td><?php echo htmlspecialchars($r['deduction']); ?></td>
+                                    <td><?php echo htmlspecialchars($r['total_amt_nr']); ?></td>
+                                    <td><?php echo htmlspecialchars($r['deduction_amt']); ?></td>
                                     <td><?php echo htmlspecialchars($r['refund_amt']); ?></td>
                                     <td>
                                             <?php

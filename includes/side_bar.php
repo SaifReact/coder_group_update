@@ -41,6 +41,10 @@ $role = $_SESSION['role'] ?? '';
                             <span class="icon"><i class="bi bi-door-closed"></i></span> 
                             <span class="description"> Close </span>
                         </a>
+                        <a class="nav-link" href="voucher_approval.php">
+                            <span class="icon"><i class="bi bi-door-closed"></i></span> 
+                            <span class="description"> Voucher </span>
+                        </a>
                     </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#setupMenu" aria-expanded="false" aria-controls="setupMenu">
@@ -101,6 +105,14 @@ $role = $_SESSION['role'] ?? '';
                         <a class="nav-link" href="trans_summary.php">
                             <span class="icon"><i class="bi bi-cash-coin"></i></span> 
                             <span class="description"> Trans Summary </span>
+                        </a>
+                        <a class="nav-link" href="trail_balance.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Trail Balance </span>
+                        </a>
+                        <a class="nav-link" href="balance_sheet.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Balance Sheet </span>
                         </a>
                     </div>
 

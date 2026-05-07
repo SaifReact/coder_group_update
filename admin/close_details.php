@@ -41,15 +41,16 @@ function bn_digits($value) {
         <p class="text-end"><?php echo htmlspecialchars($date); ?></p>
 
         <p>বরাবর<br/>
-        সভাপতি<br/>
+        সভাপতি/সম্পাদক <br/>
         কোডার পেশাজীবী সমবায় সমিতি লিঃ
         </p>
 
-        <p>বিষয়: সদস্যপদ ও হিসাব বন্ধ করার আবেদন।</p>
+        <p>বিষয়: সদস্যপদ বাতিল ও হিসাব বন্ধ করার আবেদন।</p>
 
         <p>জনাব/জনাবা,</p>
 
-        <p>বিনীত নিবেদন এই যে, আমার নিম্নোক্ত সদস্যপদ ও হিসাবটি বন্ধ করার জন্য আপনার সদয় অনুমতি প্রার্থনা করছি।</p>
+        <p>বিনীত নিবেদন এই যে, আমার নিম্নোক্ত সদস্যপদ বাতিল ও হিসাবটি বন্ধ করার জন্য আপনার সদয় অনুমতি প্রার্থনা করছি।</p>
+        <p>আমি কোডার পেশাজীবী সমবায় সমিতি লিঃ সমিতিতে <strong><?php echo htmlspecialchars(bn_digits(number_format($r['member_age']))); ?></strong> দিন কার্যকর ছিলাম, সদস্য বাতিলের ক্ষেত্রে সমিতির নিয়মাবলি ও বিধান অনুযায়ী সদস্যপদ ও সদস্যপদ বাতিল সেকশনের ৪ নং ও ২ নং ধারায় সকল নিয়ম-কানুন মানিয়া আমার সদস্য পদ সজ্ঞানে বাতিল করিলাম এবং সকল দেনা-পাওনা বুঝিয়া পাইলাম, তাই আমি ভবিষৎ এ  উক্ত সমিতির সাথে আমার কোনো প্রকার ওজর-আপত্তি এবং চাহিদা প্রদান করা চলিবে না।</p>
 
         <p><strong>হিসাবের নাম:</strong> <?php echo htmlspecialchars($member_name); ?><br/>
         <strong>হিসাব নম্বর:</strong> <?php echo htmlspecialchars($account_no); ?></p>
@@ -68,11 +69,11 @@ function bn_digits($value) {
             </tr>
             <tr>
                 <td><strong>মোট পরিমাণ:</strong></td>
-                <td style="text-align: right;"><strong><?php echo htmlspecialchars(bn_digits(number_format((float)$r['total_amt'],2))); ?> /-</strong></td>
+                <td style="text-align: right;"><strong><?php echo htmlspecialchars(bn_digits(number_format((float)$r['total_amt_nr'],2))); ?> /-</strong></td>
             </tr>
             <tr>
                 <td><strong>কর্তনযোগ্য ফি (১০%):</strong></td>
-                <td style="text-align: right;"><strong><?php echo htmlspecialchars(bn_digits(number_format((float)$r['deduction'],2))); ?> /-</strong></td>
+                <td style="text-align: right;"><strong><?php echo htmlspecialchars(bn_digits(number_format((float)$r['deduction_amt'],2))); ?> /-</strong></td>
             </tr>
             <tr>
                 <td><strong>ফেরতযোগ্য পরিমাণ:</strong></td>
@@ -92,7 +93,7 @@ function bn_digits($value) {
             </tr>
         </table>
         <br/><br/>
-        <p>অতএব, প্রয়োজনীয় ব্যবস্থা গ্রহণ করে আমার সদস্যপদ ও হিসাবটি বন্ধ করার জন্য বিশেষভাবে অনুরোধ জানাচ্ছি।</p>
+        <p>অতএব, প্রয়োজনীয় ব্যবস্থা গ্রহণ করে আমার সদস্যপদ বাতিল ও হিসাবটি বন্ধ করার জন্য বিশেষভাবে অনুরোধ জানাচ্ছি।</p>
 
         <p>ধন্যবাদান্তে,</p>
 
