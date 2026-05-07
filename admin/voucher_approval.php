@@ -12,9 +12,30 @@ $user_id = $_SESSION['user_id'];
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Fetch all voucher_payments table with status 'I' (pending) and join with glac_mst for glac_id and glac_name
+// Fetch all voucher_payments table with status 'I' (pending) and group debit-credit pairs by date and amount
 
-$stmtVoucher = $pdo->query("SELECT v.*, g.glac_name, g.glac_code, CASE WHEN v.drcr_code = 'D' THEN 'ডেবিট' ELSE 'ক্রেডিট' END AS drcr_code FROM voucher_payments v JOIN glac_mst g ON v.glac_id = g.id WHERE v.status = 'I' ORDER BY v.id DESC");
+$stmtVoucher = $pdo->query("
+    SELECT 
+        CONCAT(MIN(v.id), ',', MAX(v.id)) as transaction_ids,
+        v.tran_date,
+        v.tran_amount,
+        v.remarks,
+        MAX(CASE WHEN v.drcr_code = 'D' THEN v.id ELSE NULL END) as debit_id,
+        MAX(CASE WHEN v.drcr_code = 'C' THEN v.id ELSE NULL END) as credit_id,
+        MAX(CASE WHEN v.drcr_code = 'D' THEN g.glac_name ELSE NULL END) as debit_glac_name,
+        MAX(CASE WHEN v.drcr_code = 'D' THEN g.glac_code ELSE NULL END) as debit_glac_code,
+        MAX(CASE WHEN v.drcr_code = 'D' THEN g.id ELSE NULL END) as debit_glac_id,
+        MAX(CASE WHEN v.drcr_code = 'C' THEN g.glac_name ELSE NULL END) as credit_glac_name,
+        MAX(CASE WHEN v.drcr_code = 'C' THEN g.glac_code ELSE NULL END) as credit_glac_code,
+        MAX(CASE WHEN v.drcr_code = 'C' THEN g.id ELSE NULL END) as credit_glac_id,
+        MAX(CASE WHEN v.drcr_code = 'D' THEN v.status ELSE NULL END) as debit_status,
+        MAX(CASE WHEN v.drcr_code = 'C' THEN v.status ELSE NULL END) as credit_status
+    FROM voucher_payments v 
+    JOIN glac_mst g ON v.glac_id = g.id 
+    WHERE v.status = 'I' 
+    GROUP BY v.tran_date, v.tran_amount, v.remarks
+    ORDER BY v.id DESC
+");
 $voucherPayments = $stmtVoucher->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle status update
@@ -22,60 +43,68 @@ if ($method === 'POST' && isset($_POST['status'])) {
 
     $status = in_array($_POST['status'], ['A', 'I', 'R']) ? $_POST['status'] : 'I';
 
-    // determine which voucher was submitted and resolve member info from it
-    $submitted_voucher_id = (int)($_POST['vp_id'] ?? 0);
+    // Get both debit and credit transaction IDs
+    $debit_id = (int)($_POST['debit_id'] ?? 0);
+    $credit_id = (int)($_POST['credit_id'] ?? 0);
 
-    if ($submitted_voucher_id > 0) {
-        $stmtVoucherSingle = $pdo->prepare("SELECT * FROM voucher_payments WHERE id = ? LIMIT 1");
-        $stmtVoucherSingle->execute([$submitted_voucher_id]);
-        $voucherData = $stmtVoucherSingle->fetch(PDO::FETCH_ASSOC);
-        if ($voucherData) {
-            $glac_id = (int)$voucherData['glac_id'];
-            $tran_amount = $voucherData['tran_amount'] ?? 0;
-        }
-    }
+    if ($debit_id > 0 && $credit_id > 0) {
+        // Get debit transaction data
+        $stmtDebit = $pdo->prepare("SELECT * FROM voucher_payments WHERE id = ? LIMIT 1");
+        $stmtDebit->execute([$debit_id]);
+        $debitData = $stmtDebit->fetch(PDO::FETCH_ASSOC);
 
-    // If the requested status is not approval, just update that single share row and skip approval processing.
-    if ($submitted_voucher_id > 0 && $status !== 'A') {
-        $stmtSimpleMark = $pdo->prepare("UPDATE voucher_payments SET status = ? WHERE id = ?");
-        $stmtSimpleMark->execute([$status, $submitted_voucher_id]);
-    }
+        // Get credit transaction data
+        $stmtCredit = $pdo->prepare("SELECT * FROM voucher_payments WHERE id = ? LIMIT 1");
+        $stmtCredit->execute([$credit_id]);
+        $creditData = $stmtCredit->fetch(PDO::FETCH_ASSOC);
 
-        // If approving, generate project_share rows and update member_share when project_id = 1
-        if ($status === 'A') { 
-            // if the glac_id in gl_summary table then sum of tran_amount Update debit or credit wise  otherwise Insert new row in gl_summary table
-            $stmtCheckGlSummary = $pdo->prepare("SELECT * FROM gl_summary WHERE glac_id = ? LIMIT 1");
-            $stmtCheckGlSummary->execute([$glac_id]);   
-            $glSummaryData = $stmtCheckGlSummary->fetch(PDO::FETCH_ASSOC);
+        if ($debitData && $creditData) {
+            $debit_glac_id = (int)$debitData['glac_id'];
+            $credit_glac_id = (int)$creditData['glac_id'];
+            $tran_amount = $debitData['tran_amount'] ?? 0;
 
-            if ($glSummaryData) {
-                $current_debit = $glSummaryData['debit_amount'] ?? 0;
-                $current_credit = $glSummaryData['credit_amount'] ?? 0;
-                
-                if (isset($voucherData['drcr_code']) && $voucherData['drcr_code'] === 'D') {
-                    $new_debit = ($tran_amount && $tran_amount != 0) ? ($current_debit + $tran_amount) : $current_debit;
-                    $new_credit = $current_credit;
-                } elseif (isset($voucherData['drcr_code']) && $voucherData['drcr_code'] === 'C') {
-                    $new_credit = ($tran_amount && $tran_amount != 0) ? ($current_credit + $tran_amount) : $current_credit;
-                    $new_debit = $current_debit;
+            // If not approving, just update both transactions
+            if ($status !== 'A') {
+                $stmtUpdate = $pdo->prepare("UPDATE voucher_payments SET status = ? WHERE id IN (?, ?)");
+                $stmtUpdate->execute([$status, $debit_id, $credit_id]);
+            }
+
+            // If approving, update GL summary for both debit and credit accounts
+            if ($status === 'A') {
+                // Update Debit Account GL Summary
+                $stmtCheckDebitGL = $pdo->prepare("SELECT * FROM gl_summary WHERE glac_id = ? LIMIT 1");
+                $stmtCheckDebitGL->execute([$debit_glac_id]);   
+                $debitGLData = $stmtCheckDebitGL->fetch(PDO::FETCH_ASSOC);
+
+                if ($debitGLData) {
+                    $new_debit = $debitGLData['debit_amount'] + $tran_amount;
+                    $stmtUpdateDebitGL = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = ?, created_by = ? WHERE glac_id = ?");
+                    $stmtUpdateDebitGL->execute([date('Y-m-d'), $new_debit, $user_id, $debit_glac_id]);
+                } else {
+                    $stmtInsertDebitGL = $pdo->prepare("INSERT INTO gl_summary (glac_id, tran_date, debit_amount, credit_amount, created_by) VALUES (?, ?, ?, ?, ?)");
+                    $stmtInsertDebitGL->execute([$debit_glac_id, date('Y-m-d'), $tran_amount, 0, $user_id]);
                 }
 
-                $stmtUpdateGlSummary = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, debit_amount = ?, credit_amount = ?, created_by = ? WHERE glac_id = ?");
-                $stmtUpdateGlSummary->execute([date('Y-m-d'), $new_debit, $new_credit, $user_id, $glac_id]);
-            } else {
-                $debit_amount = 0;
-                $credit_amount = 0;
-                if (isset($voucherData['drcr_code']) && $voucherData['drcr_code'] === 'D') {
-                    $debit_amount = $tran_amount ?? 0;
-                } elseif (isset($voucherData['drcr_code']) && $voucherData['drcr_code'] === 'C') {
-                    $credit_amount = $tran_amount ?? 0;
+                // Update Credit Account GL Summary
+                $stmtCheckCreditGL = $pdo->prepare("SELECT * FROM gl_summary WHERE glac_id = ? LIMIT 1");
+                $stmtCheckCreditGL->execute([$credit_glac_id]);   
+                $creditGLData = $stmtCheckCreditGL->fetch(PDO::FETCH_ASSOC);
+
+                if ($creditGLData) {
+                    $new_credit = $creditGLData['credit_amount'] + $tran_amount;
+                    $stmtUpdateCreditGL = $pdo->prepare("UPDATE gl_summary SET tran_date = ?, credit_amount = ?, created_by = ? WHERE glac_id = ?");
+                    $stmtUpdateCreditGL->execute([date('Y-m-d'), $new_credit, $user_id, $credit_glac_id]);
+                } else {
+                    $stmtInsertCreditGL = $pdo->prepare("INSERT INTO gl_summary (glac_id, tran_date, debit_amount, credit_amount, created_by) VALUES (?, ?, ?, ?, ?)");
+                    $stmtInsertCreditGL->execute([$credit_glac_id, date('Y-m-d'), 0, $tran_amount, $user_id]);
                 }
-                $stmtInsertGlSummary = $pdo->prepare("INSERT INTO gl_summary (glac_id, tran_date, debit_amount, credit_amount, created_by) VALUES (?, ?, ?, ?, ?)");
-                $stmtInsertGlSummary->execute([$glac_id, date('Y-m-d'), $debit_amount, $credit_amount, $user_id]);
-            }       
-                $stmtApprove = $pdo->prepare("UPDATE voucher_payments SET status = ? WHERE id = ?");
-                $stmtApprove->execute([$status, $submitted_voucher_id]);                 
+
+                // Update both transaction statuses
+                $stmtApprove = $pdo->prepare("UPDATE voucher_payments SET status = ? WHERE id IN (?, ?)");
+                $stmtApprove->execute([$status, $debit_id, $credit_id]);
+            }
         }
+    }
     if ($status === 'A') {
         $_SESSION['success_msg'] = "✅ ভাউচার পোস্টিং অনুমোদন দেয়া হলো !";
     } elseif ($status === 'I') {
@@ -105,32 +134,41 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <thead class="table-light">
                                     <tr>
                                         <th>নং </th>
-                                        <th>জি.এল নাম </th>
                                         <th>তারিখ</th>
-                                        <th>টাকার পরিমান</th>
-                                        <th>ডেবিট/ক্রেডিট</th>
+                                        <th>ডেবিট জি.এল</th>
+                                        <th>ডেবিট</th>
+                                        <th>ক্রেডিট জি.এল</th>
+                                        <th>ক্রেডিট</th>
                                         <th>মন্তব্য</th>
                                         <th colspan="1">অবস্থা</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                <?php foreach ($voucherPayments as $voucherPayment): ?>
+                                <?php foreach ($voucherPayments as $transaction): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($voucherPayment['id']) ?></td>
-                                        <td><?= htmlspecialchars($voucherPayment['glac_id']) ?></br>
-                                            <?= htmlspecialchars($voucherPayment['glac_name']) ?></br>
-                                            <?= htmlspecialchars($voucherPayment['glac_code']) ?></td>
-                                        <td><?= htmlspecialchars($voucherPayment['tran_date']) ?></td>
-                                        <td><?= htmlspecialchars($voucherPayment['tran_amount']) ?></td>
-                                        <td><?= htmlspecialchars($voucherPayment['drcr_code']) ?></td>
-                                        <td><?= htmlspecialchars($voucherPayment['remarks']) ?></td>
+                                        <td><?= htmlspecialchars($transaction['transaction_ids']) ?></td>
+                                        <td><?= htmlspecialchars($transaction['tran_date']) ?></td>
+                                        <td>
+                                            <?= htmlspecialchars($transaction['debit_glac_id']) ?></br>
+                                            <?= htmlspecialchars($transaction['debit_glac_name']) ?></br>
+                                            <?= htmlspecialchars($transaction['debit_glac_code']) ?>
+                                        </td>
+                                        <td><?= htmlspecialchars($transaction['tran_amount']) ?></td>
+                                        <td>
+                                            <?= htmlspecialchars($transaction['credit_glac_id']) ?></br>
+                                            <?= htmlspecialchars($transaction['credit_glac_name']) ?></br>
+                                            <?= htmlspecialchars($transaction['credit_glac_code']) ?>
+                                        </td>
+                                        <td><?= htmlspecialchars($transaction['tran_amount']) ?></td>
+                                        <td><?= htmlspecialchars($transaction['remarks']) ?></td>
                                         <td>
                                             <form method="post" class="d-flex align-items-center">
-                                                <input type="hidden" name="vp_id" value="<?= $voucherPayment['id'] ?>">
+                                                <input type="hidden" name="debit_id" value="<?= $transaction['debit_id'] ?>">
+                                                <input type="hidden" name="credit_id" value="<?= $transaction['credit_id'] ?>">
                                                 <select name="status" class="form-select form-select-sm me-2">
-                                                    <option value="A" <?= $voucherPayment['status'] === 'A' ? 'selected' : '' ?>>✅ Approved</option>
-                                                    <option value="I" <?= $voucherPayment['status'] === 'I' ? 'selected' : '' ?>>⏸️ Inactive</option>
-                                                    <option value="R" <?= $voucherPayment['status'] === 'R' ? 'selected' : '' ?>>❌ Rejected</option>
+                                                    <option value="A">✅ Approved</option>
+                                                    <option value="I" selected>⏸️ Inactive</option>
+                                                    <option value="R">❌ Rejected</option>
                                                 </select>
                                                 <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
                                             </form>
