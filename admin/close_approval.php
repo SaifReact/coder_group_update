@@ -251,8 +251,10 @@ if ($method === 'POST' && isset($_POST['status'])) {
                                                 <option value="I" <?= ($r['status'] === 'I') ? 'selected' : '' ?>>⏸️ Inactive</option>
                                                 <option value="R" <?= ($r['status'] === 'R') ? 'selected' : '' ?>>❌ Reject</option>
                                             </select>
-                                            <input type="number" name="waiver" class="form-control form-control-sm" style="width:auto; min-width:120px;" step="0.01" placeholder="Waiver Amount" value="<?= htmlspecialchars($r['waiver'] ?? '') ?>">
-                                            <button type="submit" class="btn btn-primary btn-sm">Update (হালনাগাদ)</button>
+                                            <input type="number" name="waiver" class="form-control form-control-sm" style="width:auto; min-width:120px;" step="0.01" placeholder="Waiver Amount" value="<?= (isset($r['waiver']) && floatval($r['waiver']) !== 0.0) ? htmlspecialchars($r['waiver']) : '' ?>">
+                                            <?php if ($r['status'] === 'I'): ?>
+                                                <button type="submit" class="btn btn-primary btn-sm">Close (সদস্যপদ বাতিল)</button>
+                                            <?php endif; ?>
                                         </form>
                                     </div>
                                 </td>
@@ -272,7 +274,7 @@ if ($method === 'POST' && isset($_POST['status'])) {
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Account Close Letter</h5>
+        <h5 class="modal-title">Membership Close Application ( সদস্যপদ বাতিলের আবেদন )</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="closeDetailsModalBody">
