@@ -8,10 +8,10 @@
       <label class="form-label">ডকুমেন্টের ধরন</label>
       <select class="form-select" name="document_type">
         <option value="">- নির্বাচন করুন -</option>
-        <option value="NID">NID</option>
-        <option value="Photo">Photo</option>
-        <option value="Signature">Signature</option>
-        <option value="Other">Other</option>
+        <option value="NID">NID (জাতীয় পরিচয়পত্র)</option>
+        <option value="Photo">Photo (ছবি)</option>
+        <option value="Signature">Offical Documents (অফিসিয়াল ডকুমেন্টস)</option>
+        <option value="Other">Grantor Info (অনুদানকারীর তথ্য)</option>
       </select>
     </div>
     <div class="col-md-4 mb-3">
@@ -22,8 +22,10 @@
         <option value="No">No</option>
       </select>
     </div>
-    <div class="col-md-4 mb-3 d-grid">
-      <button type="submit" class="btn btn-success mt-2">সাবমিট</button>
+    <div class="col-12 mt-4 text-end">
+      <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
+        Save Documents (ডকুমেন্টস সংরক্ষণ করুন)
+      </button>
     </div>
   </div>
 </form>

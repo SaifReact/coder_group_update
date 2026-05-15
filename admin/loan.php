@@ -24,9 +24,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <button class="nav-link" id="loan-serCharge-tab" data-bs-toggle="tab" data-bs-target="#loan-serCharge" type="button" role="tab">প্রোডাক্টের চার্জ</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="loan-amount-tab" data-bs-toggle="tab" data-bs-target="#loan-amount" type="button" role="tab">ঋণের পরিমান</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="loan-documents-tab" data-bs-toggle="tab" data-bs-target="#loan-documents" type="button" role="tab">প্রয়োজনীয় ডকুমেন্টস</button>
                     </li>
                 </ul>
@@ -38,9 +35,6 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <!-- Loan Service Charge Tab -->
                     <div class="tab-pane fade" id="loan-serCharge" role="tabpanel">
                         <?php include 'loan-serCharge-tab.php'; ?>
-                    </div>
-                    <div class="tab-pane fade" id="loan-amount" role="tabpanel">
-                        <?php include 'loan-amount-tab.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="loan-documents" role="tabpanel">
                         <?php include 'loan-documents-tab.php'; ?>
