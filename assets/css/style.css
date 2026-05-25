@@ -63,7 +63,6 @@
 	margin-bottom: 0;
     padding: 15px 0;
     font-family: "Space Grotesk", sans-serif;
-    font-size: 18px;
 }
 
 .navbar .navbar-nav .nav-link {
@@ -71,6 +70,7 @@
     padding: 0;
     outline: none;
     color: var(--bs-dark);
+    font-size: .81rem;
 }
 
 .navbar .navbar-nav .nav-link:hover,
