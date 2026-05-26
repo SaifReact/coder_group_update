@@ -198,7 +198,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
         <div class="row px-2">
             <div class="card shadow-lg rounded-3 border-0">
                 <div class="card-body p-4">
-                    <h3 class="mb-3 text-primary fw-bold">Member Approval <span class="text-secondary">( সদস্য অনুমোদন )</span></h3> 
+                    <h3 class="mb-3 text-primary fw-bold">Share Approval <span class="text-secondary">( শেয়ার অনুমোদন )</span></h3> 
                     <hr class="mb-4" />
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped align-middle">
@@ -209,7 +209,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                         <th>সদস্যের নাম</th>
                                         <th>প্রকল্পের নাম</th>
                                         <th>শেয়ার সংখ্যা</th>
-                                        <th colspan="1">অবস্থা</th>
+                                        <th colspan="1">কর্মকান্ড</th>
                                     </tr>
                                 </thead>
                                 <tbody>

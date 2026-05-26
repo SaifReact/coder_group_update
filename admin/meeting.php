@@ -19,33 +19,33 @@ include_once __DIR__ . '/../includes/side_bar.php';
         <div class="row px-2">
                 <div class="card shadow-lg rounded-3 border-0">
                     <div class="card-body p-4">
-                      <h3 class="mb-3 text-primary fw-bold">Meeting <span class="text-secondary">( মিটিং )</span></h3> 
+                      <h3 class="mb-3 text-primary fw-bold">Meeting <span class="text-secondary">( সভা )</span></h3> 
                       <hr class="mb-4" />
 
                         <form action="../process/meeting_process.php" method="post">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="meeting_date">Meeting Date</label>
+                                    <label for="meeting_date">Meeting Date ( সভার তারিখ )</label>
                                     <input type="date" class="form-control" id="meeting_date" name="meeting_date" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="meeting_place">Meeting Place</label>
+                                    <label for="meeting_place">Meeting Place ( সভার স্থান )</label>
                                     <input type="text" class="form-control" id="meeting_place" name="meeting_place" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="meeting_agenda">Meeting Agenda</label>
+                                    <label for="meeting_agenda">Meeting Agenda ( সভার আলোচ্যসূচি )</label>
                                     <textarea class="form-control" id="meeting_agenda" name="meeting_agenda" rows="2" required></textarea>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="meeting_decision">Meeting Decision</label>
+                                    <label for="meeting_decision">Meeting Decision ( সভার সিদ্ধান্ত )</label>
                                     <textarea class="form-control" id="meeting_decision" name="meeting_decision" rows="2" required></textarea>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                     <label for="presided_by">Presided By</label>
+                                     <label for="presided_by">Presided By ( সভাপতিত্ব )</label>
                                      <input type="text" class="form-control" id="presided_by" name="presided_by" required>
                                 </div>
                                 <div class="col-md-12 mb-3">
-                                    <label>Members List</label>
+                                    <label>Members List ( সদস্যদের তালিকা )</label>
                                     <div class="border rounded p-2" style="max-height: 250px; overflow-y: auto; background: #f9f9f9;">
                                     <div class="row">
                                     <?php
@@ -69,7 +69,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 </div>
                                 <div class="col-12 mt-4 text-end">
                                     <button type="submit" name="action" value="insert" class="btn btn-primary btn-lg px-4 shadow-sm">
-                                        Save Meeting (মিটিং সংরক্ষণ করুন)
+                                        Save Meeting (সভা সংরক্ষণ করুন)
                                     </button>
                                 </div>
                             </div>

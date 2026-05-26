@@ -28,27 +28,27 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <input type="hidden" name="action" value="insert">
                             <div class="row">
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="project_name_bn" class="form-label">Project Name (Bangla)</label>
+                                    <label for="project_name_bn" class="form-label">Project Name ( প্রকল্প নাম - বাংলা )</label>
                                     <input type="text" class="form-control" id="project_name_bn" name="project_name_bn" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="project_name_en" class="form-label">Project Name (English)</label>
+                                    <label for="project_name_en" class="form-label">Project Name ( প্রকল্প নাম - ইংরেজি )</label>
                                     <input type="text" class="form-control" id="project_name_en" name="project_name_en" required>
                                 </div>
                                 <div class="col-12 col-md-4 mb-3">
-                                    <label for="project_value" class="form-label">Project Value</label>
+                                    <label for="project_value" class="form-label">Project Value ( প্রকল্প মূল্য )</label>
                                     <input type="text" class="form-control" id="project_value" name="project_value" required>
                                 </div>
                                 <div class="col-12 col-md-4 mb-3">
-                                    <label for="project_share" class="form-label">Project Share</label>
+                                    <label for="project_share" class="form-label">Project Share ( প্রকল্প শেয়ার )</label>
                                     <input type="text" class="form-control" id="project_share" name="project_share" required>
                                 </div>
                                 <div class="col-12 col-md-4 mb-3">
-                                    <label for="per_share_value" class="form-label">Per Share Value</label>
+                                    <label for="per_share_value" class="form-label">Per Share Value ( প্রতি শেয়ার মূল্য )</label>
                                     <input type="text" class="form-control" id="per_share_value" name="per_share_value" required>
                                 </div>
                                 <div class="col-12 col-md-12 mb-3">
-                                    <label for="about_project" class="form-label">About Service</label>
+                                    <label for="about_project" class="form-label">About Project ( প্রকল্প সম্পর্কে )</label>
                                     <textarea class="form-control" id="about_project" name="about_project" rows="10"></textarea>
                                 </div>
                                 <div class="col-12 mt-4 text-end">
@@ -63,13 +63,13 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <table class="table table-bordered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Project Name</th>
-                                        <th>Project Value</th>
-                                        <th>Project Share</th>
-                                        <th>Per Share Value</th>
-                                        <th>About Project</th>
-                                        <th>Actions</th>
+                                        <th>নং</th>
+                                        <th>প্রকল্প নাম</th>
+                                        <th>প্রকল্প মূল্য</th>
+                                        <th>প্রকল্প শেয়ার</th>
+                                        <th>প্রতি শেয়ার মূল্য</th>
+                                        <th>প্রকল্প সম্পর্কে</th>
+                                        <th>কর্মকান্ড</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -121,27 +121,27 @@ include_once __DIR__ . '/../includes/side_bar.php';
                           <input type="hidden" name="id" id="edit_id">
                           <div class="row">
                             <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_project_name_bn" class="form-label">Project Name (Bangla)</label>
+                                    <label for="edit_project_name_bn" class="form-label">Project Name ( প্রকল্প নাম - বাংলা )</label>
                                     <input type="text" class="form-control" id="edit_project_name_bn" name="edit_project_name_bn" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_project_name_en" class="form-label">Project Name (English)</label>
+                                    <label for="edit_project_name_en" class="form-label">Project Name ( প্রকল্প নাম - ইংরেজি )</label>
                                     <input type="text" class="form-control" id="edit_project_name_en" name="edit_project_name_en" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_project_value" class="form-label">Project Value</label>
+                                    <label for="edit_project_value" class="form-label">Project Value ( প্রকল্প মূল্য )</label>
                                     <input type="text" class="form-control" id="edit_project_value" name="edit_project_value" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_project_share" class="form-label">Project Share</label>
+                                    <label for="edit_project_share" class="form-label">Project Share ( প্রকল্প শেয়ার )</label>
                                     <input type="text" class="form-control" id="edit_project_share" name="edit_project_share" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_per_share_value" class="form-label">Per Share Value</label>
+                                    <label for="edit_per_share_value" class="form-label">Per Share Value ( প্রতি শেয়ার মূল্য )</label>
                                     <input type="text" class="form-control" id="edit_per_share_value" name="edit_per_share_value" required>
                                 </div>
                                 <div class="col-12 col-md-12 mb-3">
-                                    <label for="edit_about_project" class="form-label">About Project</label>
+                                    <label for="edit_about_project" class="form-label">About Project ( প্রকল্প সম্পর্কে )</label>
                                     <textarea class="form-control" id="edit_about_project" name="edit_about_project" rows="10"></textarea>
                                 </div>
                         </div>

@@ -12,26 +12,28 @@ $action = $_POST['action'] ?? '';
 if ($action === 'insert') {
     $company_name_en = $_POST['company_name_en'] ?? '';
     $company_name_bn = $_POST['company_name_bn'] ?? '';
+    $company_page_url = $_POST['company_page_url'] ?? '';
     $company_image = $_FILES['company_image'] ?? null;
     $about_company = $_POST['about_company'] ?? '';
 
-    if ($company_name_en && $company_name_bn && $company_image && $about_company) {
+    if ($company_name_en && $company_name_bn && $company_page_url && $company_image && $about_company) {
         $image_name = time() . '_' . basename($company_image['name']);
         $target_dir = '../company/';
         $target_file = $target_dir . $image_name;
 
         if (move_uploaded_file($company_image['tmp_name'], $target_file)) {
             $stmt = $pdo->prepare("
-                INSERT INTO company (company_name_en, company_name_bn, company_image, about_company) 
-                VALUES (:company_name_en, :company_name_bn, :company_image, :about_company)
+                INSERT INTO company (company_name_en, company_name_bn, company_page_url, company_image, about_company) 
+                VALUES (:company_name_en, :company_name_bn, :company_page_url, :company_image, :about_company)
             ");
             $stmt->execute([
                 ':company_name_en' => $company_name_en,
                 ':company_name_bn' => $company_name_bn,
+                ':company_page_url' => $company_page_url,
                 ':company_image' => $image_name,
                 ':about_company' => $about_company,
             ]);
-            $_SESSION['success_msg'] = "Company added successfully!";
+            $_SESSION['success_msg'] = "Company added successfully (কোম্পানি সফলভাবে যুক্ত হয়েছে)";
         } else {
             $_SESSION['error_msg'] = "Failed to upload image!";
         }
@@ -46,10 +48,11 @@ if ($action === 'insert') {
     $id = $_POST['id'] ?? '';
     $company_name_en = $_POST['edit_company_name_en'] ?? '';
     $company_name_bn = $_POST['edit_company_name_bn'] ?? '';
+    $company_page_url = $_POST['edit_company_page_url'] ?? '';
     $company_image = $_FILES['edit_company_image'] ?? null;
     $about_company = $_POST['edit_about_company'] ?? '';
 
-    if ($id && $company_name_en && $company_name_bn) {
+    if ($id && $company_name_en && $company_name_bn && $company_page_url && $about_company ) {
         // fetch existing company
         $stmt = $pdo->prepare("SELECT company_image FROM company WHERE id = :id");
         $stmt->execute([':id' => $id]);
@@ -80,6 +83,7 @@ if ($action === 'insert') {
                 UPDATE company SET 
                     company_name_en = :company_name_en,
                     company_name_bn = :company_name_bn,
+                    company_page_url = :company_page_url,
                     company_image = :company_image,
                     about_company = :about_company
                 WHERE id = :id
@@ -87,11 +91,12 @@ if ($action === 'insert') {
             $stmt->execute([
                 ':company_name_en' => $company_name_en,
                 ':company_name_bn' => $company_name_bn,
+                ':company_page_url' => $company_page_url,
                 ':company_image' => $image_name,
                 ':about_company' => $about_company,
                 ':id' => $id,
             ]);
-            $_SESSION['success_msg'] = "Company updated successfully!";
+            $_SESSION['success_msg'] = "Company updated successfully (কোম্পানি সফলভাবে হালনাগাদ হয়েছে)";
         } else {
             $_SESSION['error_msg'] = "Company not found!";
         }
@@ -119,7 +124,7 @@ if ($action === 'insert') {
                 unlink($target_dir . $existing_company['company_image']);
             }
 
-            $_SESSION['success_msg'] = "Company deleted successfully!";
+            $_SESSION['success_msg'] = "Company deleted successfully (কোম্পানি সফলভাবে মুছে ফেলা হয়েছে)";
         } else {
             $_SESSION['error_msg'] = "Company not found!";
         }

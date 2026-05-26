@@ -140,7 +140,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                         <th>ক্রেডিট জি.এল</th>
                                         <th>ক্রেডিট</th>
                                         <th>মন্তব্য</th>
-                                        <th colspan="1">অবস্থা</th>
+                                        <th colspan="1">কর্মকান্ড</th>
                                     </tr>
                                 </thead>
                                 <tbody>

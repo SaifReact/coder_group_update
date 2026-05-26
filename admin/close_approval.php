@@ -96,25 +96,6 @@ if ($method === 'POST' && isset($_POST['status'])) {
 
             $cash_credit_total = 0;
 
-            // echo "Calculations for member_id $member_id (Member Code: $member_code):\n";
-            // echo "Total Deposited: $total_deposited\n";
-            // echo "Total Amount (Non-Refundable): $total_amt\n";
-            // echo "None Refund: $none_refund\n";
-            // echo "Deduction: $deduction\n";
-            // echo "Refund Amount: $refund_amt\n";
-            // echo "Samity Share Amount: $samity_share_amount\n";
-            // echo "Project Share Amount: $project_share_amount\n";
-            // echo "Unallocated Deposit: $monthly_deposit\n";
-
-            // echo "GL summary updated. Total cash credit: $cash_at_bank_gl, $cash_credit_total\n";
-            // echo "GL summary updated. Total waiver: $member_closing_waiver_gl, $waiver\n";
-            // echo "GL summary updated. Total Deduction: $member_deposit_deduction_gl, $deduction\n";
-            // echo "GL summary updated. Total member deposit: $member_deposit_gl, $monthly_deposit\n";
-            // echo "GL summary updated. Total project share: $project_share_issued_gl, $project_share_amount\n";
-            // echo "GL summary updated. Total samity share: $samity_share_issued_gl, $samity_share_amount\n";
-
-            // die();
-
             $updateGlSummary = function($glac_id, $debit_amount, $credit_amount) use ($pdo, $tran_date, $user_id) {
                 if ($debit_amount <= 0 && $credit_amount <= 0) {
                     return;
@@ -212,16 +193,16 @@ if ($method === 'POST' && isset($_POST['status'])) {
                     <table class="table table-bordered table-striped align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th width="5%">#</th>
-                                <th width="10%">Member Info</th>
-                                <th width="10%">Reason</th>
-                                <th width="5%">Deposited</th>
-                                <th width="10%">None Refund</th>
-                                <th width="5%">Total Amt</th>
-                                <th width="5%">Deduction</th>
-                                <th width="5%">Refund Amt</th>
-                                <th width="5%">Agreed</th>
-                                <th width="40%">Action</th>
+                                <th width="5%">নং</th>
+                                <th width="10%">সদস্য তথ্য</th>
+                                <th width="10%">কারণ</th>
+                                <th width="5%">আমানত</th>
+                                <th width="10%">ফেতরযোগ্য নহে</th>
+                                <th width="5%">মোট পরিমাণ</th>
+                                <th width="5%">কর্তন</th>
+                                <th width="5%">ফেরতের পরিমাণ</th>
+                                <th width="5%">সম্মত</th>
+                                <th width="40%">কর্মকান্ড</th>
                             </tr>
                         </thead>
                         <tbody>

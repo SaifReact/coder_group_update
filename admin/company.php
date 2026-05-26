@@ -28,19 +28,23 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <form action="../process/company_process.php" method="post" enctype="multipart/form-data">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="company_name_en" class="form-label">Company Name (English)</label>
+                                    <label for="company_name_en" class="form-label">Company Name (কোম্পানি নাম - ইংরেজি) </label>
                                     <input type="text" class="form-control" id="company_name_en" name="company_name_en" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="company_name_bn" class="form-label">Company Name (Bangla)</label>
+                                    <label for="company_name_bn" class="form-label">Company Name (কোম্পানি নাম - বাংলা)</label>
                                     <input type="text" class="form-control" id="company_name_bn" name="company_name_bn" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="company_image" class="form-label">Company Logo</label>
+                                    <label for="company_page_url" class="form-label">Company Page URL (কোম্পানি পেইজ লিংক)</label>
+                                    <input type="text" class="form-control" id="company_page_url" name="company_page_url" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="company_image" class="form-label">Company Logo (কোম্পানি লোগো)</label>
                                     <input type="file" class="form-control" id="company_image" name="company_image" accept="image/*" required onchange="previewCompanyImage(event)">
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="about_company" class="form-label">About Company</label>
+                                    <label for="about_company" class="form-label">About Company (কোম্পানি সম্পর্কে)</label>
                                     <textarea class="form-control" id="about_company" name="about_company" rows="5"></textarea>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -61,11 +65,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <table class="table table-bordered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Company Name</th>
-                                        <th>About Company</th>
-                                        <th>Logo</th>
-                                        <th>Actions</th>
+                                        <th>নং</th>
+                                        <th>কোম্পানি নাম</th>
+                                        <th>কোম্পানি সম্পর্কে</th>
+                                        <th>পেইজ লিংক</th>
+                                        <th>ইমেজ</th>
+                                        <th>কর্মকান্ড</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -75,9 +80,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                         <td><?= htmlspecialchars($company['company_name_en']); ?><br/>
                                         <?= htmlspecialchars($company['company_name_bn']); ?></td>
                                         <td><?= strip_tags($company['about_company'], '<p><ul><li><b><i><br>'); ?></td>
-                                        <td>
-                                            <img src="../company/<?= htmlspecialchars($company['company_image']); ?>" style="height:40px;cursor:pointer;" onclick="showCompanyModal('../company/<?= htmlspecialchars($company['company_image']); ?>')">
-                                        </td>
+                                        <td><?= htmlspecialchars($company['company_page_url']); ?></td>
+                                        <td><img src="../company/<?= htmlspecialchars($company['company_image']); ?>" style="height:40px;cursor:pointer;" onclick="showCompanyModal('../company/<?= htmlspecialchars($company['company_image']); ?>')"></td>
                                         <td>
                                             <!-- Delete -->
                                             <form action="../process/company_process.php" method="post" style="display:inline-block;">
@@ -93,6 +97,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                                 <?= $company['id']; ?>, 
                                                 '<?= htmlspecialchars($company['company_name_en'], ENT_QUOTES); ?>', 
                                                 '<?= htmlspecialchars($company['company_name_bn'], ENT_QUOTES); ?>', 
+                                                '<?= htmlspecialchars($company['company_page_url'], ENT_QUOTES); ?>',
                                                 '<?= htmlspecialchars($company['about_company'], ENT_QUOTES); ?>', 
                                                 '../company/<?= htmlspecialchars($company['company_image']); ?>'
                                               )">
@@ -120,24 +125,28 @@ include_once __DIR__ . '/../includes/side_bar.php';
                           <input type="hidden" name="id" id="edit_id">
                           <div class="row">
                             <div class="mb-3 col-md-6">
-                              <label for="edit_company_name_en" class="form-label">Company Name (English)</label>
+                              <label for="edit_company_name_en" class="form-label">Company Name (কোম্পানি নাম - ইংরেজি)</label>
                               <input type="text" class="form-control" id="edit_company_name_en" name="edit_company_name_en" required>
                             </div>
                             <div class="mb-3 col-md-6">
-                              <label for="edit_company_name_bn" class="form-label">Company Name (Bangla)</label>
+                              <label for="edit_company_name_bn" class="form-label">Company Name (কোম্পানি নাম - বাংলা)</label>
                               <input type="text" class="form-control" id="edit_company_name_bn" name="edit_company_name_bn" required>
                             </div>
                             <div class="mb-3 col-md-6">
-                              <label for="edit_company_image" class="form-label">Company Logo (optional)</label>
+                              <label for="edit_company_page_url" class="form-label">Company Page URL (কোম্পানি পেইজ লিংক)</label>
+                              <input type="text" class="form-control" id="edit_company_page_url" name="edit_company_page_url" required>
+                            </div>
+                            <div class="mb-3 col-md-6">
+                              <label for="edit_company_image" class="form-label">Company Logo (কোম্পানি লোগো)</label>
                               <input type="file" class="form-control" id="edit_company_image" name="edit_company_image" accept="image/*" onchange="previewEditCompanyImage(event)">
                               <img id="editCompanyImagePreview" src="#" alt="Preview" style="display:none;max-height:80px;margin-top:8px;">
                             </div>
                             <div class="col-12 col-md-6 mb-3">
-                              <label for="edit_about_company" class="form-label">About Company</label>
+                              <label for="edit_about_company" class="form-label">About Company (কোম্পানি সম্পর্কে)</label>
                               <textarea class="form-control" id="edit_about_company" name="edit_about_company" rows="5"></textarea>
                             </div>
                             <div class="mb-3 col-md-6">
-                              <label>Current Logo</label><br>
+                              <label>Current Logo (বর্তমান লোগো)</label><br>
                               <img id="editCompanyCurrentImage" src="#" alt="Current Logo" style="max-height:80px;">
                             </div>
                           </div>
@@ -203,10 +212,11 @@ function previewEditCompanyImage(event) {
     img.style.display = 'none';
   }
 }
-function editCompany(id, nameEn, nameBn, aboutCompany, imgSrc) {
+function editCompany(id, nameEn, nameBn, companyPageUrl, aboutCompany, imgSrc) {
   document.getElementById('edit_id').value = id;
   document.getElementById('edit_company_name_en').value = nameEn;
   document.getElementById('edit_company_name_bn').value = nameBn;
+  document.getElementById('edit_company_page_url').value = companyPageUrl;
   document.getElementById('edit_about_company').value = aboutCompany;
   document.getElementById('editCompanyCurrentImage').src = imgSrc;
   document.getElementById('editCompanyImagePreview').style.display = 'none';
@@ -220,7 +230,5 @@ function editCompany(id, nameEn, nameBn, aboutCompany, imgSrc) {
 }
 </script>
 
-<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
 <?php include_once __DIR__ . '/../includes/toast.php'; ?>
-
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

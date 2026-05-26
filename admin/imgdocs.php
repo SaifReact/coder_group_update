@@ -28,7 +28,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <div class="row">
                                 <!-- New Select Input -->
                                 <div class="col-md-6 mb-3">
-                                    <label for="banner_category" class="form-label">Category Image</label>
+                                    <label for="banner_category" class="form-label">Category Image ( ক্যাটাগরি ইমেজ )</label>
                                     <select class="form-select" id="banner_category" name="banner_category" required>
                                         <option value="" disabled selected>Select Category ( নির্বাচন করুন )</option>
                                         <option value="ban">Banner ( ব্যানার )</option>
@@ -38,15 +38,15 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 </div>
                                 <!-- Existing Banner Name Fields -->
                                 <div class="col-md-6 mb-3">
-                                    <label for="banner_name_bn" class="form-label"> Name (Bangla)</label>
+                                    <label for="banner_name_bn" class="form-label"> Name ( নাম - বাংলা )</label>
                                     <input type="text" class="form-control" id="banner_name_bn" name="banner_name_bn" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="banner_name_en" class="form-label">Name (English)</label>
+                                    <label for="banner_name_en" class="form-label">Name ( নাম - ইংরেজি )</label>
                                     <input type="text" class="form-control" id="banner_name_en" name="banner_name_en" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="banner_image" class="form-label">Image/PDF</label>
+                                    <label for="banner_image" class="form-label">Image/PDF ( ছবি/পিডিএফ )</label>
                                     <input type="file" class="form-control" id="banner_image" name="banner_image" accept=".jpg,.jpeg,.png,.pdf" required onchange="previewBannerFile(event)">
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -64,11 +64,11 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <table class="table table-bordered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name (Bangla)</th>
-                                        <th>Name (English)</th>
-                                        <th>Image</th>
-                                        <th>Actions</th>
+                                        <th>নং</th>
+                                        <th>নাম - বাংলা</th>
+                                        <th>নাম - ইংরেজি</th>
+                                        <th>ছবি/পিডিএফ</th>
+                                        <th>কর্মকান্ড</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -148,7 +148,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                           <div class="row">
                             <!-- New Select Input -->
                             <div class="mb-3 col-md-6">
-                              <label for="edit_banner_category" class="form-label">Banner Category</label>
+                              <label for="edit_banner_category" class="form-label">Category Image ( ক্যাটাগরি ইমেজ )</label>
                               <select class="form-select" id="edit_banner_category" name="banner_category" required>
                                 <option value="" disabled selected>Select Category ( নির্বাচন করুন )</option>
                                 <option value="ban">Banner ( ব্যানার )</option>
@@ -156,15 +156,15 @@ include_once __DIR__ . '/../includes/side_bar.php';
                               </select>
                             </div>
                             <div class="mb-3 col-md-6">
-                              <label for="edit_banner_name_bn" class="form-label">Name (Bangla)</label>
+                              <label for="edit_banner_name_bn" class="form-label">Name ( নাম - বাংলা )</label>
                               <input type="text" class="form-control" id="edit_banner_name_bn" name="banner_name_bn" required>
                             </div>
                             <div class="mb-3 col-md-6">
-                              <label for="edit_banner_name_en" class="form-label">Name (English)</label>
+                              <label for="edit_banner_name_en" class="form-label">Name ( নাম - ইংরেজি )</label>
                               <input type="text" class="form-control" id="edit_banner_name_en" name="banner_name_en" required>
                             </div>
                             <div class="mb-3 col-md-6">
-                              <label for="edit_banner_image" class="form-label">Image (optional)</label>
+                              <label for="edit_banner_image" class="form-label">Image/PDF ( ছবি/পিডিএফ )</label>
                               <input type="file" class="form-control" id="edit_banner_image" name="banner_image" accept="image/*" onchange="previewEditBannerImage(event)">
                               <img id="editBannerImagePreview" src="#" alt="Preview" style="display:none;max-height:80px;margin-top:8px;">
                             </div>

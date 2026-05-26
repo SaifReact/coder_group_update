@@ -138,7 +138,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                         <th width="15%">সদস্য কোড </th>
                                         <th width="25%">সদস্যের নাম</th>
                                         <th width="3%">পাসওয়ার্ড </th>
-                                        <th colspan="2" width="45%">অবস্থা</th>
+                                        <th colspan="2" width="45%">কর্মকান্ড</th>
                                     </tr>
                                 </thead>
                                 <tbody>

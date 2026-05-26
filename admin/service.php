@@ -21,26 +21,26 @@ include_once __DIR__ . '/../includes/side_bar.php';
         <div class="row px-2">
                 <div class="card shadow-lg rounded-3 border-0">
                     <div class="card-body p-4">
-                      <h3 class="mb-3 text-primary fw-bold">Service <span class="text-secondary">( সেবা )</span></h3> 
+                      <h3 class="mb-3 text-primary fw-bold">Services <span class="text-secondary">( সেবাসমূহ )</span></h3> 
                       <hr class="mb-4" />
 
                         <form method="post" enctype="multipart/form-data" action="../process/service_process.php">
                             <input type="hidden" name="action" value="insert">
                             <div class="row">
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="service_name_bn" class="form-label">Service Name</label>
+                                    <label for="service_name_bn" class="form-label">Service Name ( সেবার নাম )</label>
                                     <input type="text" class="form-control" id="service_name_bn" name="service_name_bn" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="service_name_en" class="form-label">Goal</label>
+                                    <label for="service_name_en" class="form-label">Goal ( লক্ষ্য )</label>
                                     <input type="text" class="form-control" id="service_name_en" name="service_name_en" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="about_service" class="form-label">Objectives</label>
+                                    <label for="about_service" class="form-label">Objectives ( উদ্দেশ্য )</label>
                                     <textarea class="form-control" id="about_service" name="about_service" rows="5"></textarea>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="icon" class="form-label">Icon</label>
+                                    <label for="icon" class="form-label">Icon ( আইকন )</label>
                                     <input type="text" class="form-control" id="icon" name="icon" required>
                                 </div>
                                 <div class="col-12 mt-4 text-end">
@@ -55,12 +55,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
                             <table class="table table-bordered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Service Name</th>
-                                        <th>Goal</th>
-                                        <th>Objective</th>
-                                        <th>Icon</th>
-                                        <th>Actions</th>
+                                        <th>নং</th>
+                                        <th>সেবার নাম</th>
+                                        <th>লক্ষ্য</th>
+                                        <th>উদ্দেশ্য</th>
+                                        <th>আইকন</th>
+                                        <th>কর্মকান্ড</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -108,19 +108,19 @@ include_once __DIR__ . '/../includes/side_bar.php';
                           <input type="text" name="id" id="edit_id">
                           <div class="row">
                             <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_service_name_bn" class="form-label">Service Name</label>
+                                    <label for="edit_service_name_bn" class="form-label">Service Name ( সেবার নাম )</label>
                                     <input type="text" class="form-control" id="edit_service_name_bn" name="edit_service_name_bn" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_service_name_en" class="form-label">Goal</label>
+                                    <label for="edit_service_name_en" class="form-label">Goal ( লক্ষ্য )</label>
                                     <input type="text" class="form-control" id="edit_service_name_en" name="edit_service_name_en" required>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_about_service" class="form-label">Objectives</label>
+                                    <label for="edit_about_service" class="form-label">Objectives ( উদ্দেশ্য )</label>
                                     <textarea class="form-control" id="edit_about_service" name="edit_about_service" rows="5"></textarea>
                                 </div>
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label for="edit_icon" class="form-label">Icon <i id="edit_icon_preview" class="fa"></i></label>
+                                    <label for="edit_icon" class="form-label">Icon ( আইকন ) <i id="edit_icon_preview" class="fa"></i></label>
                                     <input type="text" class="form-control" id="edit_icon" name="edit_icon" required>
                           </div>
                         </div>
@@ -186,7 +186,5 @@ function editService(id, service_name_en, service_name_bn, about_service, icon) 
 }
 </script>
 
-<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
 <?php include_once __DIR__ . '/../includes/toast.php'; ?>
-
 <?php include_once __DIR__ . '/../includes/end.php'; ?>

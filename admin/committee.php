@@ -58,7 +58,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
               <input type="hidden" name="action" value="insert">
               <div class="row">
                 <div class="col-12 col-md-6 mb-3">
-                  <label for="member_id" class="form-label">Member Name</label>
+                  <label for="member_id" class="form-label">Member Name ( সদস্যের নাম )</label>
                   <select class="form-select select2" id="member_id" name="member_id" required>
                     <option value="">Select Member ( সদস্য বাছাই করুন )</option>
                     <?php foreach($members as $member): ?>
@@ -70,7 +70,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 </div>
 
                 <div class="col-12 col-md-6 mb-3">
-                  <label for="designation" class="form-label">Designation</label>
+                  <label for="designation" class="form-label">Designation ( পদবি )</label>
                   <select class="form-select" id="designation" name="designation" required>
                     <option value="">Select Designation ( পদবি বাছাই করুন )</option>
                    <?php foreach($designations as $designation): ?>
@@ -83,20 +83,20 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
                 <!-- Switch Input -->
                 <div class="col-12 col-md-3 mb-3">
-                  <label class="form-label">Role</label>
+                  <label class="form-label">Role ( রোল )</label>
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="role_switch" name="role" value="Entrepreneur">
-                    <label class="form-check-label" for="role_switch">Entrepreneur</label>
+                    <label class="form-check-label" for="role_switch">Entrepreneur ( উদ্যোক্তা )</label>
                   </div>
                 </div>
 
                 <div class="col-12 col-md-5 mb-3">
-                  <label for="facebook" class="form-label">Facebook</label>
+                  <label for="facebook" class="form-label">Facebook ( ফেসবুক )</label>
                   <input type="text" class="form-control" id="facebook" name="facebook" required>
                 </div>
 
                 <div class="col-12 col-md-4 mb-3">
-                  <label for="linkedin" class="form-label">LinkedIn</label>
+                  <label for="linkedin" class="form-label">LinkedIn ( লিঙ্কডইন )</label>
                   <input type="text" class="form-control" id="linkedin" name="linkedin" required>
                 </div>
 
@@ -115,12 +115,12 @@ include_once __DIR__ . '/../includes/side_bar.php';
               <table class="table table-bordered align-middle">
                 <thead class="table-light">
                   <tr>
-                    <th>ID</th>
-                    <th>Designation</th>
-                    <th>Member Info</th>
-                    <th>Social</th>
-                    <th>Role</th>
-                    <th>Actions</th>
+                    <th>নং</th>
+                    <th>পদবি</th>
+                    <th>সদস্য তথ্য</th>
+                    <th>সোশ্যাল লিংক</th>
+                    <th>রোল</th>
+                    <th>কর্মকান্ড</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -186,7 +186,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
                   <div class="row">
                     <div class="col-12 col-md-6 mb-3">
-                      <label for="edit_member_id" class="form-label">Member Name</label>
+                      <label for="edit_member_id" class="form-label">Member Name ( সদস্যের নাম )</label>
                       <select class="form-select select2" id="edit_member_id" name="edit_member_id" required>
                         <option value="">Select Member ( সদস্য বাছাই করুন )</option>
                         <?php foreach($members as $member): ?>
@@ -198,7 +198,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     </div>
 
                     <div class="col-12 col-md-6 mb-3">
-                      <label for="edit_designation" class="form-label">Designation</label>
+                      <label for="edit_designation" class="form-label">Designation ( পদবি )</label>
                       <select class="form-select" id="edit_designation" name="edit_designation" required>
                         <option value="">Select Designation ( পদবি বাছাই করুন )</option>
                        <?php foreach($designations as $designation): ?>
@@ -210,21 +210,21 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     </div>
 
                     <div class="col-12 col-md-6 mb-3">
-                      <label for="edit_facebook" class="form-label">Facebook</label>
+                      <label for="edit_facebook" class="form-label">Facebook ( ফেসবুক )</label>
                       <input type="text" class="form-control" id="edit_facebook" name="edit_facebook">
                     </div>
 
                     <div class="col-12 col-md-6 mb-3">
-                      <label for="edit_linkedin" class="form-label">LinkedIn</label>
+                      <label for="edit_linkedin" class="form-label">LinkedIn ( লিঙ্কডইন )</label>
                       <input type="text" class="form-control" id="edit_linkedin" name="edit_linkedin">
                     </div>
 
                     <!-- Switch Input -->
                     <div class="col-12 col-md-6 mb-3">
-                      <label class="form-label">Role</label>
+                      <label class="form-label">Role ( রোল )</label>
                       <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="edit_role_switch" name="edit_role" value="Entrepreneur">
-                        <label class="form-check-label" for="edit_role_switch">Entrepreneur</label>
+                        <label class="form-check-label" for="edit_role_switch">Entrepreneur ( উদ্যোক্তা )</label>
                       </div>
                     </div>
                   </div>
