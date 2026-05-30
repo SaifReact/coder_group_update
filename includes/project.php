@@ -4,7 +4,7 @@ include_once __DIR__ . '/../config/config.php';
 
 // Fetch banners from the database
 try {
-    $stmt = $pdo->query("SELECT company_name_en, company_name_bn, company_image FROM company ORDER BY id ASC");
+    $stmt = $pdo->query("SELECT company_name_en, company_name_bn, company_image, company_page_url FROM company ORDER BY id ASC");
     $companies = $stmt->fetchAll();
 } catch (Exception $e) {
     die('Error fetching banners: ' . $e->getMessage());
@@ -23,7 +23,7 @@ try {
                         <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.2s">
                             <div class="project-item position-relative overflow-hidden">
                                 <img class="img-fluid w-100" src="company/<?= htmlspecialchars($company['company_image']); ?>" alt="<?= htmlspecialchars($company['company_name_en']); ?>">
-                                <a class="project-overlay text-decoration-none" href="#!">
+                                <a class="project-overlay text-decoration-none" href="<?= BASE_URL . htmlspecialchars($company['company_page_url'] ?? ''); ?>" target="_blank" rel="noopener noreferrer">
                                     <h4 class="text-white"><?= htmlspecialchars($company['company_name_en']); ?></h4>
                                     <small class="text-white"><?= htmlspecialchars($company['company_name_bn']); ?></small>
                                 </a>
