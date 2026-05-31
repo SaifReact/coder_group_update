@@ -75,6 +75,10 @@ $role = $_SESSION['role'] ?? '';
                         <span class="icon"><i class="bi bi-people-fill"></i></span> 
                         <span class="description"> Committee </span>
                     </a>
+                    <a class="nav-link" href="loan.php">
+                        <span class="icon"><i class="bi bi-cash-stack"></i></span> 
+                        <span class="description"> Loan Product </span>
+                    </a>
                 </div>
                 
                 <?php elseif ($role === 'Account'): ?>
