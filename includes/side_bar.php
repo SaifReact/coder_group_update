@@ -37,6 +37,10 @@ $role = $_SESSION['role'] ?? '';
                             <span class="icon"><i class="bi bi-receipt"></i></span> 
                             <span class="description"> Voucher </span>
                         </a>
+                        <a class="nav-link" href="loan_approval.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Loan </span>
+                        </a>
                         <a class="nav-link" href="close_approval.php">
                             <span class="icon"><i class="bi bi-door-closed"></i></span> 
                             <span class="description"> Close </span>
@@ -99,6 +103,10 @@ $role = $_SESSION['role'] ?? '';
                         <a class="nav-link" href="payment_approved.php">
                             <span class="icon"><i class="bi bi-cash-coin"></i></span> 
                             <span class="description"> Approved </span>
+                        </a>
+                        <a class="nav-link" href="loan_approval.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Loan </span>
                         </a>
                     </div>
                     
@@ -164,6 +172,11 @@ $role = $_SESSION['role'] ?? '';
                    href="payment.php" style="font-size:.8rem;">
                     <span class="icon"><i class="bi bi-credit-card"></i></span> 
                     <span class="description">Payment</span>
+                </a>
+                <a class="nav-link"
+                   href="loan_application.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-credit-card"></i></span> 
+                    <span class="description">Loan Application</span>
                 </a>
                 <a class="nav-link"
                    href="receipt.php" style="font-size:.8rem;">

@@ -14,13 +14,13 @@ $shareInfo = [];
 $monthly_deposit = 0.0;
 $project_amount = 0.0;
 $total_deposits = 0.0;
-$eighty_percent = 0.0;
+$sixty_percent = 0.0;
 $products = [];
 $grantors = [];
 
 // Fetch loan products from loan_info table
 try {
-    $stmt = $pdo->query("SELECT id, product_name FROM loan_info ORDER BY product_name ASC");
+    $stmt = $pdo->query("SELECT id, product_name, savings_percentage FROM loan_info ORDER BY product_name ASC");
     $products = $stmt->fetchAll();
 } catch (PDOException $e) {
     $products = [];
@@ -86,27 +86,81 @@ if ($member_id) {
 
     $samity_share_amount = isset($shareInfo['samity_share_amt']) ? (float)$shareInfo['samity_share_amt'] : 0.0;
     $total_deposits = $monthly_deposit + $project_amount + $samity_share_amount;
-    $sixty_percent = $total_deposits * 0.60;
+    $savings_percentage = 0.0;
+    if (isset($products[0]['savings_percentage'])) {
+        $savings_percentage = (float)$products[0]['savings_percentage'];
+    }
+    $sixty_percent = $total_deposits * ($savings_percentage / 100.0);
 }
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $member_id = $_POST['member_id'] ?? $member_id;
     $product_id = $_POST['product_id'] ?? null;
+    $product_code = $_POST['product_code'] ?? '';
     $loan_amount = $_POST['loan_amount'] ?? null;
     $loan_purpose = $_POST['loan_purpose'] ?? null;
     $loan_term = $_POST['loan_term'] ?? null;
+    $service_charge_amount = $_POST['service_charge_amount'] ?? 0;
+    $verification_charge = $_POST['verification_charge'] ?? 0;
+    $late_charge = $_POST['late_charge'] ?? 0;
+    $expired_charge = $_POST['expired_charge'] ?? 0;
+    $disbursement_amount = $_POST['disbursement_amount'] ?? 0;
     $grantor_id = $_POST['grantor_id'] ?? null;
+    $grantor_describes = $_POST['grantor_describes'] ?? '';
+    $member_name = $member['name'] ?? ($_POST['member_name'] ?? '');
+    $member_code = $_SESSION['member_code'] ?? '';
+    $created_by = $_SESSION['user_id'] ?? null;
+
+    $service_charge_amount = floatval(str_replace([',', ' Tk'], '', $service_charge_amount));
+    $verification_charge = floatval(str_replace([',', ' Tk'], '', $verification_charge));
+    $late_charge = floatval(str_replace([',', ' Tk'], '', $late_charge));
+    $expired_charge = floatval(str_replace([',', ' Tk'], '', $expired_charge));
+    $disbursement_amount = floatval(str_replace([',', ' Tk'], '', $disbursement_amount));
+    $loan_amount = floatval(str_replace([',', ' Tk'], '', $loan_amount));
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO loan_applications (member_id, product_id, loan_amount, loan_purpose, loan_term, grantor_id, application_date) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-        if ($stmt->execute([$member_id, $product_id, $loan_amount, $loan_purpose, $loan_term, $grantor_id])) {
-            $success = 'Loan application submitted successfully!';
+        $statusStmt = $pdo->prepare("SELECT status FROM loan_application WHERE member_id = ? AND member_code = ? AND status IN ('I', 'A') ORDER BY id DESC LIMIT 1");
+        $statusStmt->execute([$member_id, $member_code]);
+        $existingStatus = $statusStmt->fetchColumn();
+
+        if ($existingStatus === 'I') {
+            $error = 'আপনার ঋণটি অনুমোদনের জন্য অপেক্ষমান আছে।';
+        } elseif ($existingStatus === 'A') {
+            $error = 'আপনার ঋণটি এখন ও সচল আছে।';
+        } elseif ($existingStatus === 'P') {
+            $error = 'আপনার ঋণটি অনুমোদনের জন্য প্রক্রিয়াধীন আছে।';
         } else {
-            $error = 'Failed to submit loan application.';
+            $insertSql = "INSERT INTO loan_application (member_id, member_code, member_name, product_code, loan_amount, duration, service_charge, verification_charge, late_charge, expired_charge, disbursement_amount, loan_purpose, grantor_id, grantor_describes, status, created_by, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $pdo->prepare($insertSql);
+            $now = date('Y-m-d H:i:s');
+            if ($stmt->execute([
+                $member_id,
+                $member_code,
+                $member_name,
+                $product_code,
+                $loan_amount,
+                $loan_term,
+                $service_charge_amount,
+                $verification_charge,
+                $late_charge,
+                $expired_charge,
+                $disbursement_amount,
+                $loan_purpose,
+                $grantor_id,
+                $grantor_describes,
+                'I',
+                $created_by,
+                $now
+            ])) {
+                $success = 'ঋণের জন্য আবেদনপত্র প্রস্তাব করা হইলো।';
+            } else {
+                $error = 'ঋণের আবেদনপত্র জমা দিতে ব্যর্থ হয়েছেন। অনুগ্রহ করে আবার চেষ্টা করুন।';
+            }
         }
     } catch (PDOException $e) {
-        $error = 'Failed to submit loan application.';
+        $error = 'ঋণের আবেদন জমা দিতে ব্যর্থ হয়েছে: ' . $e->getMessage();
     }
 }
 
@@ -128,7 +182,7 @@ if (isset($_GET['fetch_member']) && isset($_GET['member_id'])) {
 if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
     $product_id = $_GET['product_id'];
     try {
-        $stmt = $pdo->prepare("SELECT product_name, product_code, max_loan_amount, min_loan_amount, loan_term, savings_percentage, share_percentage FROM loan_info WHERE id = ? LIMIT 1");
+        $stmt = $pdo->prepare("SELECT product_name, product_code, max_loan_amount, min_loan_amount, loan_term, savings_percentage, share_percentage, installment_frequency, service_charge_calculation_method, installment_measurement_method FROM loan_info WHERE id = ? LIMIT 1");
         $stmt->execute([$product_id]);
         $product = $stmt->fetch();
         echo json_encode($product ?: []);
@@ -151,12 +205,15 @@ if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
                     </div>
                 </div>
                 <hr class="mb-4" />
+                <?php if(isset($success)) echo '<div class="alert alert-success mt-3">'.$success.'</div>'; ?>
+                <?php if(isset($error)) echo '<div class="alert alert-danger mt-3">'.$error.'</div>'; ?>
                 <form id="loanForm" method="POST">
                     <div class="row g-2 mb-3">
                         <div class="col-12 col-md-3">
                             <label class="form-label">সদস্য নং</label>
                             <input type="text" class="form-control" id="member_id" name="member_id" value="<?= htmlspecialchars($member_id) ?>" readonly required>
                         </div>
+
                         <div class="col-12 col-md-9">
                             <div class="row g-2" id="memberInfoRow">
                                 <div class="col-12 col-md-4">
@@ -173,6 +230,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-12 col-md-3">
                             <label class="form-label">মাসিক জমা</label>
                             <input type="text" class="form-control" value="<?= htmlspecialchars(number_format((float)$monthly_deposit, 2)) ?>" readonly>
@@ -199,7 +257,36 @@ if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
                             </select>
                         </div>
                         <div class="col-12 col-md-8" id="productInfo"></div>
-                        
+                        <div class="col-12 col-md-3">
+                            <label class="form-label">প্রোডাক্ট কোড</label>
+                            <input type="text" class="form-control" id="product_code_field" name="product_code" readonly>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label">ঋণের হার %</label>
+                            <input type="text" class="form-control" id="savings_percentage_field" name="savings_percentage_field" readonly>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label">সর্বনিম্ন ঋণ পরিমান</label>
+                            <input type="text" class="form-control" id="min_loan_amount_field" name="min_loan_amount_field" readonly>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label">সর্বোচ্চ ঋণ পরিমান</label>
+                            <input type="text" class="form-control" id="max_loan_amount_field" name="max_loan_amount_field" readonly>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label">কিস্তির ফ্রিকোয়েন্সি</label>  
+                            <input type="text" class="form-control" id="installment_frequency_field" name="installment_frequency_field" readonly>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label">সার্ভিস চার্জ হিসাবের পদ্ধতি</label>    
+                            <input type="text" class="form-control" id="service_charge_calculation_method_field" name="service_charge_calculation_method_field" readonly>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label">কিস্তির পরিমাপের পদ্ধতি</label>
+                            <input type="text" class="form-control" id="installment_measurement_method_field" name="installment_measurement_method_field" readonly>
+                            <input type="hidden" id="installment_measurement_method_code" name="installment_measurement_method_code" value="">
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label">ঋণের টাকার পরিমান</label>
                             <div class="border rounded p-3 bg-light">
@@ -250,9 +337,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
                                 <option value="">- নির্বাচন করুন -</option>
                             </select>
                         </div>
-
-                        
-                        
+                       
                         <div class="col-12">
                             <div class="row g-2" id="loanTermDetailFields">
                                 <div class="col-12 col-md-2">
@@ -273,44 +358,48 @@ if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label class="form-label">ভেরিফিকেশন টাকার পরিমান</label>
-                                    <input type="text" class="form-control" id="loan_term_verification_charge" readonly>
+                                    <input type="text" class="form-control" id="loan_term_verification_charge" name="verification_charge" readonly>
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-12">
                             <div class="row g-2" id="loanTermDetailFields">
                                 <div class="col-12 col-md-2">
                                     <label class="form-label">নির্বাচিত ঋণের টাকার পরিমান</label>
-                                    <input type="text" class="form-control" id="selected_loan_amount" readonly>
+                                    <input type="text" class="form-control" id="selected_loan_amount" name="selected_loan_amount" readonly>
                                 </div>
                                 <div class="col-12 col-md-2">
                                     <label class="form-label">সার্ভিস চার্জের পরিমান</label>
-                                    <input type="text" class="form-control" id="service_charge_amount" readonly>
+                                    <input type="text" class="form-control" id="service_charge_amount" name="service_charge_amount" readonly>
                                 </div>
                                 <div class="col-12 col-md-2">
                                     <label class="form-label">বিলম্ব চার্জের পরিমান</label>
-                                    <input type="text" class="form-control" id="late_service_amount" readonly>
+                                    <input type="text" class="form-control" id="late_service_amount" name="late_charge" readonly>
                                 </div>
                                 <div class="col-12 col-md-2">
                                     <label class="form-label">মেয়াদোত্তির্ণ চার্জের পরিমান</label>
-                                    <input type="text" class="form-control" id="expired_service_amount" readonly>
+                                    <input type="text" class="form-control" id="expired_service_amount" name="expired_charge" readonly>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label class="form-label">বিতরনকৃত টাকার পরিমান</label>
-                                    <input type="text" class="form-control" id="remaining_amount" readonly>
+                                    <input type="text" class="form-control" id="remaining_amount" name="disbursement_amount" readonly>
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-12">
                             <div class="card border-0 shadow-sm mt-3">
                                 <div class="card-header py-2 bg-light"><strong>আসল/মূলধন পরিমানের তালিকা</strong></div>
                                 <div class="card-body p-2" id="principal_schedule"></div>
                             </div>
                         </div>
+
                         <div class="col-12 col-md-4">
                             <label class="form-label">ঋণের উদ্দেশ্য</label>
                             <input type="text" class="form-control" id="loan_purpose" name="loan_purpose" required>
                         </div>
+
                         <div class="col-12 col-md-4">
                             <label class="form-label">অনুদানকারীর তথ্য</label>
                             <select class="form-control" id="grantor_id" name="grantor_id" required>
@@ -321,9 +410,10 @@ if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
                                 <?php endforeach; ?>               
                             </select>
                         </div>
+
                         <div class="col-12 col-md-4" id="grantor_others_field" style="display: none;">
                             <label class="form-label">অন্যান্য তথ্য (বিবরণ)</label>
-                            <textarea class="form-control" id="grantor_others_text" name="grantor_others_text" rows="3" placeholder="এখানে অনুদানকারীর বিবরণ লিখুন..."></textarea>
+                            <textarea class="form-control" id="grantor_others_text" name="grantor_describes" rows="3" placeholder="এখানে অনুদানকারীর বিবরণ লিখুন..."></textarea>
                         </div>
                     </div>
                     <div class="text-center mt-4">
@@ -341,8 +431,6 @@ if (isset($_GET['fetch_product']) && isset($_GET['product_id'])) {
                         <?php endif; ?>
                     </div>
                 </form>
-                <?php if(isset($success)) echo '<div class="alert alert-success mt-3">'.$success.'</div>'; ?>
-                <?php if(isset($error)) echo '<div class="alert alert-danger mt-3">'.$error.'</div>'; ?>
             </div>
         </div>
     </div>
@@ -428,6 +516,56 @@ document.addEventListener('DOMContentLoaded', function() {
         return Number(value).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
     }
 
+    function mapInstallmentFrequency(code) {
+        var frequencyMap = {
+            'M': 'Monthly',
+            'Q': 'Quarterly',
+            'H': 'Half-Yearly',
+            'Y': 'Yearly'
+        };
+        return frequencyMap[code] || code;
+    }
+
+    function mapServiceChargeMethod(code) {
+        var methodMap = {
+            'F': 'Flat',
+            'R': 'Reducing'
+        };
+        return methodMap[code] || code;
+    }
+
+    function mapInstallmentMeasurement(code) {
+        var measurementMap = {
+            'SCDF': 'Service Charge Deduction First',
+            'SCAWL': 'Service Charge Adding With Loan'
+        };
+        return measurementMap[code] || code;
+    }
+
+    function getPaymentDates(months) {
+        var dates = [];
+        var today = new Date();
+        var currentDate = new Date(today.getFullYear(), today.getMonth(), 10);
+        
+        // If today is after 10th of this month, start from next month's 10th
+        if (today.getDate() > 10) {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+        
+        for (var i = 0; i < months; i++) {
+            var payDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 10);
+            dates.push(payDate);
+        }
+        return dates;
+    }
+
+    function formatPaymentDate(date) {
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        return day + '-' + month + '-' + year;
+    }
+
     function updatePrincipalSchedule(selectedAmount, months) {
         if (!principalScheduleContainer) {
             return;
@@ -439,12 +577,63 @@ document.addEventListener('DOMContentLoaded', function() {
         var base = Math.floor(selectedAmount / months);
         var total = 0;
         var rows = '';
+        var paymentDates = getPaymentDates(months);
+        
         for (var i = 1; i <= months; i++) {
             var amount = i === months ? selectedAmount - total : base;
             total += amount;
-            rows += '<tr><td class="text-center">' + i + '</td><td class="text-end">' + formatCurrency(amount) + ' Tk</td></tr>';
+            var payDate = paymentDates[i - 1];
+            rows += '<tr><td class="text-center">' + i + '</td><td class="text-center">' + formatPaymentDate(payDate) + '</td><td class="text-end">' + formatCurrency(amount) + ' Tk</td></tr>';
         }
-        principalScheduleContainer.innerHTML = '<div class="table-responsive"><table class="table table-bordered mb-0"><thead><tr><th class="text-center">কিস্তি</th><th class="text-end">আসল/মূলধন পরিমান</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+        var footer = '<tfoot><tr class="table-secondary"><th colspan="2" class="text-end">সর্বমোট</th><th class="text-end">' + formatCurrency(total) + ' Tk</th></tr></tfoot>';
+        principalScheduleContainer.innerHTML = '<div class="table-responsive"><table class="table table-bordered mb-0"><thead><tr><th class="text-center">কিস্তি</th><th class="text-center">কিস্তির তারিখ</th><th class="text-end">আসল/মূলধন পরিমান</th></tr></thead><tbody>' + rows + '</tbody>' + footer + '</table></div>';
+    }
+
+    function updateServiceChargeWithPrincipalSchedule(selectedAmount, months, serviceChargeTotal, verificationAmount) {
+        if (!principalScheduleContainer) {
+            return;
+        }
+        if (!selectedAmount || !months || months <= 0) {
+            principalScheduleContainer.innerHTML = '<div class="text-muted">আসল/মূলধন পরিমানের তালিকা দেখতে ঋণের পরিমাণ ও মেয়াদ নির্বাচন করুন।</div>';
+            return;
+        }
+
+        var principalBase = Math.floor(selectedAmount / months);
+        var totalPrincipal = 0;
+        var serviceBase = Math.floor(serviceChargeTotal / months);
+        var totalService = 0;
+        var verificationBase = Math.floor(verificationAmount / months);
+        var totalVerification = 0;
+        var totalInstallment = 0;
+        var rows = '';
+        var paymentDates = getPaymentDates(months);
+
+        for (var i = 1; i <= months; i++) {
+            var principal = i === months ? selectedAmount - totalPrincipal : principalBase;
+            totalPrincipal += principal;
+
+            var serviceCharge = i === months ? serviceChargeTotal - totalService : serviceBase;
+            totalService += serviceCharge;
+
+            var verification = i === months ? verificationAmount - totalVerification : verificationBase;
+            totalVerification += verification;
+
+            var installment = principal + serviceCharge + verification;
+            totalInstallment += installment;
+
+            var payDate = paymentDates[i - 1];
+            rows += '<tr>' +
+                '<td class="text-center">' + i + '</td>' +
+                '<td class="text-center">' + formatPaymentDate(payDate) + '</td>' +
+                '<td class="text-end">' + formatCurrency(principal) + ' Tk</td>' +
+                '<td class="text-end">' + formatCurrency(serviceCharge) + ' Tk</td>' +
+                '<td class="text-end">' + formatCurrency(verification) + ' Tk</td>' +
+                '<td class="text-end">' + formatCurrency(installment) + ' Tk</td>' +
+                '</tr>';
+        }
+        var footer = '<tfoot><tr class="table-secondary"><th colspan="2" class="text-end">সর্বমোট</th><th class="text-end">' + formatCurrency(totalPrincipal) + ' Tk</th><th class="text-end">' + formatCurrency(totalService) + ' Tk</th><th class="text-end">' + formatCurrency(totalVerification) + ' Tk</th><th class="text-end">' + formatCurrency(totalInstallment) + ' Tk</th></tr></tfoot>';
+
+        principalScheduleContainer.innerHTML = '<div class="table-responsive"><table class="table table-bordered mb-0"><thead><tr><th class="text-center">কিস্তি</th><th class="text-center">কিস্তির তারিখ</th><th class="text-end">মূলধন</th><th class="text-end">সার্ভিস চার্জ</th><th class="text-end">ভেরিফিকেশন</th><th class="text-end">মোট কিস্তি</th></tr></thead><tbody>' + rows + '</tbody>' + footer + '</table></div>';
     }
 
     function updateCalculatedAmounts() {
@@ -473,7 +662,12 @@ document.addEventListener('DOMContentLoaded', function() {
             expiredServiceAmountField.value = expiredServiceCalculated ? formatCurrency(expiredServiceCalculated) + ' Tk' : '0 Tk';
         }
         var termMonths = parseNumber(loanTermSelect ? loanTermSelect.value : 0);
-        updatePrincipalSchedule(selectedAmount, termMonths);
+        var measurementCode = (document.getElementById('installment_measurement_method_code') || {}).value || '';
+        if (measurementCode === 'SCDF') {
+            updatePrincipalSchedule(selectedAmount, termMonths);
+        } else {
+            updateServiceChargeWithPrincipalSchedule(selectedAmount, termMonths, serviceChargeCalculated, verificationAmount);
+        }
     }
 
     function updateSelectedLoanAmount() {
@@ -508,36 +702,34 @@ document.addEventListener('DOMContentLoaded', function() {
     loanAmountRadios.forEach(function(radio) {
         radio.addEventListener('change', updateSelectedLoanAmount);
     });
-    updateSelectedLoanAmount();
 
     if (productInput) {
         productInput.addEventListener('change', function() {
             var productId = this.value;
             populateLoanTerms(productId);
             document.getElementById('productInfo').innerHTML = '';
+            document.getElementById('product_code_field').value = '';
+            document.getElementById('min_loan_amount_field').value = '';
+            document.getElementById('max_loan_amount_field').value = '';
+            document.getElementById('installment_frequency_field').value = '';
+            document.getElementById('service_charge_calculation_method_field').value = '';
+            document.getElementById('installment_measurement_method_field').value = '';
+            
             if (productId) {
                 fetch('loan_application.php?fetch_product=1&product_id=' + productId)
                     .then(response => response.json())
                     .then(data => {
                         if (data && data.product_name) {
-                            var details = [];
-                            if (data.product_code) {
-                                details.push('<b>Product Code:</b> ' + data.product_code);
-                            }
-                            if (data.min_loan_amount && data.max_loan_amount) {
-                                details.push('<b>Loan Range:</b> ' + parseFloat(data.min_loan_amount).toFixed(0) + ' - ' + parseFloat(data.max_loan_amount).toFixed(0));
-                            }
-                            if (data.loan_term) {
-                                details.push('<b>Loan Term:</b> ' + data.loan_term + ' months');
-                            }
-                            if (data.savings_percentage) {
-                                details.push('<b>Loan Amount %:</b> ' + data.savings_percentage + '%');
-                            }
-                            
-                            document.getElementById('productInfo').innerHTML = `<div class="alert alert-info"><b>Product Name:</b> ${data.product_name}<br>${details.join('<br>')}</div>`;
-                        } else {
-                            document.getElementById('productInfo').innerHTML = '<span class="text-danger">Product not found.</span>';
-                        }
+                            document.getElementById('product_code_field').value = data.product_code || '';
+                            document.getElementById('savings_percentage_field').value = (data.savings_percentage !== undefined && data.savings_percentage !== null) ? data.savings_percentage + ' %' : '';
+                            document.getElementById('min_loan_amount_field').value = (data.min_loan_amount ? parseFloat(data.min_loan_amount).toLocaleString() : '');
+                            document.getElementById('max_loan_amount_field').value = (data.max_loan_amount ? parseFloat(data.max_loan_amount).toLocaleString() : '');
+                            document.getElementById('installment_frequency_field').value = mapInstallmentFrequency(data.installment_frequency) || '';
+                            document.getElementById('service_charge_calculation_method_field').value = mapServiceChargeMethod(data.service_charge_calculation_method) || '';
+                            document.getElementById('installment_measurement_method_field').value = mapInstallmentMeasurement(data.installment_measurement_method) || '';
+                            document.getElementById('installment_measurement_method_code').value = data.installment_measurement_method || '';
+                            updatePercentLoanAmount(parseNumber(data.savings_percentage));
+                        } 
                     });
             }
         });
@@ -573,11 +765,15 @@ document.addEventListener('DOMContentLoaded', function() {
         var anyChecked = Array.from(radios).some(function(r){ return r.checked && !r.disabled; });
         if (!anyChecked && firstEnabled) {
             firstEnabled.checked = true;
+            if (typeof updateSelectedLoanAmount === 'function') {
+                updateSelectedLoanAmount();
+            }
         }
     }
 
     // Run on load
     disableLargeLoanOptions(50000);
+    updateSelectedLoanAmount();
 
     // Handle grantor Others option
     var grantorSelect = document.getElementById('grantor_id');
@@ -595,5 +791,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Auto-hide success/error alerts after 5 seconds
+    setTimeout(function() {
+        document.querySelectorAll('.alert.alert-success, .alert.alert-danger').forEach(function(element) {
+            element.style.transition = 'opacity 0.4s ease';
+            element.style.opacity = '0';
+            setTimeout(function() {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            }, 400);
+        });
+    }, 5000);
 });
 </script>
