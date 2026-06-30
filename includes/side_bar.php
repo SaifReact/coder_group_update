@@ -42,8 +42,12 @@ $role = $_SESSION['role'] ?? '';
                             <span class="description"> Loan </span>
                         </a>
                         <a class="nav-link" href="close_approval.php">
-                            <span class="icon"><i class="bi bi-door-closed"></i></span> 
+                            <span class="icon"><i class="bi bi-door-closed"></i></span>
                             <span class="description"> Close </span>
+                        </a>
+                        <a class="nav-link" href="bazar_approve.php">
+                            <span class="icon"><i class="bi bi-cart-check"></i></span>
+                            <span class="description"> Bazar </span>
                         </a>
                     </div>
 
@@ -175,8 +179,13 @@ $role = $_SESSION['role'] ?? '';
                 </a>
                 <a class="nav-link"
                    href="loan_application.php" style="font-size:.8rem;">
-                    <span class="icon"><i class="bi bi-credit-card"></i></span> 
+                    <span class="icon"><i class="bi bi-credit-card"></i></span>
                     <span class="description">Loan Application</span>
+                </a>
+                <a class="nav-link"
+                   href="monthly_bazar.php" style="font-size:.8rem;">
+                    <span class="icon"><i class="bi bi-cart3"></i></span>
+                    <span class="description">Monthly Bazar</span>
                 </a>
                 <a class="nav-link"
                    href="receipt.php" style="font-size:.8rem;">

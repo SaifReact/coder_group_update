@@ -31,7 +31,7 @@ $status = isset($_SESSION['status']) ? $_SESSION['status'] : '';
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
-            <div class="navbar-nav ms-auto">
+            <div class="navbar-nav ms-auto" style="font-size:1.5rem;">
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <a class="nav-item nav-link active" href="#">
                         স্বাগতম, <b><?= htmlspecialchars($_SESSION['user_name']); ?> - <?= htmlspecialchars($_SESSION['member_code']); ?></b>

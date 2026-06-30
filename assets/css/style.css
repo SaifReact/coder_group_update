@@ -70,7 +70,7 @@
     padding: 0;
     outline: none;
     color: var(--bs-dark);
-    font-size: .81rem;
+    font-size: 1rem;
 }
 
 .navbar .navbar-nav .nav-link:hover,
