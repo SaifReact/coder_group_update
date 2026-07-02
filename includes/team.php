@@ -89,7 +89,7 @@ try {
 </style>
 
 <div class="team-section">
-    <div class="container-fluid">
+    <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-5">
             <h1 class="mb-0">Committee <span class="text-uppercase text-primary bg-light px-2">Members</span>
             ( কমিটির <span class="text-uppercase text-primary bg-light px-2">সদস্য</span> )
