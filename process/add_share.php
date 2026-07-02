@@ -58,7 +58,7 @@ try {
         $existingMemberProjectId = $existingCount['id'];
 
         // Insert new share_id(s) into project_share table
-        $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
         
         // First time: add both current samity + buying shares
         // Second time onwards: add only buying shares
@@ -120,8 +120,8 @@ try {
 
                 // Insert shares under this samity project
                 if( $samity_project_id == 1 ) {
-                    $stmtShare = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at)
-                VALUES (?, ?, ?, ?, ?, NOW())");
+                    $stmtShare = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status,created_at)
+                VALUES (?, ?, ?, ?, ?, 'A', NOW())");
 
                 for ($i = 0; $i < $currentSamityShare; $i++) {
                     $currentShareNumber = $startingNumber + $i;
@@ -203,7 +203,7 @@ try {
             $stmtUpdateProject->execute([$buyingShare, $share_amount, $share_amount, $id, $member_id, $member_code, $project_id]);
 
             // Insert rows into project_share table based on addShare count
-            $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+            $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
 
             for ($k = 0; $k < $buyingShare; $k++) {
                 $currentShareNumber = $startingNumber + $k;

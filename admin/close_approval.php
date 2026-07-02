@@ -83,6 +83,17 @@ if ($method === 'POST' && isset($_POST['status'])) {
             }
         }
 
+        // Find project_share rows for this member and update each row's status to 'C'
+        $stmtFindPS = $pdo->prepare("SELECT id FROM project_share WHERE member_id = ? ");
+        $stmtFindPS->execute([$member_id]);
+        $psRows = $stmtFindPS->fetchAll(PDO::FETCH_ASSOC);
+        if ($psRows) {
+            $stmtUpdateSingle = $pdo->prepare("UPDATE project_share SET status = 'C' WHERE id = ?");
+            foreach ($psRows as $psRow) {
+                $stmtUpdateSingle->execute([$psRow['id']]);
+            }
+        }
+
         // Find member_payments rows for this member and update each row's status to 'C'
         $stmtFindPay = $pdo->prepare("SELECT id FROM member_payments WHERE member_id = ?");
         $stmtFindPay->execute([$member_id]);

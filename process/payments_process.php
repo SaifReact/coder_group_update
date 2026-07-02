@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $member_project_id = $pdo->lastInsertId();
 
                     // Insert into project_share table for each samity share
-                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id) VALUES (?, ?, ?, ?, ?)");
+                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
                     $startingNumber = 1;
 
                     for ($i = 0; $i < $samity_share; $i++) {
@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $member_project_id = $pdo->lastInsertId();
 
                     // Insert into project_share table for each extra share
-                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id) VALUES (?, ?, ?, ?, ?)");
+                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
                     $startingNumber = 1;
 
                     for ($j = 0; $j < $extra_share; $j++) {

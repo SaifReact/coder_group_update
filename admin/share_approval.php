@@ -107,7 +107,7 @@ if ($method === 'POST' && isset($_POST['status'])) {
                     
 
                     // insert project_share rows
-                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
                     for ($i = 0; $i < $addCount; $i++) {
                         $num = $startingNumber + $i;
                         $n = str_pad($num, 3, '0', STR_PAD_LEFT);
@@ -151,7 +151,7 @@ if ($method === 'POST' && isset($_POST['status'])) {
                     }
 
                     // insert project_share rows
-                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
                     for ($i = 0; $i < $addCount; $i++) {
                         $num = $startingNumber + $i;
                         $n = str_pad($num, 3, '0', STR_PAD_LEFT);

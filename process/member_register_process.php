@@ -265,7 +265,7 @@ if ($method === 'POST') {
 
         // Insert into project_share for samity_share and extra_share
         if ($samityShare > 0) {
-            $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+            $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
             // First, insert samity shares if samityShare > 0
             if ($samityShare > 0 ) {
                 for ($i = 0; $i < $samityShare; $i++) {
