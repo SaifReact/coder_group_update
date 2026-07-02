@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 define('BASE_URL', '/coder_group_update/');
 
-$host = 'localhost';
+$host = '127.0.0.1:3307';
 $db   = 'cpsslcom_samity';
 $user = 'root';
 $pass = '';

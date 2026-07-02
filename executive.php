@@ -105,9 +105,9 @@ include_once __DIR__ . '/config/config.php';
 
 // Fetch Advisors (উপদেষ্টা)
 try {
-    $stmt = $pdo->query("SELECT a.name_bn, b.fb, b.li, c.position_bn FROM members_info a 
-    LEFT JOIN committee_member b ON b.member_id = a.id 
-    LEFT JOIN committee_role c ON c.id = b.committee_role_id 
+    $stmt = $pdo->query("SELECT a.name_bn, a.profile_image, b.fb, b.li, c.position_bn FROM members_info a
+    LEFT JOIN committee_member b ON b.member_id = a.id
+    LEFT JOIN committee_role c ON c.id = b.committee_role_id
     WHERE b.committee_role_id = 1
     ORDER BY b.id ASC");
     $advisors = $stmt->fetchAll();
@@ -117,8 +117,8 @@ try {
 
 // Fetch Entrepreneurs (উদ্যোক্তা) - role_id 9
 try {
-    $stmt = $pdo->query("SELECT a.name_bn, b.fb, b.li FROM members_info a 
-    LEFT JOIN committee_member b ON b.member_id = a.id 
+    $stmt = $pdo->query("SELECT a.name_bn, a.profile_image, b.fb, b.li FROM members_info a
+    LEFT JOIN committee_member b ON b.member_id = a.id
     WHERE b.role = 'Entrepreneur'
     ORDER BY b.id ASC");
     $entrepreneurs = $stmt->fetchAll();
@@ -128,9 +128,9 @@ try {
 
 // Fetch Executive Committee (কার্যকরী কমিটি)
 try {
-    $stmt = $pdo->query("SELECT a.name_bn, b.fb, b.li, c.position_bn FROM members_info a 
-    LEFT JOIN committee_member b ON b.member_id = a.id 
-    LEFT JOIN committee_role c ON c.id = b.committee_role_id 
+    $stmt = $pdo->query("SELECT a.name_bn, a.profile_image, b.fb, b.li, c.position_bn FROM members_info a
+    LEFT JOIN committee_member b ON b.member_id = a.id
+    LEFT JOIN committee_role c ON c.id = b.committee_role_id
     WHERE b.committee_role_id = 8
     ORDER BY b.id ASC");
     $executives = $stmt->fetchAll();
@@ -156,7 +156,8 @@ try {
          <div class="col-lg-3 col-md-4 col-sm-6">
            <div class="member-card">
              <div class="member-img">
-               <img src="assets/img/user.jpg" alt="<?= htmlspecialchars($advisor['name_bn']); ?>">
+               <img src="<?= htmlspecialchars(!empty($advisor['profile_image']) ? $advisor['profile_image'] : 'assets/img/user.jpg') ?>"
+                    alt="<?= htmlspecialchars($advisor['name_bn']); ?>">
              </div>
              <div class="member-position"><?= htmlspecialchars($advisor['position_bn']); ?></div>
              <div class="member-name"><?= htmlspecialchars($advisor['name_bn']); ?></div>
@@ -193,7 +194,8 @@ try {
          <div class="col-lg-3 col-md-4 col-sm-6">
            <div class="member-card">
              <div class="member-img">
-               <img src="assets/img/user.jpg" alt="<?= htmlspecialchars($entrepreneur['name_bn']); ?>">
+               <img src="<?= htmlspecialchars(!empty($entrepreneur['profile_image']) ? $entrepreneur['profile_image'] : 'assets/img/user.jpg') ?>"
+                    alt="<?= htmlspecialchars($entrepreneur['name_bn']); ?>">
              </div>
              <div class="member-name"><?= htmlspecialchars($entrepreneur['name_bn']); ?></div>
              <div class="social-links">
@@ -230,7 +232,8 @@ try {
          <div class="col-lg-3 col-md-4 col-sm-6">
            <div class="member-card">
              <div class="member-img">
-               <img src="assets/img/user.jpg" alt="<?= htmlspecialchars($executive['name_bn']); ?>">
+               <img src="<?= htmlspecialchars(!empty($executive['profile_image']) ? $executive['profile_image'] : 'assets/img/user.jpg') ?>"
+                    alt="<?= htmlspecialchars($executive['name_bn']); ?>">
              </div>
              <div class="member-position"><?= htmlspecialchars($executive['position_bn']); ?></div>
              <div class="member-name"><?= htmlspecialchars($executive['name_bn']); ?></div>

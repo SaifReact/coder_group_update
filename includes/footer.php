@@ -38,6 +38,29 @@ $slogan = $slogan_bn . ($slogan_en ? ' ( ' . $slogan_en . ' )' : '');
                 </a>
                     <p class="mb-0">নিবন্ধন নং- <?= htmlspecialchars($reg_no); ?></p>
                     <p class="mb-0"><?= htmlspecialchars($slogan); ?></p>
+
+                    <!-- সমবায় অধিদপ্তর -->
+                    <div class="mt-3">
+                        <a href="https://coop.rdcd.gov.bd/coop/2025.1.32.2625.2823"
+                           target="_blank" rel="noopener noreferrer"
+                           title="সমবায় অধিদপ্তর — নিবন্ধন যাচাই করুন"
+                           style="display:inline-flex; align-items:center; gap:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:8px 14px; text-decoration:none; transition:background .2s;"
+                           onmouseover="this.style.background='rgba(255,255,255,0.16)'"
+                           onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            <img src="assets/img/logo.jpg"
+                                 alt="সমবায় অধিদপ্তর"
+                                 style="height:44px; width:auto;"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <span style="display:none; width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#045D5D,#008080); align-items:center; justify-content:center; font-size:1.4rem; color:#fff; flex-shrink:0;">
+                                <i class="fa fa-landmark"></i>
+                            </span>
+                            <span style="display:flex; flex-direction:column;">
+                                <span style="color:#fff; font-size:.8rem; font-weight:700; letter-spacing:.5px; line-height:1.2;">সমবায় অধিদপ্তর</span>
+                                <span style="color:rgba(255,255,255,.65); font-size:.7rem; line-height:1.3;">Department of Cooperatives</span>
+                                <span style="color:#7dd3d3; font-size:.65rem; margin-top:2px;">নিবন্ধন যাচাই করুন ↗</span>
+                            </span>
+                        </a>
+                    </div>
                 </div>
                 <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.3s">
                     <h5 class="text-white mb-4">Get In Touch (যোগাযোগ করুন)</h5>
