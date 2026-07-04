@@ -6,603 +6,366 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
 }
 include_once __DIR__ . '/../config/config.php';
 
-// Helper function to convert English numbers to Bangla
-function englishToBanglaNumber($number) {
-    $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ','];
-    $bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯', '.', ','];
-    return str_replace($en, $bn, $number);
+function bn($n) {
+    return str_replace(
+        ['0','1','2','3','4','5','6','7','8','9','.'],
+        ['০','১','২','৩','৪','৫','৬','৭','৮','৯','.'],
+        $n
+    );
+}
+function tk($amount) {
+    return '৳ ' . bn(number_format((float)$amount, 2));
 }
 
-// Fetch member counts
-$processed = $pdo->query("SELECT COUNT(*) FROM user_login WHERE status='P' and role = 'user'")->fetchColumn();
-$approved = $pdo->query("SELECT COUNT(*) FROM user_login WHERE status='A' and role = 'user'")->fetchColumn();
-$inactive = $pdo->query("SELECT COUNT(*) FROM user_login WHERE status='I' and role = 'user'")->fetchColumn();
-$rejected = $pdo->query("SELECT COUNT(*) FROM user_login WHERE status='R' and role = 'user'")->fetchColumn();
-$paymentDoneData = $pdo->query("SELECT COUNT(DISTINCT member_id) as total_payment_done FROM member_payments WHERE status = 'A'")->fetch(PDO::FETCH_ASSOC);
+// ── Member status counts ─────────────────────────────────────────────────────
+$counts = $pdo->query("
+    SELECT
+        SUM(status='A') AS approved,
+        SUM(status='P') AS processed,
+        SUM(status='I') AS inactive,
+        SUM(status='R') AS rejected
+    FROM user_login WHERE role='user'
+")->fetch(PDO::FETCH_ASSOC);
 
-// Fetch financial data from member_share table
-$shareStmt = $pdo->query("
-    SELECT 
-        COALESCE(SUM(idcard_fee), 0) as total_idcard_fee,
-        COALESCE(SUM(passbook_fee), 0) as total_passbook_fee,
-        COALESCE(SUM(softuses_fee), 0) as total_softuses_fee,
-        COALESCE(SUM(sms_fee), 0) as total_sms_fee,
-        COALESCE(SUM(office_rent), 0) as total_office_rent,
-        COALESCE(SUM(office_staff), 0) as total_office_staff,
-        COALESCE(SUM(other_fee), 0) as total_other_fee,
-        COALESCE(SUM(late_fee), 0) as total_late_fee
+$paymentMemberCount = (int)$pdo->query("
+    SELECT COUNT(DISTINCT member_id) FROM member_payments WHERE status='A'
+")->fetchColumn();
+
+// ── Fees from member_share ───────────────────────────────────────────────────
+$fees = $pdo->query("
+    SELECT
+        COALESCE(SUM(idcard_fee),    0) AS idcard_fee,
+        COALESCE(SUM(passbook_fee),  0) AS passbook_fee,
+        COALESCE(SUM(softuses_fee),  0) AS softuses_fee,
+        COALESCE(SUM(sms_fee),       0) AS sms_fee,
+        COALESCE(SUM(office_rent),   0) AS office_rent,
+        COALESCE(SUM(office_staff),  0) AS office_staff,
+        COALESCE(SUM(other_fee),     0) AS other_fee,
+        COALESCE(SUM(late_fee),      0) AS late_fee
     FROM member_share
-");
-$shareData = $shareStmt->fetch(PDO::FETCH_ASSOC);
+")->fetch(PDO::FETCH_ASSOC);
 
-// Fetch payment data from member_payments table
-$paymentStmt = $pdo->query("
-    SELECT 
-        COALESCE(SUM(CASE WHEN payment_method = 'Samity Share' THEN amount ELSE 0 END), 0) as total_samity_share,
-        COALESCE(SUM(CASE WHEN payment_method = 'Project Share' THEN amount ELSE 0 END), 0) as total_project_share,
-        COALESCE(SUM(CASE WHEN payment_method NOT IN ('Samity Share', 'Project Share', 'admission') THEN amount ELSE 0 END), 0) as total_monthly
-    FROM member_payments WHERE status = 'A'
-");
-$paymentData = $paymentStmt->fetch(PDO::FETCH_ASSOC);
+$admission_fee = array_sum([
+    $fees['idcard_fee'], $fees['passbook_fee'], $fees['softuses_fee'],
+    $fees['sms_fee'],    $fees['office_rent'],  $fees['office_staff'],
+    $fees['other_fee'],
+]);
 
-// Calculate totals
-$total_member_admission_fees = $shareData['total_idcard_fee'] + $shareData['total_passbook_fee'] + 
-                           $shareData['total_softuses_fee'] + $shareData['total_sms_fee'] + 
-                           $shareData['total_office_rent'] + $shareData['total_office_staff'] + 
-                           $shareData['total_other_fee'];
+// ── Payments by type from member_payments ────────────────────────────────────
+$pay = $pdo->query("
+    SELECT
+        COALESCE(SUM(CASE WHEN payment_method='Samity Share'   THEN amount ELSE 0 END), 0) AS samity_share,
+        COALESCE(SUM(CASE WHEN payment_method='Uddokta Share'  THEN amount ELSE 0 END), 0) AS uddokta_share,
+        COALESCE(SUM(CASE WHEN payment_method='Project Share'  THEN amount ELSE 0 END), 0) AS project_share,
+        COALESCE(SUM(CASE WHEN payment_method NOT IN
+            ('Samity Share','Uddokta Share','Project Share','admission') THEN amount ELSE 0 END), 0) AS monthly
+    FROM member_payments WHERE status='A'
+")->fetch(PDO::FETCH_ASSOC);
 
-$total_all_deposits = $paymentData['total_samity_share'] + $paymentData['total_project_share'] + 
-                      $paymentData['total_monthly'] + $total_member_admission_fees + $shareData['total_late_fee'];
+$total_deposits = $admission_fee + $fees['late_fee']
+                + $pay['samity_share'] + $pay['uddokta_share']
+                + $pay['project_share'] + $pay['monthly'];
+
+// ── Payment done detail rows ─────────────────────────────────────────────────
+$detailRows = $pdo->query("
+    WITH uddokta_cte AS (
+        SELECT mp.member_id, COALESCE(SUM(mp.project_share), 0) AS uddokta_shares
+        FROM member_project mp
+        JOIN project p ON p.id = mp.project_id
+        WHERE p.project_name_en LIKE '%Uddokta%'
+           OR p.project_name_bn LIKE '%উদ্যোক্তা%'
+        GROUP BY mp.member_id
+    ),
+    share_data AS (
+        SELECT ms.member_id,
+               SUM(ms.samity_share)            AS samity_shares,
+               SUM(ms.no_share - ms.samity_share) AS extra_shares
+        FROM member_share ms GROUP BY ms.member_id
+    ),
+    pay_data AS (
+        SELECT member_id,
+               SUM(CASE WHEN payment_method='admission'     THEN amount ELSE 0 END) AS admission,
+               SUM(CASE WHEN payment_method='Samity Share'  THEN amount ELSE 0 END) AS samity_share,
+               SUM(CASE WHEN payment_method='Uddokta Share' THEN amount ELSE 0 END) AS uddokta_share,
+               SUM(CASE WHEN payment_method='Project Share' THEN amount ELSE 0 END) AS project_share,
+               SUM(CASE WHEN payment_method NOT IN
+                   ('Samity Share','Uddokta Share','Project Share','admission')
+                   THEN amount ELSE 0 END)                                          AS monthly
+        FROM member_payments WHERE status='A' GROUP BY member_id
+    )
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY a.id) AS sn,
+        a.id, a.member_code, a.name_bn,
+        COALESCE(s.samity_shares,  0)                                          AS samity_shares,
+        COALESCE(u.uddokta_shares, 0)                                          AS uddokta_shares,
+        GREATEST(0, COALESCE(s.extra_shares,0) - COALESCE(u.uddokta_shares,0)) AS project_shares,
+        COALESCE(p.admission,      0) AS admission,
+        COALESCE(p.samity_share,   0) AS samity_share,
+        COALESCE(p.uddokta_share,  0) AS uddokta_share,
+        COALESCE(p.project_share,  0) AS project_share,
+        COALESCE(p.monthly,        0) AS monthly
+    FROM members_info a
+    LEFT JOIN share_data  s ON s.member_id = a.id
+    LEFT JOIN uddokta_cte u ON u.member_id = a.id
+    LEFT JOIN pay_data    p ON p.member_id = a.id
+    WHERE EXISTS (
+        SELECT 1 FROM user_login c
+        WHERE c.member_id = a.id AND c.status IN ('A','P')
+    )
+    ORDER BY a.id
+")->fetchAll(PDO::FETCH_ASSOC);
+
+// Column totals for the modal footer
+$col_totals = [
+    'samity_shares'  => 0, 'uddokta_shares' => 0, 'project_shares' => 0,
+    'admission'      => 0, 'samity_share'   => 0,
+    'uddokta_share'  => 0, 'project_share'  => 0,
+    'monthly'        => 0,
+];
+foreach ($detailRows as $r) {
+    foreach ($col_totals as $k => $_) $col_totals[$k] += (float)$r[$k];
+}
+
+// ── Member list helper ───────────────────────────────────────────────────────
+function memberRows(PDO $pdo, string $status): string {
+    $stmt = $pdo->prepare("
+        SELECT a.member_code, a.name_bn, a.name_en, a.mobile
+        FROM members_info a
+        JOIN user_login b ON b.member_id = a.id
+        WHERE b.status = ? AND b.role = 'user'
+        ORDER BY b.id DESC
+    ");
+    $stmt->execute([$status]);
+    $html = '';
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $html .= '<tr>'
+            . '<td>' . htmlspecialchars($row['member_code']) . '</td>'
+            . '<td>' . htmlspecialchars($row['name_bn'])     . '</td>'
+            . '<td>' . htmlspecialchars($row['name_en'])     . '</td>'
+            . '<td>' . htmlspecialchars($row['mobile'])      . '</td>'
+            . '</tr>';
+    }
+    return $html ?: '<tr><td colspan="4" class="text-center text-muted">কোনো তথ্য নেই</td></tr>';
+}
 ?>
 
-<?php 
-include_once __DIR__ . '/../includes/open.php'; 
-include_once __DIR__ . '/../includes/side_bar.php'; 
+<?php
+include_once __DIR__ . '/../includes/open.php';
+include_once __DIR__ . '/../includes/side_bar.php';
 ?>
 
-    <main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
-            <div>
-                <h3 class="mb-3 text-primary fw-bold">একাউন্টস ড্যাশবোর্ড <span class="text-secondary">(Accounts Dashboard)</span></h3> 
-                <hr class="mb-4" />
+<main class="col-12 col-md-10 col-lg-10 col-xl-10 px-md-3">
+    <div>
+        <h3 class="mb-3 text-primary fw-bold">একাউন্টস ড্যাশবোর্ড <span class="text-secondary">(Accounts Dashboard)</span></h3>
+        <hr class="mb-4" />
 
-                <!-- Member Status Cards -->
-                <div class="row g-4 mb-4">
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0 text-center" style="<?php echo $approved > 0 ? 'cursor:pointer;' : ''; ?> background: linear-gradient(135deg, #28a745 0%, #20c997 100%);" <?php echo $approved > 0 ? 'data-bs-toggle="modal" data-bs-target="#approvedModal"' : ''; ?>>
-                      <div class="card-body text-white">
-                        <h6 class="mb-2">✅ অনুমোদিত সদস্য</h6>
-                        <p class="mb-1 small">Approved Members</p>
-                        <div class="display-5 fw-bold"><?php echo englishToBanglaNumber($approved); ?></div>
-                      </div>
+        <!-- ── Member Status Cards ─────────────────────────────────────────── -->
+        <?php
+        $statusCards = [
+            ['id'=>'approvedModal',  'label'=>'অনুমোদিত সদস্য',   'en'=>'Approved Members',    'icon'=>'✅', 'count'=>$counts['approved'],  'gradient'=>'#28a745,#20c997'],
+            ['id'=>'processModal',   'label'=>'প্রক্রিয়াধীন সদস্য','en'=>'Processing Members',  'icon'=>'⏳', 'count'=>$counts['processed'], 'gradient'=>'#007bff,#0056b3'],
+            ['id'=>'inactiveModal',  'label'=>'নিষ্ক্রিয় সদস্য',   'en'=>'Inactive Members',    'icon'=>'⏸️', 'count'=>$counts['inactive'],  'gradient'=>'#ffc107,#ff9800'],
+            ['id'=>'rejectedModal',  'label'=>'প্রত্যাখ্যাত সদস্য', 'en'=>'Rejected Members',    'icon'=>'❌', 'count'=>$counts['rejected'],  'gradient'=>'#dc3545,#c82333'],
+        ];
+        ?>
+        <div class="row g-4 mb-4">
+            <?php foreach ($statusCards as $c): ?>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 text-center"
+                     style="background:linear-gradient(135deg,<?= $c['gradient'] ?>);<?= $c['count'] > 0 ? 'cursor:pointer;' : '' ?>"
+                     <?= $c['count'] > 0 ? 'data-bs-toggle="modal" data-bs-target="#' . $c['id'] . '"' : '' ?>>
+                    <div class="card-body text-white">
+                        <h6 class="mb-2"><?= $c['icon'] ?> <?= $c['label'] ?></h6>
+                        <p class="mb-1 small"><?= $c['en'] ?></p>
+                        <div class="display-5 fw-bold"><?= bn($c['count']) ?></div>
                     </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0 text-center" style="<?php echo $processed > 0 ? 'cursor:pointer;' : ''; ?> background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);" <?php echo $processed > 0 ? 'data-bs-toggle="modal" data-bs-target="#processModal"' : ''; ?>>
-                      <div class="card-body text-white">
-                        <h6 class="mb-2">⏳ প্রক্রিয়াধীন সদস্য</h6>
-                        <p class="mb-1 small">Processing Members</p>
-                        <div class="display-5 fw-bold"><?php echo englishToBanglaNumber($processed); ?></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0 text-center" style="<?php echo $inactive > 0 ? 'cursor:pointer;' : ''; ?> background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);" <?php echo $inactive > 0 ? 'data-bs-toggle="modal" data-bs-target="#inactiveModal"' : ''; ?>>
-                      <div class="card-body text-white">
-                        <h6 class="mb-2">⏸️ নিষ্ক্রিয় সদস্য</h6>
-                        <p class="mb-1 small">Inactive Members</p>
-                        <div class="display-5 fw-bold"><?php echo englishToBanglaNumber($inactive); ?></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0 text-center" style="<?php echo $rejected > 0 ? 'cursor:pointer;' : ''; ?> background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);" <?php echo $rejected > 0 ? 'data-bs-toggle="modal" data-bs-target="#rejectedModal"' : ''; ?>>
-                      <div class="card-body text-white">
-                        <h6 class="mb-2">❌ প্রত্যাখ্যাত সদস্য</h6>
-                        <p class="mb-1 small">Rejected Members</p>
-                        <div class="display-5 fw-bold"><?php echo englishToBanglaNumber($rejected); ?></div>
-                      </div>
-                    </div>
-                  </div>
-                   <div class="col-md-12">
-                    <div class="card shadow-sm border-0 text-center" style="<?php echo $paymentDoneData['total_payment_done'] > 0 ? 'cursor:pointer;' : ''; ?> background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" <?php echo $paymentDoneData['total_payment_done'] > 0 ? 'data-bs-toggle="modal" data-bs-target="#paymentDoneModal"' : ''; ?>>
-                      <div class="card-body text-white">
+                </div>
+            </div>
+            <?php endforeach; ?>
+
+            <div class="col-md-12">
+                <div class="card shadow-sm border-0 text-center"
+                     style="background:linear-gradient(135deg,#667eea,#764ba2);<?= $paymentMemberCount > 0 ? 'cursor:pointer;' : '' ?>"
+                     <?= $paymentMemberCount > 0 ? 'data-bs-toggle="modal" data-bs-target="#paymentDoneModal"' : '' ?>>
+                    <div class="card-body text-white">
                         <h6 class="mb-2">💳 সদস্য পেমেন্ট</h6>
                         <p class="mb-1 small">Members Payment</p>
-                        <div class="display-5 fw-bold"><?php echo englishToBanglaNumber($paymentDoneData['total_payment_done']); ?></div>
-                      </div>
+                        <div class="display-5 fw-bold"><?= bn($paymentMemberCount) ?></div>
                     </div>
-                  </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Financial Summary Cards -->
-                <h5 class="mb-3 text-primary fw-bold">আর্থিক সারসংক্ষেপ <span class="text-secondary">(Financial Summary)</span></h5>
-                <div class="row g-4 mb-4">
-                  <!-- Admission Fee -->
-                  
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-secondary mb-2">🪪 আইডি কার্ড ফি</h6>
-                        <p class="mb-1 small text-muted">ID Card Fee</p>
-                        <div class="h5 fw-bold text-secondary mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_idcard_fee'], 2)); ?></div>
-                      </div>
+        <!-- ── Financial Summary ──────────────────────────────────────────── -->
+        <h5 class="mb-3 text-primary fw-bold">আর্থিক সারসংক্ষেপ <span class="text-secondary">(Financial Summary)</span></h5>
+
+        <?php
+        $feeCards = [
+            ['icon'=>'🪪',  'label'=>'আইডি কার্ড ফি',  'en'=>'ID Card Fee',     'val'=>$fees['idcard_fee'],   'color'=>'text-secondary'],
+            ['icon'=>'📖',  'label'=>'পাসবুক ফি',       'en'=>'Passbook Fee',    'val'=>$fees['passbook_fee'], 'color'=>'text-secondary'],
+            ['icon'=>'💻',  'label'=>'সফটওয়্যার ফি',  'en'=>'Software Fee',    'val'=>$fees['softuses_fee'], 'color'=>'text-secondary'],
+            ['icon'=>'📱',  'label'=>'এসএমএস ফি',       'en'=>'SMS Fee',         'val'=>$fees['sms_fee'],      'color'=>'text-secondary'],
+            ['icon'=>'🏢',  'label'=>'অফিস ভাড়া',      'en'=>'Office Rent',     'val'=>$fees['office_rent'],  'color'=>'text-secondary'],
+            ['icon'=>'👥',  'label'=>'অফিস কর্মচারী',   'en'=>'Office Staff',    'val'=>$fees['office_staff'], 'color'=>'text-secondary'],
+            ['icon'=>'📋',  'label'=>'অন্যান্য ফি',    'en'=>'Other Fee',       'val'=>$fees['other_fee'],    'color'=>'text-secondary'],
+            ['icon'=>'⏰',  'label'=>'বিলম্ব ফি',       'en'=>'Late Fee',        'val'=>$fees['late_fee'],     'color'=>'text-warning'],
+            ['icon'=>'💳',  'label'=>'ভর্তি ফি',        'en'=>'Admission Fee',   'val'=>$admission_fee,        'color'=>'text-success'],
+            ['icon'=>'🏦',  'label'=>'সমিতি শেয়ার',    'en'=>'Samity Share',    'val'=>$pay['samity_share'],  'color'=>'text-info'],
+            ['icon'=>'🚀',  'label'=>'উদ্যোক্তা শেয়ার','en'=>'Uddokta Share',  'val'=>$pay['uddokta_share'], 'color'=>'text-danger'],
+            ['icon'=>'📊',  'label'=>'প্রকল্প শেয়ার',  'en'=>'Project Share',   'val'=>$pay['project_share'], 'color'=>'text-primary'],
+            ['icon'=>'📅',  'label'=>'মাসিক জমা',       'en'=>'Monthly Deposit', 'val'=>$pay['monthly'],       'color'=>'text-success'],
+        ];
+        ?>
+        <div class="row g-4 mb-4">
+            <?php foreach ($feeCards as $fc): ?>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="<?= $fc['color'] ?> mb-2"><?= $fc['icon'] ?> <?= $fc['label'] ?></h6>
+                        <p class="mb-1 small text-muted"><?= $fc['en'] ?></p>
+                        <div class="h5 fw-bold <?= $fc['color'] ?> mb-0"><?= tk($fc['val']) ?></div>
                     </div>
-                  </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
 
-                  <!-- Passbook Fee -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-secondary mb-2">📖 পাসবুক ফি</h6>
-                        <p class="mb-1 small text-muted">Passbook Fee</p>
-                        <div class="h5 fw-bold text-secondary mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_passbook_fee'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Software Fee -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-secondary mb-2">💻 সফটওয়্যার ফি</h6>
-                        <p class="mb-1 small text-muted">Software Fee</p>
-                        <div class="h5 fw-bold text-secondary mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_softuses_fee'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- SMS Fee -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-secondary mb-2">📱 এসএমএস ফি</h6>
-                        <p class="mb-1 small text-muted">SMS Fee</p>
-                        <div class="h5 fw-bold text-secondary mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_sms_fee'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Office Rent -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-secondary mb-2">🏢 অফিস ভাড়া</h6>
-                        <p class="mb-1 small text-muted">Office Rent</p>
-                        <div class="h5 fw-bold text-secondary mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_office_rent'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Office Staff -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-secondary mb-2">👥 অফিস কর্মচারী</h6>
-                        <p class="mb-1 small text-muted">Office Staff</p>
-                        <div class="h5 fw-bold text-secondary mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_office_staff'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Other Fee -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-secondary mb-2">📋 অন্যান্য ফি</h6>
-                        <p class="mb-1 small text-muted">Other Fee</p>
-                        <div class="h5 fw-bold text-secondary mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_other_fee'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Late Fee -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-warning mb-2">⏰ বিলম্ব ফি</h6>
-                        <p class="mb-1 small text-muted">Late Fee</p>
-                        <div class="h5 fw-bold text-warning mb-0">৳ <?php echo englishToBanglaNumber(number_format($shareData['total_late_fee'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-                
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-primary mb-2">💳 ভর্তি ফি</h6>
-                        <p class="mb-1 small text-muted">Admission Fee</p>
-                        <div class="h5 fw-bold text-success mb-0">৳ <?php echo englishToBanglaNumber(number_format($total_member_admission_fees, 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Samity Share -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-info mb-2">🏦 সমিতি শেয়ার</h6>
-                        <p class="mb-1 small text-muted">Samity Share</p>
-                        <div class="h5 fw-bold text-info mb-0">৳ <?php echo englishToBanglaNumber(number_format($paymentData['total_samity_share'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Project Share -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-primary mb-2">📊 প্রকল্প শেয়ার</h6>
-                        <p class="mb-1 small text-muted">Project Share</p>
-                        <div class="h5 fw-bold text-primary mb-0">৳ <?php echo englishToBanglaNumber(number_format($paymentData['total_project_share'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Monthly Deposit -->
-                  <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                      <div class="card-body">
-                        <h6 class="text-success mb-2">📅 মাসিক জমা</h6>
-                        <p class="mb-1 small text-muted">Monthly Deposit</p>
-                        <div class="h5 fw-bold text-success mb-0">৳ <?php echo englishToBanglaNumber(number_format($paymentData['total_monthly'], 2)); ?></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  </div>
-
-                  <!-- ID Card Fee -->
-                  
-
-                <!-- Total Deposit Card -->
-                <div class="row g-4 mb-4">
-                  <div class="col-12">
-                    <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                      <div class="card-body text-white text-center py-4">
+        <!-- ── Total Deposit ──────────────────────────────────────────────── -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card shadow-lg border-0" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+                    <div class="card-body text-white text-center py-4">
                         <h4 class="mb-2">💰 মোট জমা পরিমাণ</h4>
                         <p class="mb-3">Total Deposit Amount</p>
-                        <div class="display-4 fw-bold">৳ <?php echo englishToBanglaNumber(number_format($total_all_deposits, 2)); ?></div>
-                      </div>
+                        <div class="display-4 fw-bold"><?= tk($total_deposits) ?></div>
                     </div>
-                  </div>
                 </div>
-                <!-- Approved Members Modal -->
-                <div class="modal fade" id="approvedModal" tabindex="-1" aria-labelledby="approvedModalLabel" aria-hidden="true">
-                  <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title" id="approvedModalLabel">✅ অনুমোদিত সদস্য তালিকা (Approved Members List)</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="table-responsive">
-                          <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-success">
-                              <tr>
-                                <th>Member Code</th>
-                                <th>Name (Bangla)</th>
-                                <th>Name (English)</th>
-                                <th>Mobile</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <?php
-                              $stmt = $pdo->query("SELECT a.member_code, a.name_bn, a.name_en, a.mobile FROM members_info a, user_login b WHERE a.id = b.member_id and b.status='A' and b.role = 'user' ORDER BY b.id DESC");
-                              while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                echo '<tr>';
-                                echo '<td>'.htmlspecialchars($row['member_code']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_bn']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_en']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['mobile']).'</td>';
-                                echo '</tr>';
-                              }
-                              ?>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal fade" id="processModal" tabindex="-1" aria-labelledby="processModalLabel" aria-hidden="true">
-                  <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="processModalLabel">⏳ প্রক্রিয়াধীন সদস্য তালিকা (Processing Members List)</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="table-responsive">
-                          <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-primary">
-                              <tr>
-                                <th>Member Code</th>
-                                <th>Name (Bangla)</th>
-                                <th>Name (English)</th>
-                                <th>Mobile</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <?php
-                              $stmt = $pdo->query("SELECT a.member_code, a.name_bn, a.name_en, a.mobile FROM members_info a, user_login b WHERE a.id = b.member_id and b.status='P' and b.role = 'user' ORDER BY b.id DESC");
-                              while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                echo '<tr>';
-                                echo '<td>'.htmlspecialchars($row['member_code']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_bn']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_en']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['mobile']).'</td>';
-                                echo '</tr>';
-                              }
-                              ?>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Pending Members Modal -->
-                <div class="modal fade" id="inactiveModal" tabindex="-1" aria-labelledby="inactiveModalLabel" aria-hidden="true">
-                  <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header bg-warning text-white">
-                        <h5 class="modal-title" id="inactiveModalLabel">⏸️ নিষ্ক্রিয় সদস্য তালিকা (Inactive Members List)</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="table-responsive">
-                          <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-warning">
-                              <tr>
-                                <th>Member Code</th>
-                                <th>Name (Bangla)</th>
-                                <th>Name (English)</th>
-                                <th>Mobile</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <?php
-                              $stmt = $pdo->query("SELECT a.member_code, a.name_bn, a.name_en, a.mobile FROM members_info a, user_login b WHERE a.id = b.member_id and b.status='I' and b.role = 'user' ORDER BY b.id DESC");
-                              while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                echo '<tr>';
-                                echo '<td>'.htmlspecialchars($row['member_code']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_bn']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_en']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['mobile']).'</td>';
-                                echo '</tr>';
-                              }
-                              ?>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Rejected Members Modal -->
-                <div class="modal fade" id="rejectedModal" tabindex="-1" aria-labelledby="rejectedModalLabel" aria-hidden="true">
-                  <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title" id="rejectedModalLabel">❌ প্রত্যাখ্যাত সদস্য তালিকা (Rejected Members List)</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="table-responsive">
-                          <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-danger">
-                              <tr>
-                                <th>Member Code</th>
-                                <th>Name (Bangla)</th>
-                                <th>Name (English)</th>
-                                <th>Mobile</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <?php
-                              $stmt = $pdo->query("SELECT a.member_code, a.name_bn, a.name_en, a.mobile FROM members_info a, user_login b WHERE a.id = b.member_id and b.status='R' and b.role = 'user' ORDER BY b.id DESC");
-                              while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                echo '<tr>';
-                                echo '<td>'.htmlspecialchars($row['member_code']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_bn']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['name_en']).'</td>';
-                                echo '<td>'.htmlspecialchars($row['mobile']).'</td>';
-                                echo '</tr>';
-                              }
-                              ?>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Payment Done Modal -->
-                <div class="modal fade" id="paymentDoneModal" tabindex="-1" aria-labelledby="paymentDoneModalLabel" aria-hidden="true">
-                  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content">
-                      <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <h5 class="modal-title" id="paymentDoneModalLabel">💳 পেমেন্ট সম্পন্ন সদস্যদের তালিকা (Payment Done Members List)</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="d-flex justify-content-end mb-2">
-                          <button class="btn btn-danger btn-sm" onclick="downloadPDF()">Download PDF</button>
-                        </div>
-                        <div class="table-responsive" id="payment-done-table">
-                          <table class="table table-bordered table-hover align-middle">
-                            <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                              <tr>
-                                <th>No#</th>
-                                <th>Member Info</th>
-                                <th>No Samity Share</th>
-                                <th>No Project Share</th>
-                                <th>Admission Fee</th>
-                                <th>Samity Share Amt</th>
-                                <th>Project Share Amt</th>
-                                <th>Monthly Fee</th>
-                                <th>সর্বমোট</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <?php
-                              $stmt = $pdo->query("WITH share_data AS (
-                                    SELECT 
-                                        ms.member_id,
-                                        SUM(ms.samity_share) AS samity_share,
-                                        SUM(ms.no_share - ms.samity_share) AS projects
-                                    FROM member_share ms
-                                    GROUP BY ms.member_id
-                                ),
-                                
-                                payment_data AS (
-                                    SELECT 
-                                        mp.member_id,
-                                        SUM(CASE WHEN mp.payment_method = 'admission' THEN mp.amount ELSE 0 END) AS admission,
-                                        SUM(CASE WHEN mp.payment_method = 'Samity Share' THEN mp.amount ELSE 0 END) AS Samity_Share,
-                                        SUM(CASE WHEN mp.payment_method = 'Project Share' THEN mp.amount ELSE 0 END) AS project_share,
-                                        SUM(CASE WHEN mp.payment_method NOT IN ('Samity Share','Project Share','admission') THEN mp.amount ELSE 0 END) AS monthly
-                                    FROM member_payments mp
-                                    WHERE mp.status = 'A'
-                                    GROUP BY mp.member_id
-                                )
-                                
-                                SELECT 
-                                    ROW_NUMBER() OVER (ORDER BY a.id) AS serial_no,
-                                    a.id,
-                                    a.member_code,
-                                    a.name_bn,
-                                    COALESCE(s.samity_share,0) AS samity_share,
-                                    COALESCE(s.projects,0) AS projects,
-                                    COALESCE(p.admission,0) AS admission,
-                                    COALESCE(p.Samity_Share,0) AS Samity_Share,
-                                    COALESCE(p.project_share,0) AS project_share,
-                                    COALESCE(p.monthly,0) AS monthly
-                                
-                                FROM members_info a
-                                LEFT JOIN share_data s ON a.id = s.member_id
-                                LEFT JOIN payment_data p ON a.id = p.member_id
-                                
-                                WHERE EXISTS (
-                                    SELECT 1 
-                                    FROM user_login c 
-                                    WHERE c.member_id = a.id 
-                                    AND c.status IN ('A','P')
-                                )
-                                
-                                UNION ALL
-                                
-                                SELECT 
-                                    NULL,
-                                    NULL,
-                                    'সর্বমোট',
-                                    '',
-                                    SUM(COALESCE(s.samity_share,0)),
-                                    SUM(COALESCE(s.projects,0)),
-                                    SUM(COALESCE(p.admission,0)),
-                                    SUM(COALESCE(p.Samity_Share,0)),
-                                    SUM(COALESCE(p.project_share,0)),
-                                    SUM(COALESCE(p.monthly,0))
-                                
-                                FROM members_info a
-                                LEFT JOIN share_data s ON a.id = s.member_id
-                                LEFT JOIN payment_data p ON a.id = p.member_id
-                                
-                                WHERE EXISTS (
-                                    SELECT 1 
-                                    FROM user_login c 
-                                    WHERE c.member_id = a.id 
-                                    AND c.status IN ('A','P')
-                                )");
-                              while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                echo '<tr>';
-                                // ...existing code...
-                                // Column-wise totals initialization
-                                static $total_admission = 0;
-                                static $total_samity_share = 0;
-                                static $total_project_share = 0;
-                                static $total_monthly = 0;
-
-                                // Add to totals if not 'সর্বমোট' row
-                                if ($row['serial_no'] !== null) {
-                                  $total_admission += floatval($row['admission']);
-                                  $total_samity_share += floatval($row['Samity_Share']);
-                                  $total_project_share += floatval($row['project_share']);
-                                  $total_monthly += floatval($row['monthly']);
-                                }
-
-                                echo '<td>'.englishToBanglaNumber(htmlspecialchars($row['serial_no'])).'</td>';
-                                echo '<td>'
-                                  . englishToBanglaNumber(htmlspecialchars($row['id'])) . '<br>' 
-                                  . htmlspecialchars($row['member_code']) . '<br>' 
-                                  . htmlspecialchars($row['name_bn']) . 
-                                '</td>';
-                                echo '<td>'.englishToBanglaNumber(htmlspecialchars($row['samity_share'])).'</td>';
-                                echo '<td>'.englishToBanglaNumber(htmlspecialchars($row['projects'])).'</td>';
-                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['admission']), 2)).'</td>';
-                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['Samity_Share']), 2)).'</td>';
-                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['project_share']), 2)).'</td>';
-                                echo '<td>'.englishToBanglaNumber(number_format(htmlspecialchars($row['monthly']), 2)).'</td>';
-                                // Calculate row total for relevant columns
-                                $row_total = floatval($row['admission']) + floatval($row['Samity_Share']) + floatval($row['project_share']) + floatval($row['monthly']);
-                                echo '<td>'.englishToBanglaNumber(number_format($row_total, 2)).'</td>';
-                                echo '</tr>';
-
-                                
-                              }
-                              ?>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Add your main dashboard content here -->
             </div>
-        </main>
-  </div>
-  
+        </div>
+    </div>
+</main>
 </div>
-<!-- Hero End -->
- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</div>
 
+<!-- ── Member Status Modals ────────────────────────────────────────────────── -->
+<?php
+$modals = [
+    ['id'=>'approvedModal', 'title'=>'✅ অনুমোদিত সদস্য তালিকা (Approved Members List)',    'hdr'=>'bg-success',  'thd'=>'table-success',  'status'=>'A'],
+    ['id'=>'processModal',  'title'=>'⏳ প্রক্রিয়াধীন সদস্য তালিকা (Processing Members List)','hdr'=>'bg-primary',  'thd'=>'table-primary',  'status'=>'P'],
+    ['id'=>'inactiveModal', 'title'=>'⏸️ নিষ্ক্রিয় সদস্য তালিকা (Inactive Members List)',  'hdr'=>'bg-warning',  'thd'=>'table-warning',  'status'=>'I'],
+    ['id'=>'rejectedModal', 'title'=>'❌ প্রত্যাখ্যাত সদস্য তালিকা (Rejected Members List)','hdr'=>'bg-danger',   'thd'=>'table-danger',   'status'=>'R'],
+];
+foreach ($modals as $m): ?>
+<div class="modal fade" id="<?= $m['id'] ?>" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header <?= $m['hdr'] ?> text-white">
+                <h5 class="modal-title"><?= $m['title'] ?></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="<?= $m['thd'] ?>">
+                            <tr><th>Member Code</th><th>Name (Bangla)</th><th>Name (English)</th><th>Mobile</th></tr>
+                        </thead>
+                        <tbody><?= memberRows($pdo, $m['status']) ?></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endforeach; ?>
+
+<!-- ── Payment Done Modal ─────────────────────────────────────────────────── -->
+<div class="modal fade" id="paymentDoneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+                <h5 class="modal-title">💳 পেমেন্ট সম্পন্ন সদস্যদের তালিকা (Payment Done Members List)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-danger btn-sm" onclick="downloadPDF()">Download PDF</button>
+                </div>
+                <div class="table-responsive" id="payment-done-table">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead style="background:linear-gradient(135deg,#667eea,#764ba2); color:#fff;">
+                            <tr>
+                                <th>#</th>
+                                <th>সদস্য তথ্য</th>
+                                <th class="text-center">সমিতি শেয়ার (সংখ্যা)</th>
+                                <th class="text-center">উদ্যোক্তা শেয়ার (সংখ্যা)</th>
+                                <th class="text-center">প্রকল্প শেয়ার (সংখ্যা)</th>
+                                <th class="text-end">ভর্তি ফি</th>
+                                <th class="text-end">সমিতি শেয়ার টাকা</th>
+                                <th class="text-end">উদ্যোক্তা শেয়ার টাকা</th>
+                                <th class="text-end">প্রকল্প শেয়ার টাকা</th>
+                                <th class="text-end">মাসিক জমা</th>
+                                <th class="text-end">সর্বমোট</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($detailRows as $r):
+                            $row_total = $r['admission'] + $r['samity_share'] + $r['uddokta_share'] + $r['project_share'] + $r['monthly'];
+                        ?>
+                        <tr>
+                            <td><?= bn($r['sn']) ?></td>
+                            <td><?= bn($r['id']) ?><br><?= htmlspecialchars($r['member_code']) ?><br><?= htmlspecialchars($r['name_bn']) ?></td>
+                            <td class="text-center"><?= bn($r['samity_shares']) ?></td>
+                            <td class="text-center"><?= bn($r['uddokta_shares']) ?></td>
+                            <td class="text-center"><?= bn($r['project_shares']) ?></td>
+                            <td class="text-end"><?= tk($r['admission']) ?></td>
+                            <td class="text-end"><?= tk($r['samity_share']) ?></td>
+                            <td class="text-end"><?= tk($r['uddokta_share']) ?></td>
+                            <td class="text-end"><?= tk($r['project_share']) ?></td>
+                            <td class="text-end"><?= tk($r['monthly']) ?></td>
+                            <td class="text-end fw-bold"><?= tk($row_total) ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                        <tfoot class="table-dark fw-bold">
+                            <?php
+                            $ft = $col_totals;
+                            $grand = $ft['admission'] + $ft['samity_share'] + $ft['uddokta_share'] + $ft['project_share'] + $ft['monthly'];
+                            ?>
+                            <tr>
+                                <td colspan="2" class="text-end">সর্বমোট</td>
+                                <td class="text-center"><?= bn($ft['samity_shares']) ?></td>
+                                <td class="text-center"><?= bn($ft['uddokta_shares']) ?></td>
+                                <td class="text-center"><?= bn($ft['project_shares']) ?></td>
+                                <td class="text-end"><?= tk($ft['admission']) ?></td>
+                                <td class="text-end"><?= tk($ft['samity_share']) ?></td>
+                                <td class="text-end"><?= tk($ft['uddokta_share']) ?></td>
+                                <td class="text-end"><?= tk($ft['project_share']) ?></td>
+                                <td class="text-end"><?= tk($ft['monthly']) ?></td>
+                                <td class="text-end"><?= tk($grand) ?></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 function downloadPDF() {
-    const element = document.getElementById('payment-done-table');
-    
-    // Create a wrapper for proper sizing
-    const wrapper = document.createElement('div');
-    wrapper.style.width = '290mm'; // A4 width
-    wrapper.style.padding = '15mm';
-    wrapper.style.boxSizing = 'border-box';
-    wrapper.style.backgroundColor = 'white';
+    var element = document.getElementById('payment-done-table');
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'width:290mm;padding:15mm;box-sizing:border-box;background:#fff;';
     wrapper.innerHTML = element.innerHTML;
-    
-    // Temporarily add to body
     document.body.appendChild(wrapper);
-    
-    const opt = {
+    html2pdf().set({
         margin: 0,
-        filename: `payment-done-table.pdf`,
+        filename: 'payment-done-table.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true,
-            letterRendering: true,
-            allowTaint: true,
-            scrollY: -window.scrollY,
-            scrollX: 0
-        },
-        jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'landscape'
-        }
-    };
-    
-    html2pdf().set(opt).from(wrapper).save().then(() => {
-        // Remove temporary wrapper
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    }).from(wrapper).save().then(function() {
         document.body.removeChild(wrapper);
     });
 }

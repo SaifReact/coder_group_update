@@ -32,14 +32,15 @@ try {
 
     // Member-wise breakdown for this project
     $stmt3 = $pdo->prepare("
-        SELECT m.name_bn, m.member_code, ms.samity_share, ms.extra_share,
-               COUNT(ps.id) AS project_shares
-        FROM project_share ps
+        SELECT m.name_bn, m.member_code, ms.samity_share,
+               ps.project_share AS project_shares
+        FROM member_project ps
         JOIN members_info m ON m.id = ps.member_id
         LEFT JOIN member_share ms ON ms.member_id = ps.member_id
         WHERE ps.project_id = ?
+        AND ps.status = 'A'
         GROUP BY ps.member_id
-        ORDER BY m.name_bn ASC
+        ORDER BY m.id ASC
     ");
     $stmt3->execute([$project_id]);
     $members = $stmt3->fetchAll(PDO::FETCH_ASSOC);

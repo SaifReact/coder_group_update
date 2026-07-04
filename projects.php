@@ -73,7 +73,7 @@ function bn_date($date) {
 include_once __DIR__ . '/config/config.php'; 
 
 // Fetch all projects
-$stmt = $pdo->prepare("SELECT * FROM project ORDER BY id DESC");
+$stmt = $pdo->prepare("SELECT * FROM project WHERE id != 2 ORDER BY id DESC");
 $stmt->execute();
 $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

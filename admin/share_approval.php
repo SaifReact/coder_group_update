@@ -22,19 +22,20 @@ LEFT JOIN project c ON a.project_id = c.id
 ORDER BY a.id DESC");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Load utils fees for samity and project shares
-$stmtUtils = $pdo->query("SELECT fee_type, fee FROM utils WHERE fee_type IN ('samity_share','project_share') AND status = 'A' ORDER BY id ASC");
+// Auto-add uddokta_share column to member_share if not exists
+try { $pdo->exec("ALTER TABLE member_share ADD COLUMN uddokta_share INT NOT NULL DEFAULT 0"); }
+catch (Exception $e) { /* already exists */ }
+
+// Load utils fees for samity, project, and uddokta shares
+$stmtUtils = $pdo->query("SELECT fee_type, fee FROM utils WHERE fee_type IN ('samity_share','project_share','uddokta_share') AND status = 'A' ORDER BY id ASC");
 $utilsRows = $stmtUtils->fetchAll(PDO::FETCH_ASSOC);
-$samity_share_value_utils = 0.0;
+$samity_share_value_utils  = 0.0;
 $project_share_value_utils = 0.0;
+$uddokta_share_value_utils = 0.0;
 foreach ($utilsRows as $u) {
-    if (isset($u['fee_type']) && isset($u['fee'])) {
-        if ($u['fee_type'] === 'samity_share') {
-            $samity_share_value_utils = (float)$u['fee'];
-        } elseif ($u['fee_type'] === 'project_share') {
-            $project_share_value_utils = (float)$u['fee'];
-        }
-    }
+    if ($u['fee_type'] === 'samity_share')  $samity_share_value_utils  = (float)$u['fee'];
+    if ($u['fee_type'] === 'project_share') $project_share_value_utils = (float)$u['fee'];
+    if ($u['fee_type'] === 'uddokta_share') $uddokta_share_value_utils = (float)$u['fee'];
 }
 
 // Handle status update
@@ -73,8 +74,13 @@ if ($method === 'POST' && isset($_POST['status'])) {
                 $member_code_val = $stmtMC->fetchColumn();
             }
 
-            // find pending share entries for this member (status = 'I' or pending)
-            $stmtShares = $pdo->prepare("SELECT * FROM share WHERE member_id = ? AND status != 'A'");
+            // find pending share entries with project name for uddokta detection
+            $stmtShares = $pdo->prepare("
+                SELECT s.*, p.project_name_en, p.project_name_bn
+                FROM share s
+                LEFT JOIN project p ON p.id = s.project_id
+                WHERE s.member_id = ? AND s.status != 'A'
+            ");
             $stmtShares->execute([$member_id]);
 
             while ($shareRow = $stmtShares->fetch(PDO::FETCH_ASSOC)) {
@@ -124,7 +130,13 @@ if ($method === 'POST' && isset($_POST['status'])) {
                     $stmtMark = $pdo->prepare("UPDATE share SET status = 'A' WHERE id = ?");
                     $stmtMark->execute([$shareRow['id']]);
                 } elseif ($project_id > 1 && $addCount > 0) {
-                    // Find or create member_project for this project, then find last share sequence
+                    // Detect if this is an uddokta share project
+                    $pname_en = $shareRow['project_name_en'] ?? '';
+                    $pname_bn = $shareRow['project_name_bn'] ?? '';
+                    $is_uddokta = stripos($pname_en, 'uddokta') !== false
+                               || mb_strpos($pname_bn, 'উদ্যোক্তা') !== false;
+
+                    // Find or create member_project for this project
                     $stmtMP = $pdo->prepare("SELECT id FROM member_project WHERE member_id = ? AND project_id = ? LIMIT 1");
                     $stmtMP->execute([$member_id, $project_id]);
                     $mp = $stmtMP->fetch(PDO::FETCH_ASSOC);
@@ -159,16 +171,20 @@ if ($method === 'POST' && isset($_POST['status'])) {
                         $stmtInsert->execute([$member_project_id, $member_id, $member_code_val, $project_id, $share_id]);
                     }
 
-                    $shareAmt = $addCount * $project_share_value_utils;
+                    $shareAmt = $addCount * ($is_uddokta ? $uddokta_share_value_utils : $project_share_value_utils);
 
                     // update member_project share count
                     $stmtUpdateMP = $pdo->prepare("UPDATE member_project SET share_amount = share_amount + ?, project_share = project_share + ?, sundry_amount = sundry_amount + ? WHERE id = ? AND member_id = ?");
-                    $stmtUpdateMP->execute([$shareAmt, $addCount, $shareAmt, $member_project_id, $member_id]);    
+                    $stmtUpdateMP->execute([$shareAmt, $addCount, $shareAmt, $member_project_id, $member_id]);
 
-
-                    // update member_share totals
-                    $stmtUpdateMS = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, extra_share = extra_share + ? WHERE member_id = ? AND member_code = ?");
-                    $stmtUpdateMS->execute([$addCount, $addCount, $member_id, $member_code_val]);
+                    // update member_share — uddokta tracked separately
+                    if ($is_uddokta) {
+                        $stmtUpdateMS = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, extra_share = extra_share + ?, uddokta_share = uddokta_share + ? WHERE member_id = ? AND member_code = ?");
+                        $stmtUpdateMS->execute([$addCount, $addCount, $addCount, $member_id, $member_code_val]);
+                    } else {
+                        $stmtUpdateMS = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, extra_share = extra_share + ? WHERE member_id = ? AND member_code = ?");
+                        $stmtUpdateMS->execute([$addCount, $addCount, $member_id, $member_code_val]);
+                    }
 
                     // mark this share row as approved
                     $stmtMark = $pdo->prepare("UPDATE share SET status = 'A' WHERE id = ?");
