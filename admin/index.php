@@ -287,8 +287,9 @@ foreach ($modals as $m): ?>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="d-flex justify-content-end mb-2">
-                    <button class="btn btn-danger btn-sm" onclick="downloadPDF()">Download PDF</button>
+                <div class="d-flex justify-content-end gap-2 mb-2">
+                    <button class="btn btn-success btn-sm" onclick="downloadCSV()">⬇ Download CSV</button>
+                    <button class="btn btn-danger btn-sm" onclick="downloadPDF()">⬇ Download PDF</button>
                 </div>
                 <div class="table-responsive" id="payment-done-table">
                     <table class="table table-bordered table-hover align-middle">
@@ -353,6 +354,62 @@ foreach ($modals as $m): ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
+var csvData = <?= json_encode(array_merge(
+    // header row
+    [['#','সদস্য ID','সদস্য কোড','সদস্যের নাম','সমিতি শেয়ার (সংখ্যা)','উদ্যোক্তা শেয়ার (সংখ্যা)','প্রকল্প শেয়ার (সংখ্যা)','ভর্তি ফি','সমিতি শেয়ার টাকা','উদ্যোক্তা শেয়ার টাকা','প্রকল্প শেয়ার টাকা','মাসিক জমা','সর্বমোট']],
+    // data rows
+    array_map(function($r) {
+        $total = $r['admission'] + $r['samity_share'] + $r['uddokta_share'] + $r['project_share'] + $r['monthly'];
+        return [
+            $r['sn'], $r['id'], $r['member_code'], $r['name_bn'],
+            $r['samity_shares'], $r['uddokta_shares'], $r['project_shares'],
+            number_format((float)$r['admission'],    2),
+            number_format((float)$r['samity_share'],  2),
+            number_format((float)$r['uddokta_share'], 2),
+            number_format((float)$r['project_share'], 2),
+            number_format((float)$r['monthly'],       2),
+            number_format($total, 2),
+        ];
+    }, $detailRows),
+    // totals row
+    (function() use ($col_totals) {
+        $grand = $col_totals['admission'] + $col_totals['samity_share'] + $col_totals['uddokta_share'] + $col_totals['project_share'] + $col_totals['monthly'];
+        return [['সর্বমোট','','','',
+            $col_totals['samity_shares'], $col_totals['uddokta_shares'], $col_totals['project_shares'],
+            number_format((float)$col_totals['admission'],    2),
+            number_format((float)$col_totals['samity_share'],  2),
+            number_format((float)$col_totals['uddokta_share'], 2),
+            number_format((float)$col_totals['project_share'], 2),
+            number_format((float)$col_totals['monthly'],       2),
+            number_format($grand, 2),
+        ]];
+    })()
+), JSON_UNESCAPED_UNICODE) ?>;
+
+function downloadCSV() {
+    var BOM = '﻿'; // UTF-8 BOM for Bengali text in Excel
+    var rows = csvData.map(function(row) {
+        return row.map(function(cell) {
+            var s = String(cell === null || cell === undefined ? '' : cell);
+            // wrap in quotes if contains comma, newline or quote
+            if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+                s = '"' + s.replace(/"/g, '""') + '"';
+            }
+            return s;
+        }).join(',');
+    }).join('\r\n');
+
+    var blob = new Blob([BOM + rows], { type: 'text/csv;charset=utf-8;' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'payment-done.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 function downloadPDF() {
     var element = document.getElementById('payment-done-table');
     var wrapper = document.createElement('div');
