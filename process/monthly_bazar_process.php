@@ -99,6 +99,84 @@ if ($action === 'update_prices') {
     exit;
 }
 
+// Admin-only: Approve bazar + insert bazar_transaction
+if ($action === 'approve_with_transaction') {
+    header('Content-Type: application/json; charset=utf-8');
+    if (($_SESSION['role'] ?? '') !== 'Admin') {
+        echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+        exit;
+    }
+
+    $member_id     = (int)($_POST['member_id']      ?? 0);
+    $member_code   = trim($_POST['member_code']      ?? '');
+    $month         = trim($_POST['month']            ?? '');
+    $no_product    = (int)($_POST['no_product']      ?? 0);
+    $price         = (float)($_POST['price']         ?? 0);
+    $discount      = (float)($_POST['discount']      ?? 0);
+    $service_charge= (float)($_POST['service_charge']?? 0);
+    $sum_price     = (float)($_POST['sum_price']     ?? 0);
+    $due_price     = (float)($_POST['due_price']     ?? 0);
+
+    if (!$member_id || !$month) {
+        echo json_encode(['success' => false, 'message' => 'অবৈধ অনুরোধ।']);
+        exit;
+    }
+
+    try {
+
+        // Upsert bazar_transaction
+        $pdo->prepare(
+            "INSERT INTO bazar_transaction
+                (member_id, member_code, month, no_product, price, discount, service_charge, sum_price, due_price)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE
+                no_product=VALUES(no_product), price=VALUES(price),
+                discount=VALUES(discount), service_charge=VALUES(service_charge),
+                sum_price=VALUES(sum_price), due_price=VALUES(due_price)"
+        )->execute([$member_id, $member_code, $month, $no_product,
+                    $price, $discount, $service_charge, $sum_price, $due_price]);
+
+        // Set monthly_bazar status = Approved
+        $pdo->prepare(
+            "UPDATE monthly_bazar SET status='A' WHERE member_id=? AND month=?"
+        )->execute([$member_id, $month]);
+
+        echo json_encode(['success' => true, 'message' => 'সফলভাবে অনুমোদন করা হয়েছে!']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+// Admin-only: update paid_price and recalculate due_price
+if ($action === 'update_paid_price') {
+    header('Content-Type: application/json; charset=utf-8');
+    if (($_SESSION['role'] ?? '') !== 'Admin') {
+        echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+        exit;
+    }
+
+    $member_id  = (int)($_POST['member_id']  ?? 0);
+    $month      = trim($_POST['month']       ?? '');
+    $paid_price = (float)($_POST['paid_price'] ?? 0);
+    $due_price  = (float)($_POST['due_price']  ?? 0);
+
+    if (!$member_id || !$month) {
+        echo json_encode(['success' => false, 'message' => 'অবৈধ অনুরোধ।']);
+        exit;
+    }
+
+    try {
+        $pdo->prepare(
+            "UPDATE bazar_transaction SET paid_price=?, due_price=? WHERE member_id=? AND month=?"
+        )->execute([$paid_price, $due_price, $member_id, $month]);
+        echo json_encode(['success' => true, 'message' => 'সফলভাবে সংরক্ষণ হয়েছে।']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
 $member_id = $_SESSION['member_id'] ?? 0;
 
 try {
@@ -108,6 +186,7 @@ try {
         $quantities    = $_POST['quantity']          ?? [];
         $companies     = $_POST['company']           ?? [];
         $remarks_arr   = $_POST['remarks']           ?? [];
+        $seller_prices = $_POST['seller_price']      ?? [];
 
         if (!$month || empty($product_names)) {
             $_SESSION['error_msg'] = "Month and at least one product row are required!";
@@ -116,8 +195,8 @@ try {
         }
 
         $stmt = $pdo->prepare(
-            "INSERT INTO monthly_bazar (member_id, month, product_name, quantity, company, remarks, status)
-             VALUES (?, ?, ?, ?, ?, ?, 'I')"
+            "INSERT INTO monthly_bazar (member_id, month, product_name, quantity, company, remarks, seller_price, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'I')"
         );
 
         $qty_amounts = $_POST['qty_amount'] ?? [];
@@ -131,9 +210,10 @@ try {
             $quantity     = $qty_amount !== '' ? $qty_amount . ' ' . $qty_unit : trim($quantities[$i] ?? '');
             $company      = trim($companies[$i]   ?? '');
             $remarks      = trim($remarks_arr[$i] ?? '');
+            $seller_price = (float)($seller_prices[$i] ?? 0);
 
-            if ($product_name && $quantity && $company) {
-                $stmt->execute([$member_id, $month, $product_name, $quantity, $company, $remarks]);
+            if ($product_name && $quantity) {
+                $stmt->execute([$member_id, $month, $product_name, $quantity, $company, $remarks, $seller_price]);
                 $inserted++;
             }
         }
@@ -156,14 +236,15 @@ try {
         $quantity     = $qty_amount !== '' ? $qty_amount . ' ' . $qty_unit : '';
         $company      = trim($_POST['company']          ?? '');
         $remarks      = trim($_POST['remarks']          ?? '');
+        $seller_price = (float)($_POST['seller_price']  ?? 0);
 
-        if ($id && $month && $product_name && $quantity && $company) {
+        if ($id && $month && $product_name && $quantity) {
             $stmt = $pdo->prepare(
                 "UPDATE monthly_bazar
-                 SET month=?, product_name=?, quantity=?, company=?, remarks=?
+                 SET month=?, product_name=?, quantity=?, company=?, remarks=?, seller_price=?
                  WHERE id=? AND member_id=?"
             );
-            $stmt->execute([$month, $product_name, $quantity, $company, $remarks, $id, $member_id]);
+            $stmt->execute([$month, $product_name, $quantity, $company, $remarks, $seller_price, $id, $member_id]);
             $_SESSION['success_msg'] = "✅ Record updated successfully! (সফলভাবে হালনাগাদ করা হয়েছে!)";
         } else {
             $_SESSION['error_msg'] = "All required fields must be filled!";

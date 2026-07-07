@@ -17,39 +17,6 @@ $role = $_SESSION['role'] ?? '';
                     <span class="icon"><i class="bi bi-speedometer2"></i></span> 
                     <span class="description">Dashboard</span>
                 </a>
-                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#approvalMenu" aria-expanded="false" aria-controls="approvalMenu">
-                    <span class="icon"><i class="bi bi-check-circle"></i></span> 
-                    <span class="description"> Approval <i class="bi bi-caret-down-fill"></i></span></a>
-                    <div class="sub-menu collapse" id="approvalMenu">
-                        <a class="nav-link" href="approval.php">
-                            <span class="icon"><i class="bi bi-person-lines-fill"></i></span> 
-                            <span class="description"> Members </span>
-                        </a>
-                        <a class="nav-link" href="share_approval.php">
-                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
-                            <span class="description"> Shares </span>
-                        </a>
-                        <a class="nav-link" href="late_assign.php">
-                            <span class="icon"><i class="bi bi-alarm"></i></span> 
-                            <span class="description"> Late Assign </span>
-                        </a>
-                        <a class="nav-link" href="voucher_approval.php">
-                            <span class="icon"><i class="bi bi-receipt"></i></span> 
-                            <span class="description"> Voucher </span>
-                        </a>
-                        <a class="nav-link" href="loan_approval.php">
-                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
-                            <span class="description"> Loan </span>
-                        </a>
-                        <a class="nav-link" href="close_approval.php">
-                            <span class="icon"><i class="bi bi-door-closed"></i></span>
-                            <span class="description"> Close </span>
-                        </a>
-                        <a class="nav-link" href="bazar_approve.php">
-                            <span class="icon"><i class="bi bi-cart-check"></i></span>
-                            <span class="description"> Bazar </span>
-                        </a>
-                    </div>
 
                 <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#setupMenu" aria-expanded="false" aria-controls="setupMenu">
                     <span class="icon"><i class="bi bi-gear"></i></span> 
@@ -84,8 +51,61 @@ $role = $_SESSION['role'] ?? '';
                         <span class="description"> Committee </span>
                     </a>
                     <a class="nav-link" href="loan.php">
-                        <span class="icon"><i class="bi bi-cash-stack"></i></span> 
+                        <span class="icon"><i class="bi bi-cash-stack"></i></span>
                         <span class="description"> Loan Product </span>
+                    </a>
+                </div>
+
+                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#approvalMenu" aria-expanded="false" aria-controls="approvalMenu">
+                    <span class="icon"><i class="bi bi-check-circle"></i></span> 
+                    <span class="description"> Approval <i class="bi bi-caret-down-fill"></i></span></a>
+                    <div class="sub-menu collapse" id="approvalMenu">
+                        <a class="nav-link" href="approval.php">
+                            <span class="icon"><i class="bi bi-person-lines-fill"></i></span> 
+                            <span class="description"> Members </span>
+                        </a>
+                        <a class="nav-link" href="share_approval.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Shares </span>
+                        </a>
+                        <a class="nav-link" href="late_assign.php">
+                            <span class="icon"><i class="bi bi-alarm"></i></span> 
+                            <span class="description"> Late Assign </span>
+                        </a>
+                        <a class="nav-link" href="voucher_approval.php">
+                            <span class="icon"><i class="bi bi-receipt"></i></span> 
+                            <span class="description"> Voucher </span>
+                        </a>
+                        <a class="nav-link" href="loan_approval.php">
+                            <span class="icon"><i class="bi bi-cash-coin"></i></span> 
+                            <span class="description"> Loan </span>
+                        </a>
+                        <a class="nav-link" href="close_approval.php">
+                            <span class="icon"><i class="bi bi-door-closed"></i></span>
+                            <span class="description"> Close </span>
+                        </a>
+                        <a class="nav-link" href="bazar_approve.php">
+                            <span class="icon"><i class="bi bi-cart-check"></i></span>
+                            <span class="description"> Bazar </span>
+                        </a>
+                    </div>
+
+                <a class="nav-link" data-bs-toggle="collapse" data-bs-target="#productMenu" aria-expanded="false" aria-controls="productMenu">
+                    <span class="icon"><i class="bi bi-box-seam"></i></span>
+                    <span class="description"> Products <i class="bi bi-caret-down-fill"></i></span>
+                </a>
+                <div class="sub-menu collapse" id="productMenu">
+                    <a class="nav-link" href="category.php">
+                        <span class="icon"><i class="bi bi-tags"></i></span>
+                        <span class="description"> Category </span>
+                    </a>
+                    <a class="nav-link" href="pcompany.php">
+                        <span class="icon"><i class="bi bi-building"></i></span>
+                        <span class="description"> Company </span>
+                    </a>
+                    <a class="nav-link" href="product.php">
+                        <span class="icon"><i class="bi bi-basket"></i></span>
+                        <span class="description"> Product </span>
                     </a>
                 </div>
                 

@@ -7,17 +7,11 @@ if (!isset($_SESSION['user_id'])) {
 
 include_once __DIR__ . '/../config/config.php';
 
-$member_id     = $_SESSION['member_id'];
-$current_month       = date('F'); // stored value (English key)
-$current_month_label = $months[$current_month] ?? $current_month; // display with Bangla
+$member_id = $_SESSION['member_id'];
 
 $success_msg = $_SESSION['success_msg'] ?? '';
 $error_msg   = $_SESSION['error_msg']   ?? '';
 unset($_SESSION['success_msg'], $_SESSION['error_msg']);
-
-$stmt = $pdo->prepare("SELECT * FROM monthly_bazar WHERE member_id = ? ORDER BY id DESC");
-$stmt->execute([$member_id]);
-$bazars = $stmt->fetchAll();
 
 $months = [
     'January'  => 'January (জানুয়ারি)',
@@ -33,6 +27,9 @@ $months = [
     'November' => 'November (নভেম্বর)',
     'December' => 'December (ডিসেম্বর)',
 ];
+
+$current_month       = date('F');
+$current_month_label = $months[$current_month] ?? $current_month;
 
 $units = [
     'KG'     => 'KG (কেজি)',
@@ -50,180 +47,68 @@ $units = [
     'Tin'    => 'Tin (টিন)',
 ];
 
-// Bangladesh grocery product list (key = stored value, value = display label)
-$product_groups = [
-    'Rice (চাল)' => [
-        'Miniket Rice'    => 'Miniket Rice (মিনিকেট চাল)',
-        'Nazirshail Rice' => 'Nazirshail Rice (নাজিরশাইল চাল)',
-        'BR28 Rice'       => 'BR28 Rice (বিআর২৮ চাল)',
-        'Paijam Rice'     => 'Paijam Rice (পাইজাম চাল)',
-        'Kalijira Rice'   => 'Kalijira Rice (কালিজিরা চাল)',
-    ],
-    'Dal / Lentils (ডাল)' => [
-        'Musur Dal'    => 'Musur Dal (মসুর ডাল)',
-        'Mung Dal'     => 'Mung Dal (মুগ ডাল)',
-        'Maskalai Dal' => 'Maskalai Dal (মাসকলাই ডাল)',
-        'Chola Dal'    => 'Chola Dal (ছোলার ডাল)',
-        'Motor Dal'    => 'Motor Dal (মটর ডাল)',
-    ],
-    'Oil (তেল)' => [
-        'Soybean Oil'  => 'Soybean Oil (সয়াবিন তেল)',
-        'Mustard Oil'  => 'Mustard Oil (সরিষার তেল)',
-        'Palm Oil'     => 'Palm Oil (পাম তেল)',
-    ],
-    'Spices (মশলা)' => [
-        'Onion'            => 'Onion (পেঁয়াজ)',
-        'Garlic'           => 'Garlic (রসুন)',
-        'Ginger'           => 'Ginger (আদা)',
-        'Green Chili'      => 'Green Chili (কাঁচা মরিচ)',
-        'Dry Chili'        => 'Dry Chili (শুকনো মরিচ)',
-        'Turmeric Powder'  => 'Turmeric Powder (হলুদ গুঁড়া)',
-        'Coriander Powder' => 'Coriander Powder (ধনিয়া গুঁড়া)',
-        'Cumin Powder'     => 'Cumin Powder (জিরা গুঁড়া)',
-        'Red Chili Powder' => 'Red Chili Powder (লাল মরিচ গুঁড়া)',
-        'Garam Masala'     => 'Garam Masala (গরম মশলা)',
-        'Bay Leaf'         => 'Bay Leaf (তেজপাতা)',
-    ],
-    'Essentials (প্রয়োজনীয়)' => [
-        'Sugar'              => 'Sugar (চিনি)',
-        'Salt'               => 'Salt (লবণ)',
-        'Flour / Atta'       => 'Flour / Atta (আটা)',
-        'Maida'              => 'Maida (ময়দা)',
-        'Semolina / Suji'    => 'Semolina / Suji (সুজি)',
-        'Vermicelli / Semai' => 'Vermicelli / Semai (সেমাই)',
-        'Noodles'            => 'Noodles (নুডলস)',
-        'Biscuit'            => 'Biscuit (বিস্কুট)',
-        'Bread'              => 'Bread (পাউরুটি)',
-    ],
-    'Vegetables (সবজি)' => [
-        'Potato'               => 'Potato (আলু)',
-        'Tomato'               => 'Tomato (টমেটো)',
-        'Eggplant / Brinjal'   => 'Eggplant / Brinjal (বেগুন)',
-        'Cauliflower'          => 'Cauliflower (ফুলকপি)',
-        'Cabbage'              => 'Cabbage (বাঁধাকপি)',
-        'Pumpkin'              => 'Pumpkin (মিষ্টি কুমড়া)',
-        'Bitter Gourd'         => 'Bitter Gourd (করলা)',
-        'Bottle Gourd'         => 'Bottle Gourd (লাউ)',
-        'Lady Finger / Okra'   => 'Lady Finger / Okra (ঢেঁড়স)',
-        'Spinach'              => 'Spinach (পালং শাক)',
-        'Red Spinach'          => 'Red Spinach (লাল শাক)',
-        'Banana'               => 'Banana (কলা)',
-        'Coconut'              => 'Coconut (নারকেল)',
-    ],
-    'Protein (প্রোটিন)' => [
-        'Egg'                  => 'Egg (ডিম)',
-        'Chicken'              => 'Chicken (মুরগি)',
-        'Beef'                 => 'Beef (গরুর মাংস)',
-        'Mutton'               => 'Mutton (খাসির মাংস)',
-        'Hilsha Fish'          => 'Hilsha Fish (ইলিশ মাছ)',
-        'Rui Fish'             => 'Rui Fish (রুই মাছ)',
-        'Catla Fish'           => 'Catla Fish (কাতলা মাছ)',
-        'Pangash Fish'         => 'Pangash Fish (পাঙ্গাশ মাছ)',
-        'Tilapia Fish'         => 'Tilapia Fish (তেলাপিয়া মাছ)',
-        'Dried Fish / Shutki'  => 'Dried Fish / Shutki (শুঁটকি)',
-    ],
-    'Dairy (দুগ্ধজাত)' => [
-        'Milk'   => 'Milk (দুধ)',
-        'Ghee'   => 'Ghee (ঘি)',
-        'Butter' => 'Butter (মাখন)',
-    ],
-    'Beverages (পানীয়)' => [
-        'Tea'    => 'Tea (চা পাতা)',
-        'Coffee' => 'Coffee (কফি)',
-    ],
-    'Household (গৃহস্থালি)' => [
-        'Soap'              => 'Soap (সাবান)',
-        'Detergent Powder'  => 'Detergent Powder (ডিটারজেন্ট পাউডার)',
-        'Shampoo'           => 'Shampoo (শ্যাম্পু)',
-        'Toothpaste'        => 'Toothpaste (টুথপেস্ট)',
-        'Toilet Cleaner'    => 'Toilet Cleaner (টয়লেট ক্লিনার)',
-    ],
-    'Fuel / Others (জ্বালানি)' => [
-        'Gas Cylinder' => 'Gas Cylinder (গ্যাস সিলিন্ডার)',
-        'Kerosene'     => 'Kerosene (কেরোসিন)',
-        'Match Box'    => 'Match Box (দিয়াশলাই)',
-    ],
-];
+// Fetch bazar records
+$stmt = $pdo->prepare("SELECT * FROM monthly_bazar WHERE member_id = ? ORDER BY id DESC");
+$stmt->execute([$member_id]);
+$bazars = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Bangladesh grocery company list
-$company_groups = [
-    'Food & Beverage (খাদ্য ও পানীয়)' => [
-        'PRAN'                  => 'PRAN (প্রাণ)',
-        'ACI Consumer Brands'   => 'ACI Consumer Brands (এসিআই)',
-        'Square Food & Beverage'=> 'Square Food & Beverage (স্কয়ার)',
-        'Akij Food & Beverage'  => 'Akij Food & Beverage (আকিজ)',
-        'Bombay Sweets'         => 'Bombay Sweets (বম্বে সুইটস)',
-        'Danish Foods'          => 'Danish Foods (ড্যানিশ)',
-        'Fresh (Meghna Group)'  => 'Fresh / Meghna Group (ফ্রেশ)',
-        'Bashundhara Food'      => 'Bashundhara Food (বসুন্ধরা)',
-        'Olympic Industries'    => 'Olympic Industries (অলিম্পিক)',
-        'Abul Khair Group'      => 'Abul Khair Group (আবুল খায়ের)',
-        'TK Food'               => 'TK Food (টিকে ফুড)',
-        'Cocola Food'           => 'Cocola Food (কোকোলা)',
-        'Bengal Meat'           => 'Bengal Meat (বেঙ্গল মিট)',
-        'Kazi Farms'            => 'Kazi Farms (কাজী ফার্মস)',
-        'CP Bangladesh'         => 'CP Bangladesh (সিপি বাংলাদেশ)',
-        'Nestle Bangladesh'     => 'Nestle Bangladesh (নেসলে)',
-    ],
-    'Dairy (দুগ্ধজাত)' => [
-        'Aarong Dairy'  => 'Aarong Dairy / BRAC (আড়ং ডেইরি)',
-        'Milk Vita'     => 'Milk Vita (মিল্ক ভিটা)',
-        'Arla / Dano'   => 'Arla / Dano (আরলা/ডানো)',
-        'Farm Fresh'    => 'Farm Fresh (ফার্ম ফ্রেশ)',
-        'Igloo'         => 'Igloo / Abdul Monem (ইগলু)',
-    ],
-    'Oil & Spice (তেল ও মশলা)' => [
-        'Rupchanda (City Group)' => 'Rupchanda / City Group (রূপচাঁদা)',
-        'Teer (City Group)'      => 'Teer / City Group (তীর)',
-        'Radhuni (PRAN)'         => 'Radhuni / PRAN (রাঁধুনি)',
-        'Meizan'                 => 'Meizan (মেইজান)',
-        'Sunflower'              => 'Sunflower (সানফ্লাওয়ার)',
-    ],
-    'Household & Personal Care (গৃহস্থালি)' => [
-        'Unilever Bangladesh'    => 'Unilever Bangladesh (ইউনিলিভার)',
-        'Keya Cosmetics'         => 'Keya Cosmetics (কেয়া)',
-        'Square Toiletries'      => 'Square Toiletries (স্কয়ার)',
-        'RFL Group'              => 'RFL Group (আরএফএল)',
-    ],
-    'Other (অন্যান্য)' => [
-        'TCB (Government)'  => 'TCB / Govt. (সরকারি টিসিবি)',
-        'Local Market'      => 'Local Market (স্থানীয় বাজার)',
-        'Imported'          => 'Imported (আমদানিকৃত)',
-        'Other'             => 'Other (অন্যান্য)',
-    ],
-];
+// Fetch categories from DB
+try {
+    $categories = $pdo->query("SELECT * FROM category ORDER BY category_name_bn")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) { $categories = []; }
 
-// Flat product array for JS (enables rebuild-on-change deduplication)
-$productData = [];
-foreach ($product_groups as $group => $items) {
-    foreach ($items as $val => $label) {
-        $productData[] = ['value' => $val, 'label' => $label, 'group' => $group];
-    }
-}
+// Fetch active products for bazar (for_uses = b or be)
+try {
+    $products_db = $pdo->query(
+        "SELECT id, category_id, product_name, product_name_bn, seller_price
+         FROM product
+         WHERE status = 'A' AND for_uses IN ('b','be')
+         ORDER BY product_name_bn"
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) { $products_db = []; }
 
-// Static HTML for company & unit (no deduplication needed)
-$companyOptHtml = '<option value="">-- কোম্পানী নির্বাচন করুন --</option>';
-foreach ($company_groups as $group => $items) {
-    $companyOptHtml .= '<optgroup label="' . htmlspecialchars($group) . '">';
-    foreach ($items as $val => $label) {
-        $companyOptHtml .= '<option value="' . htmlspecialchars($val) . '">' . htmlspecialchars($label) . '</option>';
-    }
-    $companyOptHtml .= '</optgroup>';
-}
+// Fetch companies from pcompany table
+try {
+    $pcompanies = $pdo->query("SELECT * FROM pcompany ORDER BY company_name_bn")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) { $pcompanies = []; }
 
+// Build unit HTML
 $unitOptHtml = '<option value="">একক</option>';
 foreach ($units as $val => $label) {
     $unitOptHtml .= '<option value="' . htmlspecialchars($val) . '">' . htmlspecialchars($label) . '</option>';
 }
 
-// Product opt HTML for edit modal (static, no deduplication)
+// Build category HTML
+$categoryOptHtml = '<option value="">-- সব ক্যাটাগরি --</option>';
+foreach ($categories as $cat) {
+    $categoryOptHtml .= '<option value="' . (int)$cat['id'] . '">'
+        . htmlspecialchars($cat['category_name_bn']) . ' (' . htmlspecialchars($cat['category_name']) . ')</option>';
+}
+
+// Build pcompany HTML
+$pcompanyOptHtml = '<option value="">-- কোম্পানী নির্বাচন করুন --</option>';
+foreach ($pcompanies as $co) {
+    $pcompanyOptHtml .= '<option value="' . htmlspecialchars($co['company_name_bn']) . '">'
+        . htmlspecialchars($co['company_name_bn']) . ' (' . htmlspecialchars($co['company_name']) . ')</option>';
+}
+
+// Build products JSON for JS
+$productsJson = json_encode(array_map(function ($p) {
+    return [
+        'cat_id'  => (int)$p['category_id'],
+        'name_bn' => $p['product_name_bn'],
+        'name_en' => $p['product_name'],
+        'price'   => (float)$p['seller_price'],
+    ];
+}, $products_db), JSON_UNESCAPED_UNICODE);
+
+// Build product option HTML for edit modal (all products)
 $productOptHtml = '<option value="">-- পণ্য নির্বাচন করুন --</option>';
-foreach ($product_groups as $group => $items) {
-    $productOptHtml .= '<optgroup label="' . htmlspecialchars($group) . '">';
-    foreach ($items as $val => $label) {
-        $productOptHtml .= '<option value="' . htmlspecialchars($val) . '">' . htmlspecialchars($label) . '</option>';
-    }
-    $productOptHtml .= '</optgroup>';
+foreach ($products_db as $p) {
+    $productOptHtml .= '<option value="' . htmlspecialchars($p['product_name_bn']) . '"'
+        . ' data-price="' . (float)$p['seller_price'] . '"'
+        . ' data-catid="' . (int)$p['category_id'] . '">'
+        . htmlspecialchars($p['product_name_bn']) . ' (' . htmlspecialchars($p['product_name']) . ')</option>';
 }
 ?>
 
@@ -246,20 +131,20 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
             <?php if ($success_msg): ?>
                 <div class="alert alert-success alert-dismissible fade show">
-                    <?php echo htmlspecialchars($success_msg); ?>
+                    <?= htmlspecialchars($success_msg) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
             <?php if ($error_msg): ?>
                 <div class="alert alert-danger alert-dismissible fade show">
-                    <?php echo htmlspecialchars($error_msg); ?>
+                    <?= htmlspecialchars($error_msg) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
 
             <form action="../process/monthly_bazar_process.php" method="post" id="bazarForm" autocomplete="off">
                 <input type="hidden" name="action" value="insert_bulk">
-                <input type="hidden" name="member_id" value="<?php echo htmlspecialchars($member_id); ?>">
+                <input type="hidden" name="member_id" value="<?= htmlspecialchars($member_id) ?>">
 
                 <!-- Month row -->
                 <div class="row mb-3 align-items-center">
@@ -269,10 +154,10 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         </label>
                         <input type="text"
                                class="form-control fw-bold text-primary"
-                               value="<?php echo htmlspecialchars($current_month_label); ?>"
+                               value="<?= htmlspecialchars($current_month_label) ?>"
                                readonly
                                style="background:#eef4ff;cursor:not-allowed;">
-                        <input type="hidden" name="month" value="<?php echo htmlspecialchars($current_month); ?>">
+                        <input type="hidden" name="month" value="<?= htmlspecialchars($current_month) ?>">
                     </div>
                     <div class="col-12 col-md-9 d-flex align-items-end justify-content-end mt-3 mt-md-0">
                         <button type="button" class="btn btn-success px-4" onclick="addRow()">
@@ -283,25 +168,17 @@ include_once __DIR__ . '/../includes/side_bar.php';
 
                 <!-- Dynamic rows table -->
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle" id="inputTable" style="min-width:900px;">
+                    <table class="table table-bordered align-middle" id="inputTable" style="min-width:1100px;">
                         <thead class="table-primary">
                             <tr>
-                                <th style="width:42px">#</th>
-                                <th style="min-width:210px">
-                                    Product Name <span class="fw-normal small">(পণ্যের নাম)</span>
-                                </th>
-                                <th style="min-width:180px">
-                                    Quantity <span class="fw-normal small">(পরিমাণ)</span>
-                                </th>
-                                <th style="min-width:200px">
-                                    Company <span class="fw-normal small">(কোম্পানি)</span>
-                                </th>
-                                <th style="min-width:140px">
-                                    Remarks <span class="fw-normal small">(মন্তব্য)</span>
-                                </th>
-                                <th style="width:50px" class="text-center">
-                                    <i class="bi bi-trash text-danger"></i>
-                                </th>
+                                <th style="width:38px">#</th>
+                                <th style="min-width:160px">ক্যাটাগরি <span class="fw-normal small">(Category)</span></th>
+                                <th style="min-width:210px">পণ্যের নাম <span class="fw-normal small">(Product)</span></th>
+                                <th style="min-width:100px">মূল্য <span class="fw-normal small">(Price ৳)</span></th>
+                                <th style="min-width:185px">পরিমাণ <span class="fw-normal small">(Quantity)</span></th>
+                                <th style="min-width:190px">কোম্পানি <span class="fw-normal small">(Company)</span></th>
+                                <th style="min-width:130px">মন্তব্য <span class="fw-normal small">(Remarks)</span></th>
+                                <th style="width:46px" class="text-center"><i class="bi bi-trash text-danger"></i></th>
                             </tr>
                         </thead>
                         <tbody id="rowContainer"></tbody>
@@ -329,40 +206,48 @@ include_once __DIR__ . '/../includes/side_bar.php';
                     <thead class="table-dark">
                         <tr>
                             <th>#</th>
-                            <th>Month (মাস)</th>
-                            <th>Product Name (পণ্যের নাম)</th>
-                            <th>Quantity (পরিমাণ)</th>
-                            <th>Company (কোম্পানি)</th>
-                            <th>Remarks (মন্তব্য)</th>
-                            <th class="text-center">Action (কার্যকলাপ)</th>
+                            <th>মাস (Month)</th>
+                            <th>পণ্যের নাম (Product)</th>
+                            <th class="text-end">মূল্য (Price)</th>
+                            <th>পরিমাণ (Quantity)</th>
+                            <th>কোম্পানি (Company)</th>
+                            <th>মন্তব্য (Remarks)</th>
+                            <th class="text-center">কার্যকলাপ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($bazars)): ?>
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
-                                    No records found. ( কোনো তথ্য পাওয়া যায়নি। )
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    কোনো তথ্য পাওয়া যায়নি।
                                 </td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($bazars as $i => $row): ?>
                                 <tr>
-                                    <td><?php echo $i + 1; ?></td>
-                                    <td><span class="badge bg-primary"><?php echo htmlspecialchars($row['month']); ?></span></td>
-                                    <td><?php echo htmlspecialchars($row['product_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['quantity']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['company']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['remarks']); ?></td>
+                                    <td><?= $i + 1 ?></td>
+                                    <td><span class="badge bg-primary"><?= htmlspecialchars($row['month']) ?></span></td>
+                                    <td><?= htmlspecialchars($row['product_name']) ?></td>
+                                    <td class="text-end">
+                                        <?php if (!empty($row['seller_price'])): ?>
+                                            <span class="text-success fw-semibold">৳<?= number_format((float)$row['seller_price'], 2) ?></span>
+                                        <?php else: ?>
+                                            <span class="text-muted">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($row['quantity']) ?></td>
+                                    <td><?= htmlspecialchars($row['company']) ?></td>
+                                    <td><?= htmlspecialchars($row['remarks']) ?></td>
                                     <td class="text-center text-nowrap">
                                         <button class="btn btn-sm btn-warning me-1"
-                                            onclick="openEditModal(<?php echo htmlspecialchars(json_encode($row)); ?>)">
+                                            onclick="openEditModal(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <form action="../process/monthly_bazar_process.php" method="post"
                                               class="d-inline"
-                                              onsubmit="return confirm('Delete this record?\n(এই তথ্যটি মুছে ফেলবেন?)')">
+                                              onsubmit="return confirm('এই তথ্যটি মুছে ফেলবেন?')">
                                             <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                            <input type="hidden" name="id" value="<?= $row['id'] ?>">
                                             <button type="submit" class="btn btn-sm btn-danger">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -390,51 +275,65 @@ include_once __DIR__ . '/../includes/side_bar.php';
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="id" id="edit_id">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">
-                        Edit Record <span class="fw-normal small">( তথ্য সম্পাদনা )</span>
-                    </h5>
+                    <h5 class="modal-title">Edit Record <span class="fw-normal small">( তথ্য সম্পাদনা )</span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Month <span class="text-secondary small">(মাস)</span></label>
+                            <label class="form-label fw-semibold">মাস (Month)</label>
                             <select class="form-select" name="month" id="edit_month" required>
                                 <option value="">-- Select --</option>
                                 <?php foreach ($months as $val => $label): ?>
-                                    <option value="<?php echo $val; ?>"><?php echo htmlspecialchars($label); ?></option>
+                                    <option value="<?= $val ?>"><?= htmlspecialchars($label) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Product Name <span class="text-secondary small">(পণ্যের নাম)</span></label>
-                            <select class="form-select" name="product_name" id="edit_product_name" required>
-                                <?php echo $productOptHtml; ?>
+                            <label class="form-label fw-semibold">ক্যাটাগরি (Category)</label>
+                            <select class="form-select" id="edit_cat_id" onchange="rebuildEditProducts()">
+                                <option value="">-- সব ক্যাটাগরি --</option>
+                                <?= $categoryOptHtml ?>
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Quantity <span class="text-secondary small">(পরিমাণ)</span></label>
+                            <label class="form-label fw-semibold">পণ্যের নাম (Product)</label>
+                            <select class="form-select" name="product_name" id="edit_product_name"
+                                    onchange="onEditProductChange()" required>
+                                <?= $productOptHtml ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">মূল্য (Price ৳)</label>
+                            <input type="text" inputmode="decimal" class="form-control"
+                                   name="seller_price" id="edit_price" value="0" placeholder="০.০০">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">পরিমাণ (Quantity)</label>
                             <div class="input-group">
-                                <input type="number" class="form-control" name="edit_qty_amount"
-                                       id="edit_qty_amount" min="0" step="any" placeholder="Amount" required>
-                                <select class="form-select" name="edit_qty_unit" id="edit_qty_unit" style="max-width:100px;" required>
-                                    <?php echo $unitOptHtml; ?>
+                                <input type="text" inputmode="decimal" class="form-control"
+                                       name="edit_qty_amount" id="edit_qty_amount" placeholder="পরিমান" required>
+                                <select class="form-select" name="edit_qty_unit" id="edit_qty_unit"
+                                        style="max-width:100px;" required>
+                                    <?= $unitOptHtml ?>
                                 </select>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Company <span class="text-secondary small">(কোম্পানি)</span></label>
-                            <select class="form-select" name="company" id="edit_company" required>
-                                <?php echo $companyOptHtml; ?>
+                            <label class="form-label fw-semibold">কোম্পানি (Company)</label>
+                            <select class="form-select" name="company" id="edit_company">
+                                <?= $pcompanyOptHtml ?>
                             </select>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Remarks <span class="text-secondary small">(মন্তব্য)</span></label>
+                            <label class="form-label fw-semibold">মন্তব্য (Remarks)</label>
                             <textarea class="form-control" name="remarks" id="edit_remarks" rows="2"></textarea>
                         </div>
 
@@ -452,64 +351,81 @@ include_once __DIR__ . '/../includes/side_bar.php';
 </div>
 
 <script>
-// Product list as structured JSON — used to REBUILD options dynamically
-const PRODUCTS = <?php echo json_encode($productData, JSON_UNESCAPED_UNICODE); ?>;
+// Product list from DB
+const PRODUCTS = <?= $productsJson ?>;
 
-// Static HTML strings for company & unit (no deduplication needed)
-const COMPANY_HTML = <?php echo json_encode($companyOptHtml); ?>;
-const UNIT_HTML    = <?php echo json_encode($unitOptHtml); ?>;
+// Static HTML snippets
+const CATEGORY_HTML = <?= json_encode($categoryOptHtml) ?>;
+const PCOMPANY_HTML = <?= json_encode($pcompanyOptHtml) ?>;
+const UNIT_HTML     = <?= json_encode($unitOptHtml) ?>;
 
 let rowCounter = 0;
 
-// Escape HTML for option text/values
 function esc(s) {
     return String(s)
         .replace(/&/g,'&amp;').replace(/</g,'&lt;')
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Build product <option> HTML, EXCLUDING values in excludeSet
-function buildProductOpts(excludeSet) {
+// Build product <option> HTML for a row: exclude usedElsewhere, filter by catId (0 = all)
+function buildProductOpts(catId, usedElsewhere) {
     let html = '<option value="">-- পণ্য নির্বাচন করুন --</option>';
-    let lastGroup = '';
     PRODUCTS.forEach(p => {
-        if (excludeSet.has(p.value)) return; // completely skip taken products
-        if (p.group !== lastGroup) {
-            if (lastGroup) html += '</optgroup>';
-            html += '<optgroup label="' + esc(p.group) + '">';
-            lastGroup = p.group;
-        }
-        html += '<option value="' + esc(p.value) + '">' + esc(p.label) + '</option>';
+        if (usedElsewhere.has(p.name_bn)) return;
+        if (catId && p.cat_id !== catId) return;
+        const label = p.name_bn + (p.name_en ? ' (' + p.name_en + ')' : '');
+        html += '<option value="' + esc(p.name_bn) + '" data-price="' + p.price + '">' + esc(label) + '</option>';
     });
-    if (lastGroup) html += '</optgroup>';
     return html;
 }
 
-// Rebuild every product dropdown: remove products already chosen by OTHER rows
-function refreshProductOptions() {
-    // Snapshot current value of every product select
-    const current = {};
+// Rebuild product options for a single row (respects its own category filter + dedup)
+function rebuildProductsForRow(rowId) {
+    const row     = document.getElementById(rowId);
+    if (!row) return;
+    const catSel  = row.querySelector('.cat-select');
+    const prodSel = row.querySelector('.product-select');
+    const catId   = catSel ? (parseInt(catSel.value) || 0) : 0;
+    const ownVal  = prodSel.value;
+
+    // Collect values selected in OTHER rows
+    const usedElsewhere = new Set();
     document.querySelectorAll('.product-select').forEach(sel => {
-        current[sel.dataset.rowid] = sel.value;
+        if (sel.dataset.rowid !== rowId && sel.value) usedElsewhere.add(sel.value);
     });
 
+    prodSel.innerHTML = buildProductOpts(catId, usedElsewhere);
+    if (ownVal) {
+        prodSel.value = ownVal;
+        if (!prodSel.value) setPrice(rowId, 0); // category filter removed it
+    }
+}
+
+// Rebuild ALL rows (used after product selection changes for dedup)
+function refreshAllRows() {
     document.querySelectorAll('.product-select').forEach(sel => {
-        const rowId  = sel.dataset.rowid;
-        const ownVal = current[rowId] || '';
-
-        // Products picked by every OTHER row
-        const excludeSet = new Set(
-            Object.entries(current)
-                .filter(([rid, v]) => rid !== rowId && v !== '')
-                .map(([, v]) => v)
-        );
-
-        // Rebuild options (taken products simply won't appear)
-        sel.innerHTML = buildProductOpts(excludeSet);
-
-        // Restore this row's own selection
-        if (ownVal) sel.value = ownVal;
+        rebuildProductsForRow(sel.dataset.rowid);
     });
+}
+
+// Called when category changes in a row
+function onCategoryChange(rowId) {
+    rebuildProductsForRow(rowId);
+}
+
+// Called when product selection changes in a row
+function onProductChange(rowId) {
+    const row     = document.getElementById(rowId);
+    const prodSel = row.querySelector('.product-select');
+    const opt     = prodSel.options[prodSel.selectedIndex];
+    setPrice(rowId, opt ? parseFloat(opt.dataset.price) || 0 : 0);
+    refreshAllRows(); // update dedup for other rows
+}
+
+function setPrice(rowId, price) {
+    const row = document.getElementById(rowId);
+    const pi  = row ? row.querySelector('.price-input') : null;
+    if (pi) pi.value = price.toFixed(2);
 }
 
 function addRow() {
@@ -519,49 +435,64 @@ function addRow() {
     tr.id = id;
     tr.innerHTML =
         '<td class="text-center text-muted fw-bold row-num"></td>' +
+
         '<td>' +
-            '<select class="form-select form-select-sm product-select"' +
-                    ' name="product_name[]"' +
-                    ' onchange="refreshProductOptions()"' +
-                    ' data-rowid="' + id + '" required>' +
+            '<select class="form-select form-select-sm cat-select" name="category_id[]"' +
+                    ' data-rowid="' + id + '"' +
+                    ' onchange="onCategoryChange(\'' + id + '\')">' +
+                CATEGORY_HTML +
             '</select>' +
         '</td>' +
+
+        '<td>' +
+            '<select class="form-select form-select-sm product-select" name="product_name[]"' +
+                    ' data-rowid="' + id + '"' +
+                    ' onchange="onProductChange(\'' + id + '\')" required>' +
+            '</select>' +
+        '</td>' +
+
+        '<td>' +
+            '<input type="text" inputmode="decimal" class="form-control form-control-sm price-input"' +
+                   ' name="seller_price[]" data-rowid="' + id + '"' +
+                   ' value="0" placeholder="০.০০">' +
+        '</td>' +
+
         '<td>' +
             '<div class="input-group input-group-sm">' +
-                '<input type="number" class="form-control" name="qty_amount[]"' +
-                       ' min="0" step="any" placeholder="পরিমান" required>' +
-                '<select class="form-select" name="qty_unit[]"' +
-                        ' style="max-width:82px;" required>' +
+                '<input type="text" inputmode="decimal" class="form-control" name="qty_amount[]"' +
+                       ' placeholder="পরিমান" required>' +
+                '<select class="form-select" name="qty_unit[]" style="max-width:82px;" required>' +
                     UNIT_HTML +
                 '</select>' +
             '</div>' +
         '</td>' +
+
         '<td>' +
-            '<select class="form-select form-select-sm" name="company[]" required>' +
-                COMPANY_HTML +
+            '<select class="form-select form-select-sm" name="company[]">' +
+                PCOMPANY_HTML +
             '</select>' +
         '</td>' +
+
         '<td>' +
-            '<input type="text" class="form-control form-control-sm"' +
-                   ' name="remarks[]" placeholder="Optional">' +
+            '<input type="text" class="form-control form-control-sm" name="remarks[]" placeholder="Optional">' +
         '</td>' +
+
         '<td class="text-center">' +
-            '<button type="button" class="btn btn-sm btn-outline-danger"' +
-                    ' onclick="removeRow(\'' + id + '\')">' +
+            '<button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(\'' + id + '\')">' +
                 '<i class="bi bi-x-lg"></i>' +
             '</button>' +
         '</td>';
 
     document.getElementById('rowContainer').appendChild(tr);
     reNumber();
-    refreshProductOptions(); // apply current exclusions to new row immediately
+    rebuildProductsForRow(id); // populate product options
 }
 
 function removeRow(id) {
     const row = document.getElementById(id);
     if (row) {
         row.remove();
-        refreshProductOptions(); // restore freed product to all remaining rows
+        refreshAllRows();
         reNumber();
     }
 }
@@ -576,23 +507,58 @@ function reNumber() {
 document.getElementById('bazarForm').addEventListener('submit', function(e) {
     if (document.querySelectorAll('#rowContainer tr').length === 0) {
         e.preventDefault();
-        alert('Please add at least one product row.\n(অন্তত একটি পণ্য যোগ করুন।)');
+        alert('অন্তত একটি পণ্য যোগ করুন।');
     }
 });
 
-// Edit modal opener
+// ── Edit modal ─────────────────────────────────────────────────────────────
+
+function rebuildEditProducts() {
+    const catSel  = document.getElementById('edit_cat_id');
+    const prodSel = document.getElementById('edit_product_name');
+    const catId   = parseInt(catSel.value) || 0;
+    const curVal  = prodSel.value;
+
+    let html = '<option value="">-- পণ্য নির্বাচন করুন --</option>';
+    PRODUCTS.forEach(p => {
+        if (catId && p.cat_id !== catId) return;
+        const label = p.name_bn + (p.name_en ? ' (' + p.name_en + ')' : '');
+        html += '<option value="' + esc(p.name_bn) + '" data-price="' + p.price + '">' + esc(label) + '</option>';
+    });
+    prodSel.innerHTML = html;
+    if (curVal) prodSel.value = curVal;
+}
+
+function onEditProductChange() {
+    const prodSel = document.getElementById('edit_product_name');
+    const opt     = prodSel.options[prodSel.selectedIndex];
+    const price   = opt ? parseFloat(opt.dataset.price) || 0 : 0;
+    document.getElementById('edit_price').value = price.toFixed(2);
+}
+
 function openEditModal(row) {
-    document.getElementById('edit_id').value           = row.id;
-    document.getElementById('edit_month').value        = row.month;
+    document.getElementById('edit_id').value    = row.id;
+    document.getElementById('edit_month').value = row.month;
+
+    // Try to find product in PRODUCTS list to get category
+    const prod = PRODUCTS.find(p => p.name_bn === row.product_name);
+    document.getElementById('edit_cat_id').value = prod ? prod.cat_id : '';
+
+    rebuildEditProducts();
     document.getElementById('edit_product_name').value = row.product_name;
 
-    // Split stored "2.5 KG" → amount & unit
+    // Price: use stored seller_price if available, else from product
+    const storedPrice = parseFloat(row.seller_price) || 0;
+    document.getElementById('edit_price').value = (storedPrice || (prod ? prod.price : 0)).toFixed(2);
+
+    // Quantity: split "2.5 KG" → amount & unit
     const qtyParts = (row.quantity || '').trim().split(' ');
     document.getElementById('edit_qty_amount').value = qtyParts[0] || '';
     document.getElementById('edit_qty_unit').value   = qtyParts[1] || 'KG';
 
-    document.getElementById('edit_company').value = row.company;
-    document.getElementById('edit_remarks').value = row.remarks || '';
+    document.getElementById('edit_company').value  = row.company  || '';
+    document.getElementById('edit_remarks').value  = row.remarks  || '';
+
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 
