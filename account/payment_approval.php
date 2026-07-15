@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Account') {
@@ -11,43 +11,6 @@ include_once __DIR__ . '/../config/config.php';
 $user_id = $_SESSION['user_id'];
 
 $method = $_SERVER['REQUEST_METHOD'];
-
-// Helper function to send SMS
-function sms_send($mobile, $message) {
-    $sms_api_url = "http://bulksmsbd.net/api/smsapi";
-    $api_key = "B5NrU3gcYDTzS4AdGGIo";
-    $sender_id = "8809648903446";
-
-    $data = [
-        'api_key' => $api_key,
-        'type' => 'text',
-        'number' => $mobile,
-        'senderid' => $sender_id,
-        'message' => $message,
-    ];
-
-    error_log("SMS Data: " . print_r($data, true));
-
-    $url = $sms_api_url . '?' . http_build_query($data);
-    error_log("Generated SMS URL: $url");
-    error_log("Sending SMS to: $mobile with message: $message");
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    $response = curl_exec($ch);
-
-    if ($response === false) {
-        $error = curl_error($ch);
-        curl_close($ch);
-        return false;
-    }
-
-    curl_close($ch);
-    error_log("SMS Response: $response");
-    return $response;
-}
 
 // Fetch all payments
 $stmt = $pdo->query("SELECT 
@@ -77,30 +40,41 @@ $stmt = $pdo->query("SELECT
         WHEN a.project_id = 0 && a.payment_method = 'Monthly' THEN ' (মাসিক ফি)'
         WHEN a.project_id = 0 && a.payment_method = 'Late' THEN ' (বিলম্ব ফি)'
         WHEN a.project_id = 0 THEN 'ভর্তি ফি'
-        WHEN a.project_id = 1 THEN 'সমিতি শেয়ার ফি'
+        WHEN a.project_id = 1 THEN 'সমিতি শেয়ার ফি'
         ELSE p.project_name_bn
-    END AS project_title
+    END AS project_title,
+    COALESCE(sh.total_extra_share, 0) AS no_share -- এখানে টোটাল শেয়ার ৩টি দেখাবে
 FROM member_payments a
 LEFT JOIN (
     SELECT mp.*
     FROM member_project mp
     INNER JOIN (
-        SELECT member_id, member_code, MAX(id) AS max_id
+        SELECT member_id, member_code, project_id, MAX(id) AS max_id
         FROM member_project
-        GROUP BY member_id, member_code
+        GROUP BY member_id, member_code, project_id
     ) latest
         ON mp.member_id = latest.member_id
        AND mp.member_code = latest.member_code
+       AND mp.project_id = latest.project_id
        AND mp.id = latest.max_id
 ) b 
     ON a.member_id = b.member_id 
    AND a.member_code = b.member_code
+   AND a.project_id = b.project_id 
 INNER JOIN members_info c 
     ON a.member_id = c.id 
    AND a.member_code = c.member_code
 LEFT JOIN project p 
     ON a.project_id = p.id
-    WHERE a.status IN ('R', 'I')
+-- সমাধান অংশ: প্রজেক্ট আইডি ছাড়া শুধুমাত্র মেম্বার আইডি ধরে SUM করা হয়েছে
+LEFT JOIN (
+    SELECT member_id, member_code, SUM(extra_share) AS total_extra_share
+    FROM member_share
+    GROUP BY member_id, member_code
+) sh
+    ON a.member_id = sh.member_id
+   AND a.member_code = sh.member_code -- এখানে প্রজেক্ট আইডি দেওয়া হয়নি
+WHERE a.status IN ('R', 'I')
 ORDER BY a.id DESC");
 $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -111,6 +85,25 @@ if ($method === 'POST' && isset($_POST['member_id'], $_POST['member_code'], $_PO
     $member_project_id = (int)$_POST['member_project_id'];
     $pay_id = (int)$_POST['pay_id'];
     $status = in_array($_POST['status'], ['A', 'I', 'R']) ? $_POST['status'] : 'I';
+
+    // find project_id from member_project table using member_project_id
+    $stmtProject = $pdo->prepare("SELECT project_id FROM member_project WHERE id = ?");
+    $stmtProject->execute([$member_project_id]);
+    $project_id = $stmtProject->fetchColumn();
+
+    // echo "Received POST data: member_id=$member_id, member_code=$member_code, pay_id=$pay_id, status=$status";
+    // echo "member_project_id=$member_project_id" ;
+    // echo "project_id=$project_id";
+    // die();
+
+    // get the no_share value for the specific pay_id from the $payments array
+    $payments = array_filter($payments, function($payment) use ($pay_id) {
+        return $payment['id'] === $pay_id;
+    });
+    $addShareCount = reset($payments)['no_share'] ?? 0;
+
+    // echo "Updating payment ID: $pay_id for member ID: $member_id with status: $status and share count: $addShareCount";
+    // die();
 
     // Get payment details for the specific pay_id
     $stmt = $pdo->prepare("SELECT * FROM member_payments WHERE id = ?");
@@ -129,20 +122,67 @@ if ($method === 'POST' && isset($_POST['member_id'], $_POST['member_code'], $_PO
     $other_fee = round($payment['amount'] * 0.05, 2);
     $late_fee = round($payment['amount'], 2); // Assuming late fee is calculated elsewhere or is zero for this context
 
-    // Update payment status
-    $stmt = $pdo->prepare("UPDATE member_payments SET status = ? WHERE id = ? AND member_id = ? AND member_code = ?");
-    $stmt->execute([$status, $pay_id, $member_id, $member_code]);
-    
-    $stmtProject = $pdo->prepare("UPDATE member_project SET status = ? WHERE id = ? AND member_id = ? AND member_code = ?");
-    $stmtProject->execute([$status, $member_project_id, $member_id, $member_code]);
-
     if ($tran_type == 2) {
         $stmt = $pdo->prepare("UPDATE member_share SET extra_share = 0, for_install = for_install + ?, other_fee = other_fee + ? WHERE member_id = ? AND member_code = ?");
         $stmt->execute([$for_install, $other_fee,  $member_id, $member_code]);
-    } elseif ($tran_type == 3) {
+    } elseif ($tran_type == 6) {
         $stmt = $pdo->prepare("UPDATE member_share SET late_fee = late_fee + ? WHERE member_id = ? AND member_code = ?");
         $stmt->execute([$late_fee,  $member_id, $member_code]);
-    }   
+    } elseif ($tran_type == 3 || $tran_type == 5) {
+
+        // project_share table insert or update logic
+        $stmtProjectShare = $pdo->prepare("SELECT COUNT(*) as share_count FROM project_share WHERE member_id = ? AND member_code = ? AND project_id = ?");
+        $stmtProjectShare->execute([$member_id, $member_code, $project_id]);
+
+        // FETCH the result row
+        $result = $stmtProjectShare->fetch(PDO::FETCH_ASSOC);
+        $shareCount = $result['share_count'] ? (int)$result['share_count'] : 0;
+
+        if ($tran_type == 3) {
+            $type = 'uddokta';
+        } else {
+            $type = 'share';
+        }
+
+        // FIX 1: rowCount() এর বদলে প্রকৃত shareCount দিয়ে কন্ডিশন চেক করা হলো
+        if ($shareCount > 0) {
+
+            $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
+
+            for ($i = 0; $i < $addShareCount; $i++) {
+                $current_serial = $shareCount + $i + 1; // যদি shareCount ২০ হয়, তবে এটি ২১, ২২, ২৩... এভাবে বাড়বে
+                $n = str_pad($current_serial, 3, '0', STR_PAD_LEFT);
+                $share_id = "{$type}{$member_id}{$member_project_id}{$project_id}{$n}";
+                $stmtInsert->execute([$member_project_id, $member_id, $member_code, $project_id, $share_id]);
+            }
+        } else {
+
+            // Insert into project_share for the new member_project
+            $stmtInsertShare = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
+            
+            for ($i = 0; $i < $addShareCount; $i++) {
+                $n = str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+                $share_id = "{$type}{$member_id}{$member_project_id}{$project_id}{$n}";
+                $stmtInsertShare->execute([$member_project_id, $member_id, $member_code, $project_id, $share_id]);
+            }
+        }
+
+                // update member_project with project_share, paid_amount, sundry_amount, status
+        if ($tran_type == 3){
+            $stmt = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, uddokta_share = uddokta_share + ?, uddokta_share_amt = uddokta_share_amt + ?, extra_share = extra_share - ? WHERE member_id = ? AND member_code = ?");
+            $stmt->execute([$addShareCount, $addShareCount, $payment['amount'], $addShareCount, $member_id, $member_code]);
+        } else if ($tran_type == 5){
+            $stmt = $pdo->prepare("UPDATE member_share SET no_share = no_share + ?, extra_share = extra_share - ? WHERE member_id = ? AND member_code = ?");  
+            $stmt->execute([$addShareCount, $addShareCount, $member_id, $member_code]);
+        }
+    } 
+
+    $stmtUpdateProject = $pdo->prepare("UPDATE member_project SET  paid_amount = paid_amount + ?, sundry_amount = sundry_amount - ?, status = ? WHERE member_id = ? AND member_code = ? AND id = ? AND project_id = ?");
+    $stmtUpdateProject->execute([$payment['amount'], $payment['amount'], $status, $member_id, $member_code, $member_project_id, $project_id]);
+    
+        // Update payment status
+    $stmt = $pdo->prepare("UPDATE member_payments SET status = ? WHERE id = ? AND member_id = ? AND member_code = ?");
+    $stmt->execute([$status, $pay_id, $member_id, $member_code]);
 
     // get gl_maaping for glac_id and contra_glac_id  where is_active = 1 from tran_type = $tran_type
     $stmtGl = $pdo->prepare("SELECT credit_glac_id, debit_glac_id FROM gl_mapping WHERE tran_type = ? AND is_active = 1");
@@ -267,10 +307,11 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <tbody>
                                 <?php foreach ($payments as $payment): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($payment['member_code']) ?><br/> 
+                                        <td><?= htmlspecialchars($payment['member_code']) ?><br/>
                                             <?= htmlspecialchars($payment['name_bn']) ?><br/>
                                             <?= htmlspecialchars($payment['name_en']) ?><br/>
-                                            <?= htmlspecialchars($payment['mobile']) ?>
+                                            <?= htmlspecialchars($payment['mobile']) ?><br/>
+                                            <small class="text-muted">শেয়ার: <?= (int)$payment['no_share'] ?></small>
                                         </td>
                                         <td><?= htmlspecialchars(ucfirst($payment['payment_method'])) ?> 
                                         - <?= htmlspecialchars($payment['for_fees']) ?> 

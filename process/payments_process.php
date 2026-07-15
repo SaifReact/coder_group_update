@@ -47,21 +47,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bank_pay_date = $_POST['payment_date'] ?? '';
     // Convert empty date to NULL
     $bank_pay_date = !empty($bank_pay_date) ? $bank_pay_date : null;
-    $bank_trans_no = $_POST['bank_trans'] ?? '';
+    $bank_trans_no = trim($_POST['bank_trans'] ?? '');
     $pay_mode = $_POST['pay_mode'] ?? '';
     $remarks = $_POST['remarks'] ?? '';
     $total_share_value = floatval($_POST['total_share_value'] ?? 0);
-    $memberProjectDate = $_POST['memberProjects'] ?? '0';
+    $memberProjectData = $_POST['memberProjects'] ?? '0';
     $sundry_amt = floatval($_POST['sundry_amt'] ?? 0);
 
-    // Fetch monthly fee from utils table
-    $monthly_fee = 0; // Default value
-    $stmt_utils = $pdo->prepare("SELECT * FROM utils WHERE fee_type in ('samity_share','monthly') AND status = 'A' LIMIT 1");
-    $stmt_utils->execute();
-    if ($row_utils = $stmt_utils->fetch()) {
-        $monthly_fee = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 2000;
-        $per_share_value_utils = isset($row_utils['fee']) ? (float)$row_utils['fee'] : 5000;
+    // Reject duplicate bank transaction numbers
+    if ($bank_trans_no !== '') {
+        $stmtDup = $pdo->prepare("SELECT COUNT(*) FROM member_payments WHERE bank_trans_no = ?");
+        $stmtDup->execute([$bank_trans_no]);
+        if ((int)$stmtDup->fetchColumn() > 0) {
+            $_SESSION['error_msg'] = "এই ব্যাংক লেনদেন নম্বরটি আগেই ব্যবহার হয়েছে: " . htmlspecialchars($bank_trans_no);
+            header('Location: ../account/payment.php');
+            exit;
+        }
     }
+
+    $monthly_fee = 2000;
+    $per_samity_share_value = 5000;
+    $per_uddokta_share_value = 5000;
+    $per_project_share_value = 5000;
+
+    $stmt_utils = $pdo->prepare("SELECT id, fee_type, fee FROM utils WHERE fee_type IN ('monthly', 'samity_share', 'uddokta_share', 'project_share') AND status = 'A'");
+    $stmt_utils->execute();
+
+    // fetchAll ব্যবহার করে সব রো একসাথে নিয়ে আসা হলো
+    $utils_rows = $stmt_utils->fetchAll(PDO::FETCH_ASSOC);
+
+    // লুপ চালিয়ে fee_type অনুযায়ী সঠিক ভেরিয়েবলে মান বসানো হচ্ছে
+    foreach ($utils_rows as $row_utils) {
+        if (isset($row_utils['fee'])) {
+            switch ($row_utils['fee_type']) {
+                case 'monthly':
+                    $monthly_fee = (float)$row_utils['fee'];
+                    $monthlyFeeId = $row_utils['id'];
+                    break;
+                case 'samity_share':
+                    $per_samity_share_value = (float)$row_utils['fee'];
+                    $samityShareId = $row_utils['id'];
+                    break;
+                case 'uddokta_share':
+                    $per_uddokta_share_value = (float)$row_utils['fee'];
+                    $uddoktaShareId = $row_utils['id'];
+                    break;
+                case 'project_share':
+                    $per_project_share_value = (float)$row_utils['fee'];
+                    $projectShareId = $row_utils['id'];
+                    break;
+            }
+        }
+    }
+
+
 
     // Get no_share and extra_share from member_share table
     $stmt = $pdo->prepare("SELECT no_share, samity_share, samity_share_amt, extra_share, admission_fee FROM member_share WHERE member_id = ? AND member_code = ? LIMIT 1");
@@ -82,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Check if payment already exists for this month and year
-    if ($payment_method !== 'admission' && $payment_method !== 'Samity Share' && $payment_method !== 'Project Share') {
+    if (!in_array($payment_method, ['admission', 'Samity Share', 'Uddokta Share', 'Project Share'])) {
         $stmt = $pdo->prepare("SELECT id FROM member_payments WHERE member_id = ? AND payment_method = ? AND payment_year = ? LIMIT 1");
         $stmt->execute([$member_id, $payment_method, $payment_year]);
         if ($stmt->fetch()) {
@@ -167,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$amount, $sundry_samity_share, $member_id, $member_code]);
 
             // Only insert into member_project and project_share if sundry_samity_share is 0 (payment is complete)
-            if ($memberProjectDate == 0) {
+            if ($memberProjectData == 0) {
                 // member_project table insert if samity_share > 0
                 if ($samity_share > 0) {
                     $stmtInsertProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
@@ -199,53 +238,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // ===================== PROJECT SHARE PAYMENT =====================
-    elseif ($payment_method === 'Project Share' && $amount > 0 && $project_id > 1) {
+    // ===================== UDDOKTA SHARE PAYMENT =====================
+    elseif ($payment_method === 'Uddokta Share' && $amount > 0) {
         try {
             $pdo->beginTransaction();
 
+            $uddoktaTranType =  $uddoktaShareId? $uddoktaShareId : 3; // Assuming 3 is the transaction type for Uddokta Share
+            $uddoktaProjectId = 2;
+            $share_amount     = round($extra_share * $per_uddokta_share_value, 2);
+
+            // Insert into member_payments (tran_type=3, project_id=2 always)
+            $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$member_id, $member_code, $payment_method, $uddoktaTranType, $uddoktaProjectId, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Uddokta Share', date('Y-m-d'), $user_id, $pay_slip, 'I', $pay_mode, $remarks]);
+
+            if ($extra_share > 0) {
+                if ($memberProjectData == 0) {
+                    // First payment: no existing member_project for project_id=2
+                    $stmtInsertProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, paid_amount, sundry_amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmtInsertProject->execute([$member_id, $member_code, $uddoktaProjectId, $extra_share, $share_amount, 0,  $share_amount, date('Y-m-d')]);
+                    }
+                else {
+                    // Update existing member_project for project_id=2
+                    $stmt = $pdo->prepare("UPDATE member_project SET project_share = project_share + ?, share_amount = share_amount + ?, sundry_amount = sundry_amount - ? WHERE member_id = ? AND member_code = ? AND project_id = ?");
+                    $stmt->execute([$extra_share, $share_amount, $share_amount, $member_id, $member_code, $uddoktaProjectId]);
+                }
+            }
+            $pdo->commit();
+            $_SESSION['success_msg'] = '✅ উদ্যোক্তা শেয়ার পেমেন্ট সফলভাবে সম্পন্ন হয়েছে! (Uddokta Share Fee Payment Successfully..!)';
+            header('Location: ../account/payment_approval.php');
+            exit;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $_SESSION['error_msg'] = '❌ Error: ' . $e->getMessage();
+            header('Location: ../account/payment.php');
+            exit;
+        }
+    }
+
+    // ===================== PROJECT SHARE PAYMENT =====================
+    elseif ($payment_method === 'Project Share' && $amount > 0) {
+        try {
+            $pdo->beginTransaction();
+
+            $projectTranType =  $projectShareId? $projectShareId : 5; // Assuming 4 is the transaction type for Project Share
+            $share_amount = round($extra_share * $per_project_share_value, 2);
+
             // Insert into member_payments table
             $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$member_id, $member_code, $payment_method, $tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', date('Y-m-d'), $user_id, $pay_slip, 'I', $pay_mode, $remarks]);
+            $stmt->execute([$member_id, $member_code, $payment_method, $projectTranType, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $amount, 'Project Share', date('Y-m-d'), $user_id, $pay_slip, 'I', $pay_mode, $remarks]);
 
             // Get Current Status of member_project for this member_id and project_id
-            $stmtCheck = $pdo->prepare("SELECT id, paid_amount, share_amount, sundry_amount FROM member_project WHERE member_id = ? AND member_code = ? AND project_id = ? LIMIT 1");
+            $stmtCheck = $pdo->prepare("SELECT id FROM member_project WHERE member_id = ? AND member_code = ? AND project_id = ? LIMIT 1");
             $stmtCheck->execute([$member_id, $member_code, $project_id]);
             $memberProject = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-            $share_amount = $extra_share * 5000;
-            $sundry_amt_value = $sundry_amt - $amount;
-
-            if ($memberProjectDate == 0) {
-                if ($extra_share > 0 && $amount > 0) {
+             if ($extra_share > 0) {
+                if ($memberProjectData == 0) {
+                    // First payment: no existing member_project for project_id=2
                     $stmtInsertProject = $pdo->prepare("INSERT INTO member_project (member_id, member_code, project_id, project_share, share_amount, paid_amount, sundry_amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmtInsertProject->execute([$member_id, $member_code, $project_id, $extra_share, $share_amount, $amount, $sundry_amt, date('Y-m-d')]);
-                    $member_project_id = $pdo->lastInsertId();
-
-                    // Insert into project_share table for each extra share
-                    $stmtInsert = $pdo->prepare("INSERT INTO project_share (member_project_id, member_id, member_code, project_id, share_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'A', NOW())");
-                    $startingNumber = 1;
-
-                    for ($j = 0; $j < $extra_share; $j++) {
-                        $currentShareNumber = $startingNumber + $j;
-                        $n = str_pad($currentShareNumber, 3, '0', STR_PAD_LEFT);
-                        $share_id = "share{$member_id}{$member_project_id}{$project_id}{$n}";
-                        $stmtInsert->execute([$member_project_id, $member_id, $member_code, $project_id, $share_id]);
+                    $stmtInsertProject->execute([$member_id, $member_code, $project_id, $extra_share, $share_amount, 0,  $share_amount, date('Y-m-d')]);
                     }
-
-                    $stmt = $pdo->prepare("UPDATE member_share SET extra_share = extra_share - ? WHERE member_id = ? AND member_code = ?");
-                    $stmt->execute([$extra_share, $member_id, $member_code]);
+                else {
+                    // Update existing member_project for project_id=2
+                    $stmt = $pdo->prepare("UPDATE member_project SET project_share = project_share + ?, share_amount = share_amount + ?, sundry_amount = sundry_amount - ? WHERE member_id = ? AND member_code = ? AND project_id = ?");
+                    $stmt->execute([$extra_share, $share_amount, $share_amount, $member_id, $member_code, $project_id]);
                 }
-            }
-
-            if ($memberProjectDate > 0) {
-                $stmt = $pdo->prepare("UPDATE member_project SET paid_amount = paid_amount + ?, sundry_amount = ? WHERE member_id = ? AND member_code = ? AND project_id = ?");
-                $stmt->execute([$amount, $sundry_amt_value, $member_id, $member_code, $project_id]);
             }
 
             $pdo->commit();
 
-            $_SESSION['success_msg'] = '✅ Project Share Fee Payment Successfully..! (সফলভাবে প্রকল্প শেয়ার ফি পেমেন্ট করা হলো..!)';
+            $_SESSION['success_msg'] = '✅ প্রকল্প শেয়ার ফি সফলভাবে সম্পন্ন হয়েছে! (Project Share Fee Payment Successfully..!)';
             header('Location: ../account/payment_approval.php');
             exit;
         } catch (Exception $e) {
@@ -257,7 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // ===================== MONTHLY/OTHER PAYMENTS =====================
-    elseif ($payment_method != 'admission' && $payment_method != 'Samity Share' && $payment_method != 'Project Share' && $amount > 0) {
+    elseif ($payment_method != 'admission' && $payment_method != 'Samity Share' && $payment_method != 'Uddokta Share' && $payment_method != 'Project Share' && $amount > 0) {
         try {
             $pdo->beginTransaction();
 

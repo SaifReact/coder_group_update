@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে, অনুমোদনের জন্য অপেক্ষা করুন (Payment successful, please wait for approval)';
         }
         // Case 2: late_tran_type = 3 -> Insert two transactions (Monthly and Late)
-        elseif ($tran_type == 2 && $late_tran_type == 3) {
+        elseif ($tran_type == 2 && $late_tran_type == 6) {
             $late_fee = 0;
             if ($amount > $monthly_fee) {
                 $late_fee = round($amount - $monthly_fee, 2);
@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Insert Monthly transaction
             $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$member_id, $member_code, 'Monthly', $tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no, $serial_no, $monthly_fee, $payment_method, $created_at, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
-            
+
             // Generate serial_no for Late transaction
             $serial_no_late = 1;
             $stmt = $pdo->prepare("SELECT MAX(serial_no) as max_serial FROM member_payments WHERE payment_method = 'Late' AND payment_year = ?");
@@ -170,14 +170,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $serial_no_late = intval($row['max_serial']) + 1;
             }
             $trans_no_late = 'TRLATE' . $payment_year . $serial_no_late;
-            
+
             // Insert Late transaction
             $stmt = $pdo->prepare("INSERT INTO member_payments (member_id, member_code, payment_method, tran_type, project_id, payment_year, bank_pay_date, bank_trans_no, trans_no, serial_no, amount, for_fees, created_at, created_by, payment_slip, status, pay_mode, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$member_id, $member_code, 'Late', $late_tran_type, $project_id, $payment_year, $bank_pay_date, $bank_trans_no, $trans_no_late, $serial_no_late, $late_fee, $payment_method, $created_at, $created_by, $pay_slip, 'I', $pay_mode, $remarks]);
-            
+
             $_SESSION['success_msg'] = '✅ সফলভাবে পেমেন্ট করা হয়েছে (মাসিক এবং বিলম্ব ফি), অনুমোদনের জন্য অপেক্ষা করুন (Payment successful for Monthly and Late Fee, please wait for approval)';
         }
-
         header('Location: ../users/payment.php');
         exit;
     } else {

@@ -144,9 +144,11 @@ include_once __DIR__ . '/../includes/side_bar.php';
       </div>
     </div>
 
+    <!-- Bank Transaction Details -->
     <div class="col-md-6 mb-3" id="bankTransDiv" style="display:none;">
       <label for="bank_trans" class="form-label">ব্যাংক লেনদেন নং (Bank Transaction)</label>
-      <input type="text" class="form-control" id="bank_trans" name="bank_trans">
+      <input type="text" class="form-control" id="bank_trans" name="bank_trans" onblur="checkBankTrans(this.value)">
+      <small id="bankTransMsg" class="text-danger" style="display:none;">এই লেনদেন নম্বর আগেই ব্যবহার হয়েছে।</small>
     </div>
 
     <div class="col-md-6 mb-3" id="paymentDateDiv" style="display:none;">
@@ -271,29 +273,22 @@ include_once __DIR__ . '/../includes/side_bar.php';
       var payDate = new Date(paymentDate);
       var payMonth = payDate.getMonth();
       var payYear = payDate.getFullYear();
+      var isBackdated;
       if (payYear == paymentYear && payMonth == selectedIndex) {
         var day = payDate.getDate();
-        if (day < 1 || day > 30) {
-          depositAmt += lateFee;
-          lateApplied = true;
-          // Check if late_assign is 'A' and set late_tran_type
-          if (lateAssign === 'A') {
-            document.getElementById('late_tran_type').value = lateFeeId;
-          } else {
-            document.getElementById('late_tran_type').value = 0;
-          }
-        } else {
-          document.getElementById('late_tran_type').value = 0;
-        }
+        isBackdated = (day < 1 || day > 30);
       } else {
+        isBackdated = true;
+      }
+
+      // Late fine only applies when the member's late_assign is 'A'.
+      // If late_assign is 'I', no late fine is added even for backdated payments.
+      if (isBackdated && lateAssign === 'A') {
         depositAmt += lateFee;
         lateApplied = true;
-        // Check if late_assign is 'A' and set late_tran_type
-        if (lateAssign === 'A') {
-          document.getElementById('late_tran_type').value = lateFeeId;
-        } else {
-          document.getElementById('late_tran_type').value = 0;
-        }
+        document.getElementById('late_tran_type').value = lateFeeId;
+      } else {
+        document.getElementById('late_tran_type').value = 0;
       }
     }
     depositAmountInput.value = depositAmt;
@@ -360,6 +355,24 @@ include_once __DIR__ . '/../includes/side_bar.php';
     if (bankTransInput) bankTransInput.required = bp;
     if (paymentDateInput) paymentDateInput.required = bp;
     if (paymentSlipInput) paymentSlipInput.required = bp;
+  }
+
+  function checkBankTrans(val) {
+    var msg    = document.getElementById('bankTransMsg');
+    var submit = document.getElementById('submit');
+    val = val.trim();
+    if (!val) { msg.style.display = 'none'; return; }
+    fetch('../process/check_bank_trans.php?bank_trans=' + encodeURIComponent(val))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.duplicate) {
+          msg.style.display = '';
+          if (submit) submit.disabled = true;
+        } else {
+          msg.style.display = 'none';
+          if (submit) submit.disabled = false;
+        }
+      });
   }
 
               function previewPaymentSlip(event) {

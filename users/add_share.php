@@ -24,10 +24,17 @@ $stmt_share->execute([$member_id]);
 $samity_share = $stmt_share->fetchColumn();
 if ($samity_share === false) $samity_share = 1;
 
-// Fetch project shares
-$stmt_member_projects = $pdo->prepare("SELECT mp.project_id, mp.project_share, p.project_name_bn FROM member_project mp JOIN project p ON mp.project_id = p.id WHERE mp.member_id = ?");
+// Fetch project shares (excluding project_id=2 which is Uddokta Share)
+$stmt_member_projects = $pdo->prepare("SELECT mp.project_id, mp.project_share, p.project_name_bn FROM member_project mp JOIN project p ON mp.project_id = p.id WHERE mp.member_id = ? AND mp.project_id != 2");
 $stmt_member_projects->execute([$member_id]);
 $member_projects = $stmt_member_projects->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch Uddokta Share count (project_id = 2)
+$uddokta_share = 0;
+$stmt_uddokta = $pdo->prepare("SELECT project_share FROM member_project WHERE member_id = ? AND project_id = 2 LIMIT 1");
+$stmt_uddokta->execute([$member_id]);
+$row_uddokta = $stmt_uddokta->fetch(PDO::FETCH_ASSOC);
+$uddokta_share = $row_uddokta ? (int)$row_uddokta['project_share'] : 0;
 
 $shares = [];
 $stmt_share = $pdo->prepare("
@@ -70,7 +77,8 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                 <?php if (!empty($committee_role) && isset($committee_role[0]['role']) && $committee_role[0]['role'] === 'Entrepreneur'): ?>
                                     <option value="samity">সমিতি শেয়ার (CPSSL)</option>
                                 <?php endif; ?>
-                                <option value="project">প্রকল্প শেয়ার (Project Share)</option>
+                                <option value="uddokta">উদ্যোক্তা শেয়ার (Uddokta Share)</option>
+                                <option value="project">প্রকল্প শেয়ার (Project Share)</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3" id="projectSelectBox" style="display:none;">
@@ -87,6 +95,10 @@ include_once __DIR__ . '/../includes/side_bar.php';
                         <div class="col-md-6 mb-3">
                             <label class="form-label">সমিতি শেয়ার (CPSSL Share)</label>
                             <input type="text" class="form-control" value="<?php echo htmlspecialchars($samity_share); ?>" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">উদ্যোক্তা শেয়ার (Uddokta Share)</label>
+                            <input type="text" class="form-control" value="<?php echo $uddokta_share; ?>" readonly>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">প্রকল্প শেয়ার (Project Shares)</label>
@@ -129,7 +141,7 @@ include_once __DIR__ . '/../includes/side_bar.php';
                                     <?php foreach ($shares as $share): ?>
                                     <tr>
                                         <td><?= $share['id']; ?></td>
-                                        <td><?= htmlspecialchars($share['type']); ?> </td>
+                                        <td><?php $typeLabel = ['samity'=>'সমিতি শেয়ার','uddokta'=>'উদ্যোক্তা শেয়ার','project'=>'প্রকল্প শেয়ার']; echo $typeLabel[$share['type']] ?? htmlspecialchars($share['type']); ?></td>
                                         <td><?= htmlspecialchars($share['project_name_bn']); ?></td>
                                         <td><?= htmlspecialchars($share['no_share']); ?></td>
                                         <td>
@@ -238,7 +250,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var shareType = document.getElementById('share_type');
         var projectBox = document.getElementById('projectSelectBox');
     shareType.addEventListener('change', function() {
-        if (this.value === 'project') {
+        if (this.value === 'uddokta') {
+            projectBox.style.display = 'none';
+            document.getElementById('hiddenProjectId').value = '2';
+            document.getElementById('findProject').value = '2';
+        } else if (this.value === 'project') {
             projectBox.style.display = '';
             // if switching to project, set hidden project id from selector (or 0)
             var sel = document.getElementById('project_id');
@@ -276,7 +292,8 @@ document.body.insertAdjacentHTML('beforeend', `
                             <select class="form-select" name="type" id="editShareType" required>
                                 <option value="">নির্বাচন করুন (Select)</option>
                                 <option value="samity">সমিতি শেয়ার (CPSSL)</option>
-                                <option value="project">প্রকল্প শেয়ার (Project Share)</option>
+                                <option value="uddokta">উদ্যোক্তা শেয়ার (Uddokta Share)</option>
+                                <option value="project">প্রকল্প শেয়ার (Project Share)</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3" id="editProjectSelectBox">
