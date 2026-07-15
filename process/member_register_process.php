@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // DB config
 include_once __DIR__ . '/../config/config.php';
 

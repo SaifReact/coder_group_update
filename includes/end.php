@@ -1,4 +1,4 @@
- <!-- Footer Start -->
+﻿ <!-- Footer Start -->
     <div class="container-fluid bg-dark text-white-50 footer pt-3">
         <?php include_once __DIR__ .'/footer.php'; ?>
     </div>
